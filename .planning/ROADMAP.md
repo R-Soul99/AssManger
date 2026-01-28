@@ -36,10 +36,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Domain entities (Asset, FloorPlan, Marker, Location, Calibration) are implemented with validation
   5. Normalized coordinate system (0.0-1.0 range) transforms correctly to pixel coordinates
 
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] TBD during phase planning
+- [ ] 01-01-PLAN.md — Tauri scaffolding, dependencies, and project structure
+- [ ] 01-02-PLAN.md — Domain entities with Zod validation
+- [ ] 01-03-PLAN.md — Database schema, connection, and migrations
+- [ ] 01-04-PLAN.md — Repository interfaces and SQLite implementations
+- [ ] 01-05-PLAN.md — Application services (coordinates, cloud detection, file storage)
+- [ ] 01-06-PLAN.md — Project management service and UI components
 
 ### Phase 2: Location Hierarchy & Categories
 **Goal**: Users can organize assets by physical location hierarchy and classify equipment by category with visual styling.
@@ -173,7 +178,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Database Setup | 0/TBD | Not started | - |
+| 1. Foundation & Database Setup | 0/6 | Planned | - |
 | 2. Location Hierarchy & Categories | 0/TBD | Not started | - |
 | 3. Asset Management & CSV Export | 0/TBD | Not started | - |
 | 4. Floor Plan Management | 0/TBD | Not started | - |
@@ -183,4 +188,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-28*
+*Last updated: 2026-01-28 (Phase 1 planned)*

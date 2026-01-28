@@ -183,13 +183,83 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (To be populated by roadmapper) | | |
+| FOUN-01 | Phase 1 | Pending |
+| FOUN-02 | Phase 1 | Pending |
+| FOUN-03 | Phase 1 | Pending |
+| FOUN-04 | Phase 1 | Pending |
+| FOUN-05 | Phase 1 | Pending |
+| DB-01 | Phase 1 | Pending |
+| DB-02 | Phase 1 | Pending |
+| DB-03 | Phase 1 | Pending |
+| DB-04 | Phase 1 | Pending |
+| DB-05 | Phase 1 | Pending |
+| DB-06 | Phase 1 | Pending |
+| LOC-01 | Phase 2 | Pending |
+| LOC-02 | Phase 2 | Pending |
+| LOC-03 | Phase 2 | Pending |
+| LOC-04 | Phase 2 | Pending |
+| LOC-05 | Phase 2 | Pending |
+| CAT-01 | Phase 2 | Pending |
+| CAT-02 | Phase 2 | Pending |
+| CAT-03 | Phase 2 | Pending |
+| AST-01 | Phase 3 | Pending |
+| AST-02 | Phase 3 | Pending |
+| AST-03 | Phase 3 | Pending |
+| AST-04 | Phase 3 | Pending |
+| AST-05 | Phase 3 | Pending |
+| AST-06 | Phase 3 | Pending |
+| AST-07 | Phase 3 | Pending |
+| AST-08 | Phase 3 | Pending |
+| AST-09 | Phase 3 | Pending |
+| AST-10 | Phase 3 | Pending |
+| CSV-01 | Phase 3 | Pending |
+| CSV-02 | Phase 3 | Pending |
+| CSV-03 | Phase 3 | Pending |
+| CSV-04 | Phase 3 | Pending |
+| CSV-05 | Phase 3 | Pending |
+| FLP-01 | Phase 4 | Pending |
+| FLP-02 | Phase 4 | Pending |
+| FLP-03 | Phase 4 | Pending |
+| FLP-04 | Phase 4 | Pending |
+| FLP-05 | Phase 4 | Pending |
+| FLP-06 | Phase 4 | Pending |
+| VWR-01 | Phase 5 | Pending |
+| VWR-02 | Phase 5 | Pending |
+| VWR-03 | Phase 5 | Pending |
+| VWR-04 | Phase 5 | Pending |
+| VWR-05 | Phase 5 | Pending |
+| VWR-06 | Phase 5 | Pending |
+| VWR-07 | Phase 5 | Pending |
+| VWR-08 | Phase 5 | Pending |
+| MRK-01 | Phase 6 | Pending |
+| MRK-02 | Phase 6 | Pending |
+| MRK-03 | Phase 6 | Pending |
+| MRK-04 | Phase 6 | Pending |
+| MRK-05 | Phase 6 | Pending |
+| MRK-06 | Phase 6 | Pending |
+| MRK-07 | Phase 6 | Pending |
+| MRK-08 | Phase 6 | Pending |
+| MRK-09 | Phase 6 | Pending |
+| CAL-01 | Phase 7 | Pending |
+| CAL-02 | Phase 7 | Pending |
+| CAL-03 | Phase 7 | Pending |
+| CAL-04 | Phase 7 | Pending |
+| CAL-05 | Phase 7 | Pending |
+| CAL-06 | Phase 7 | Pending |
+| CAL-07 | Phase 7 | Pending |
+| CAL-08 | Phase 7 | Pending |
+| MSR-01 | Phase 7 | Pending |
+| MSR-02 | Phase 7 | Pending |
+| MSR-03 | Phase 7 | Pending |
+| MSR-04 | Phase 7 | Pending |
+| MSR-05 | Phase 7 | Pending |
+| MSR-06 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 69 total
-- Mapped to phases: 0 (pending roadmap creation)
-- Unmapped: 69 ⚠️
+- v1 requirements: 71 total
+- Mapped to phases: 71 (100% coverage)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-28*
-*Last updated: 2026-01-28 after initial definition*
+*Last updated: 2026-01-28 after roadmap creation*

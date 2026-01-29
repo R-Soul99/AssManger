@@ -1,0 +1,34 @@
+react-dom.development.js:29895 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+browser-external:util:9  Module "util" has been externalized for browser compatibility. Cannot access "util.promisify" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+get @ browser-external:util:9
+node_modules/better-sqlite3/lib/methods/backup.js @ backup.js:4
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+node_modules/better-sqlite3/lib/database.js @ database.js:78
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+node_modules/better-sqlite3/lib/index.js @ index.js:2
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+(anonymous) @ driver.ts:1
+browser-external:fs:9  Module "fs" has been externalized for browser compatibility. Cannot access "fs.access" in client code. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+get @ browser-external:fs:9
+node_modules/better-sqlite3/lib/methods/backup.js @ backup.js:6
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+node_modules/better-sqlite3/lib/database.js @ database.js:78
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+node_modules/better-sqlite3/lib/index.js @ index.js:2
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+(anonymous) @ driver.ts:1
+backup.js:6  Uncaught TypeError: promisify is not a function
+    at node_modules/better-sqlite3/lib/methods/backup.js (backup.js:6:18)
+    at __require2 (chunk-2TUXWMP5.js?v=08aba19c:15:50)
+    at node_modules/better-sqlite3/lib/database.js (database.js:78:29)
+    at __require2 (chunk-2TUXWMP5.js?v=08aba19c:15:50)
+    at node_modules/better-sqlite3/lib/index.js (index.js:2:18)
+    at __require2 (chunk-2TUXWMP5.js?v=08aba19c:15:50)
+    at driver.ts:1:69
+node_modules/better-sqlite3/lib/methods/backup.js @ backup.js:6
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+node_modules/better-sqlite3/lib/database.js @ database.js:78
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+node_modules/better-sqlite3/lib/index.js @ index.js:2
+__require2 @ chunk-2TUXWMP5.js?v=08aba19c:15
+(anonymous) @ driver.ts:1

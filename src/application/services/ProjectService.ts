@@ -1,11 +1,12 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import { exists, mkdir, copyFile } from '@tauri-apps/plugin-fs';
 import { join, basename, dirname } from '@tauri-apps/api/path';
-import { initializeDatabase, closeDatabase, getCurrentDatabasePath } from '@/infrastructure/database/connection';
-import { runMigrations } from '@/infrastructure/database/migrate';
+// TEMPORARY: Using mocks for checkpoint verification
+// TODO: Replace with Tauri commands in Rust backend
+import { initializeDatabase, closeDatabase, getCurrentDatabasePath } from '@/infrastructure/database/connection.mock';
+import { runMigrations } from '@/infrastructure/database/migrate.mock';
 import { cloudFolderDetectionService } from './CloudFolderDetectionService';
 import { localFileStorage } from '@/infrastructure/storage/LocalFileStorage';
-import { RepositoryFactory } from '@/infrastructure/repositories';
 import {
   RecentProject,
   ProjectCreateOptions,
@@ -75,10 +76,11 @@ export class ProjectService {
       await runMigrations();
 
       // Initialize file storage
-      await localFileStorage.initialize({ basePath: options.location });
+      // MOCK: Disabled for checkpoint
+      // await localFileStorage.initialize({ basePath: options.location });
 
       // Reset repository factory for new database
-      RepositoryFactory.reset();
+      // RepositoryFactory.reset(); // MOCK: Disabled for checkpoint
 
       // Add to recent projects
       this.addToRecentProjects({
@@ -131,11 +133,12 @@ export class ProjectService {
       await runMigrations();
 
       // Initialize file storage
-      const dbDir = await dirname(dbPath);
-      await localFileStorage.initialize({ basePath: dbDir });
+      // const dbDir = await dirname(dbPath);
+      // MOCK: Disabled for checkpoint
+      // await localFileStorage.initialize({ basePath: dbDir });
 
       // Reset repository factory for new database
-      RepositoryFactory.reset();
+      // RepositoryFactory.reset(); // MOCK: Disabled for checkpoint
 
       // Extract project name
       const fileName = await basename(dbPath);

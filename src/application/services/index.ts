@@ -10,3 +10,8 @@ export {
   cloudFolderDetectionService,
   type CloudCheckResult,
 } from './CloudFolderDetectionService';
+
+export {
+  ProjectService,
+  projectService,
+} from './ProjectService';

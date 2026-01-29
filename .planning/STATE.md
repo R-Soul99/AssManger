@@ -11,28 +11,28 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 1 of 7 (Foundation & Database Setup)
-Plan: 1 of TBD in current phase
+Plan: 2 of TBD in current phase
 Status: In progress
-Last activity: 2026-01-29 - Completed 01-01-PLAN.md (Project Initialization)
+Last activity: 2026-01-29 - Completed 01-02-PLAN.md (Domain Entities with Validation)
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 7 min
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 5.5 min
+- Total execution time: 0.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 1 | 7min | 7min |
+| 01 | 2 | 11min | 5.5min |
 
 **Recent Trend:**
-- Last 5 plans: 7min
-- Trend: First plan completed
+- Last 5 plans: 7min, 4min
+- Trend: Improving velocity
 
 *Updated after each plan completion*
 
@@ -50,6 +50,9 @@ Recent decisions affecting current work:
 - Plan 01-01: Manually scaffolded Tauri 2 (create-tauri-app CLI issues)
 - Plan 01-01: TypeScript strict mode enabled for type safety
 - Plan 01-01: Clean architecture structure from start (prevents mixing concerns)
+- Plan 01-02: Zod schemas with safeParse factory pattern (type-safe runtime validation)
+- Plan 01-02: Silent coordinate clamping (0.0-1.0) handles floating point edge cases gracefully
+- Plan 01-02: Immutable entities with private data and getters (enforces controlled updates through repository)
 
 ### Pending Todos
 
@@ -61,7 +64,7 @@ Recent decisions affecting current work:
 ### Blockers/Concerns
 
 **Phase 1 Foundation:**
-- Must implement normalized coordinates (0.0-1.0 range) correctly from start - cannot migrate pixel coordinates cleanly later
+- ✓ Normalized coordinates (0.0-1.0) implemented correctly with Marker entity clamping
 - Must detect cloud-synced folders (OneDrive/SharePoint) and warn users - SQLite corruption risk in network file systems
 - Repository abstraction critical for future PostgreSQL migration - avoid SQLite lock-in
 
@@ -75,8 +78,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-01-29 (plan 01-01 execution)
-Stopped at: Completed 01-01-PLAN.md - project initialization successful, Rust prerequisite pending
+Last session: 2026-01-29 (plan 01-02 execution)
+Stopped at: Completed 01-02-PLAN.md - domain entities with validation complete
 Resume file: None
 
 ---

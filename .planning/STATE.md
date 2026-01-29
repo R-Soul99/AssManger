@@ -11,27 +11,27 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 1 of 7 (Foundation & Database Setup)
-Plan: 4 of TBD in current phase
+Plan: 5 of TBD in current phase
 Status: In progress
-Last activity: 2026-01-29 - Completed 01-04-PLAN.md (Repository Layer Implementation)
+Last activity: 2026-01-29 - Completed 01-05-PLAN.md (Application Services)
 
-Progress: [████░░░░░░] 40%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 5 min
-- Total execution time: 0.3 hours
+- Total execution time: 0.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 4 | 19min | 5min |
+| 01 | 5 | 23min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 7min, 4min, 4min, 4min
+- Last 5 plans: 4min, 4min, 4min, 4min, 4min
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -60,6 +60,10 @@ Recent decisions affecting current work:
 - Plan 01-04: Factory pattern with lazy initialization and singleton for efficient repository access
 - Plan 01-04: Domain entity mapping in repositories enforces validation at persistence boundary
 - Plan 01-04: Type casting for enum filters in Drizzle queries to satisfy TypeScript strict mode
+- Plan 01-05: Pixel coordinates rounded to nearest integer for rendering precision
+- Plan 01-05: Cloud folder detection via environment variables + path patterns (OneDrive, Dropbox, SharePoint, Google Drive)
+- Plan 01-05: Session-based warning tracking prevents repetitive nagging
+- Plan 01-05: File storage uses relative paths for database portability
 
 ### Pending Todos
 
@@ -73,7 +77,9 @@ Recent decisions affecting current work:
 **Phase 1 Foundation:**
 - ✓ Normalized coordinates (0.0-1.0) implemented in entities (01-02) and schema (01-03)
 - ✓ Repository abstraction complete (01-04) - ready for future PostgreSQL migration
-- Must detect cloud-synced folders (OneDrive/SharePoint) and warn users - SQLite corruption risk in network file systems
+- ✓ Cloud folder detection service complete (01-05) - OneDrive, Dropbox, SharePoint, Google Drive detection
+- ✓ Coordinate transformation service ready for marker rendering (01-05)
+- ✓ File storage with database-relative paths for portability (01-05)
 
 **Phase 5 Viewer Performance:**
 - Canvas performance degradation expected with 500+ markers - requires viewport culling implementation
@@ -85,8 +91,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-01-29 (plan 01-04 execution)
-Stopped at: Completed 01-04-PLAN.md - repository layer with interfaces and SQLite implementations complete
+Last session: 2026-01-29 (plan 01-05 execution)
+Stopped at: Completed 01-05-PLAN.md - application services with coordinate transformation, cloud detection, and file storage
 Resume file: None
 
 ---

@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 1 of 7 (Foundation & Database Setup)
-Plan: 5 of TBD in current phase
-Status: In progress
-Last activity: 2026-01-29 - Completed 01-05-PLAN.md (Application Services)
+Plan: 6 of TBD in current phase (at checkpoint)
+Status: In progress - awaiting human verification
+Last activity: 2026-01-29 - Completed 01-06-PLAN.md tasks 1-3 (Project Management)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -64,6 +64,10 @@ Recent decisions affecting current work:
 - Plan 01-05: Cloud folder detection via environment variables + path patterns (OneDrive, Dropbox, SharePoint, Google Drive)
 - Plan 01-05: Session-based warning tracking prevents repetitive nagging
 - Plan 01-05: File storage uses relative paths for database portability
+- Plan 01-06: ProjectService manages project lifecycle (create, open, recent projects)
+- Plan 01-06: .assetmap extension for databases (supports opening .db/.sqlite)
+- Plan 01-06: Recent projects stored in localStorage (max 5)
+- Plan 01-06: Default project location is %LOCALAPPDATA%\AssManger
 
 ### Pending Todos
 
@@ -91,8 +95,8 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-01-29 (plan 01-05 execution)
-Stopped at: Completed 01-05-PLAN.md - application services with coordinate transformation, cloud detection, and file storage
+Last session: 2026-01-29 (plan 01-06 execution)
+Stopped at: Checkpoint at task 4 - awaiting human verification of project management UI
 Resume file: None
 
 ---

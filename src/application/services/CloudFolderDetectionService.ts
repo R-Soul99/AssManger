@@ -23,12 +23,9 @@ export class CloudFolderDetectionService {
   isCloudSyncedPath(filePath: string): CloudCheckResult {
     const normalizedPath = filePath.toLowerCase().replace(/\//g, '\\');
 
-    // Check OneDrive (environment variables)
-    const oneDrivePaths = [
-      process.env.OneDrive,
-      process.env.OneDriveCommercial,
-      process.env.OneDriveConsumer,
-    ].filter(Boolean) as string[];
+    // TEMPORARY: process.env doesn't exist in browser, skip env var checks
+    // TODO: Get environment variables from Rust backend
+    const oneDrivePaths: string[] = [];
 
     for (const oneDrivePath of oneDrivePaths) {
       if (normalizedPath.startsWith(oneDrivePath.toLowerCase())) {
@@ -50,11 +47,8 @@ export class CloudFolderDetectionService {
       };
     }
 
-    // Check Dropbox
-    const dropboxPath = process.env.DROPBOX_PATH ||
-      `${process.env.USERPROFILE || ''}\\Dropbox`;
-    if (normalizedPath.startsWith(dropboxPath.toLowerCase()) ||
-        normalizedPath.includes('\\dropbox\\')) {
+    // Check Dropbox (path pattern only, env vars not available in browser)
+    if (normalizedPath.includes('\\dropbox\\')) {
       return {
         isSynced: true,
         provider: 'Dropbox',
@@ -91,12 +85,8 @@ export class CloudFolderDetectionService {
    * Per CONTEXT.md: %LOCALAPPDATA%\AssManger
    */
   async getRecommendedLocation(): Promise<string> {
-    // Prefer LOCALAPPDATA (Windows standard for app data)
-    const localAppData = process.env.LOCALAPPDATA;
-    if (localAppData) {
-      return await join(localAppData, 'AssManger');
-    }
-
+    // TEMPORARY: Hardcoded for checkpoint verification
+    // TODO: Get from Tauri environment or Rust backend
     // Fallback to Tauri's app data directory
     const appData = await appDataDir();
     return await join(appData, 'databases');

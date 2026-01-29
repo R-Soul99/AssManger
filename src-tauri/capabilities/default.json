@@ -3,6 +3,7 @@
   "description": "Default permissions for the application",
   "permissions": [
     "core:default",
+    "dialog:default",
     "fs:default"
   ]
 }

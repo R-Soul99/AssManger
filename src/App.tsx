@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CreateProjectDialog, OpenProjectDialog, RecentProjectsList } from '@/presentation/components/project';
 import { projectService } from '@/application/services/ProjectService';
+import './App.css';
 
 function App() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);

@@ -91,9 +91,10 @@ export class ProjectService {
 
       return { success: true, path: dbPath };
     } catch (error) {
+      console.error('[ProjectService] Create project error:', error);
       return {
         success: false,
-        error: `Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error: `Failed to create project: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
       };
     }
   }

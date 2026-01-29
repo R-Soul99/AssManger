@@ -1,5 +1,4 @@
-import { appDataDir } from '@tauri-apps/api/path';
-import * as path from 'path';
+import { appDataDir, join } from '@tauri-apps/api/path';
 
 export interface CloudCheckResult {
   isSynced: boolean;
@@ -53,7 +52,7 @@ export class CloudFolderDetectionService {
 
     // Check Dropbox
     const dropboxPath = process.env.DROPBOX_PATH ||
-      path.join(process.env.USERPROFILE || '', 'Dropbox');
+      `${process.env.USERPROFILE || ''}\\Dropbox`;
     if (normalizedPath.startsWith(dropboxPath.toLowerCase()) ||
         normalizedPath.includes('\\dropbox\\')) {
       return {
@@ -95,12 +94,12 @@ export class CloudFolderDetectionService {
     // Prefer LOCALAPPDATA (Windows standard for app data)
     const localAppData = process.env.LOCALAPPDATA;
     if (localAppData) {
-      return path.join(localAppData, 'AssManger');
+      return await join(localAppData, 'AssManger');
     }
 
     // Fallback to Tauri's app data directory
     const appData = await appDataDir();
-    return path.join(appData, 'databases');
+    return await join(appData, 'databases');
   }
 
   /**

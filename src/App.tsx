@@ -3,7 +3,10 @@ import { CreateProjectDialog, OpenProjectDialog, RecentProjectsList } from '@/pr
 import { projectService } from '@/application/services/ProjectService';
 import './App.css';
 
+console.log('[App] Component loaded');
+
 function App() {
+  console.log('[App] Component rendering');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isOpenDialogOpen, setIsOpenDialogOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState<{ path: string; name: string } | null>(null);

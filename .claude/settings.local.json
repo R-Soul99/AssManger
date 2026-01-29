@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(gsd:progress)",
+      "Bash(chmod:*)",
+      "Bash(test:*)",
+      "Skill(gsd:execute-phase)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

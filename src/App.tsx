@@ -4,6 +4,7 @@ import { CreateProjectDialog, OpenProjectDialog, RecentProjectsList } from '@/pr
 import { projectService } from '@/application/services/ProjectService';
 import CategoryManager from '@/presentation/components/category/CategoryManager';
 import LocationManager from '@/presentation/components/location/LocationManager';
+import { AssetList } from '@/presentation/components/asset';
 import './App.css';
 
 const theme = createTheme();
@@ -17,6 +18,7 @@ function App() {
   const [currentProject, setCurrentProject] = useState<{ path: string; name: string } | null>(null);
   const [showCategories, setShowCategories] = useState(false);
   const [showLocations, setShowLocations] = useState(false);
+  const [showAssets, setShowAssets] = useState(false);
 
   const handleProjectCreated = (path: string) => {
     const name = path.split(/[/\\]/).pop()?.replace(/\.(assetmap|db|sqlite)$/i, '') || 'Project';
@@ -78,6 +80,9 @@ function App() {
         <p>Current Project: {currentProject.name}</p>
         <p className="project-path">{currentProject.path}</p>
         <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+          <button onClick={() => setShowAssets(!showAssets)}>
+            {showAssets ? 'Hide Assets' : 'Manage Assets'}
+          </button>
           <button onClick={() => setShowCategories(!showCategories)}>
             {showCategories ? 'Hide Categories' : 'Manage Categories'}
           </button>
@@ -85,6 +90,7 @@ function App() {
             {showLocations ? 'Hide Locations' : 'Manage Locations'}
           </button>
         </div>
+        {showAssets && <AssetList />}
         {showCategories && <CategoryManager />}
         {showLocations && <LocationManager />}
       </div>

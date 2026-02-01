@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { CreateProjectDialog, OpenProjectDialog, RecentProjectsList } from '@/presentation/components/project';
 import { projectService } from '@/application/services/ProjectService';
 import CategoryManager from '@/presentation/components/category/CategoryManager';
+import LocationManager from '@/presentation/components/location/LocationManager';
 import './App.css';
 
 const theme = createTheme();
@@ -15,6 +16,7 @@ function App() {
   const [isOpenDialogOpen, setIsOpenDialogOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState<{ path: string; name: string } | null>(null);
   const [showCategories, setShowCategories] = useState(false);
+  const [showLocations, setShowLocations] = useState(false);
 
   const handleProjectCreated = (path: string) => {
     const name = path.split(/[/\\]/).pop()?.replace(/\.(assetmap|db|sqlite)$/i, '') || 'Project';
@@ -75,12 +77,16 @@ function App() {
         <h1>Visual Asset Mapper</h1>
         <p>Current Project: {currentProject.name}</p>
         <p className="project-path">{currentProject.path}</p>
-        <div style={{ marginTop: '2rem' }}>
+        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
           <button onClick={() => setShowCategories(!showCategories)}>
             {showCategories ? 'Hide Categories' : 'Manage Categories'}
           </button>
+          <button onClick={() => setShowLocations(!showLocations)}>
+            {showLocations ? 'Hide Locations' : 'Manage Locations'}
+          </button>
         </div>
         {showCategories && <CategoryManager />}
+        {showLocations && <LocationManager />}
       </div>
     </ThemeProvider>
   );

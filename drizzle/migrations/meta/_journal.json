@@ -8,6 +8,27 @@
       "when": 1769715296592,
       "tag": "0000_sparkling_caretaker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769902733086,
+      "tag": "0001_yielding_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769902779789,
+      "tag": "0002_flowery_iron_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1769967188476,
+      "tag": "0003_quiet_zombie",
+      "breakpoints": true
     }
   ]
 }

@@ -16,9 +16,9 @@ export const locations = sqliteTable('locations', {
 export const assets = sqliteTable('assets', {
   id: text('id').primaryKey(),
   tag: text('tag').notNull(),
-  category: text('category').notNull(),
   description: text('description').notNull(),
   locationId: text('location_id').notNull().references(() => locations.id, { onDelete: 'restrict' }),
+  categoryId: integer('category_id').references(() => categories.id, { onDelete: 'restrict' }),
   serialNumber: text('serial_number'),
   phoneExtension: text('phone_extension'),
   status: text('status', { enum: ['active', 'pending', 'decommissioned', 'faulty', 'maintenance'] }).notNull().default('active'),
@@ -91,6 +91,10 @@ export const assetsRelations = relations(assets, ({ one, many }) => ({
     fields: [assets.locationId],
     references: [locations.id],
   }),
+  category: one(categories, {
+    fields: [assets.categoryId],
+    references: [categories.id],
+  }),
   markers: many(markers),
 }));
 
@@ -119,4 +123,27 @@ export const calibrationsRelations = relations(calibrations, ({ one }) => ({
     fields: [calibrations.floorPlanId],
     references: [floorPlans.id],
   }),
+}));
+
+// Categories table (hierarchical)
+export const categories = sqliteTable('categories', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  parentId: integer('parent_id').references((): any => categories.id, { onDelete: 'set null' }),
+  description: text('description'),
+  icon: text('icon').notNull().default('FaBox'),
+  color: text('color').notNull().default('#000000'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
+
+// Relations for Categories
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  parent: one(categories, {
+    fields: [categories.parentId],
+    references: [categories.id],
+    relationName: 'categoryHierarchy',
+  }),
+  children: many(categories, { relationName: 'categoryHierarchy' }),
+  assets: many(assets),
 }));

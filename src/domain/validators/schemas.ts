@@ -19,7 +19,7 @@ export const LocationSchema = z.object({
 export const AssetSchema = z.object({
   id: z.string().uuid(),
   tag: z.string().min(1, "Asset tag is required"),
-  category: z.string().min(1, "Category is required"),
+  categoryId: z.number(),
   description: z.string().min(1, "Description is required"),
   locationId: z.string().uuid("Location is required"),
   serialNumber: z.string().optional(),
@@ -81,9 +81,22 @@ export const CalibrationSchema = z.object({
   updatedAt: z.date(),
 });
 
+// Category schema (hierarchical)
+export const CategorySchema = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(1, "Category name is required"),
+  parentId: z.number().int().positive().nullable().optional(),
+  description: z.string().optional(),
+  icon: z.string().default('FaBox'),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Color must be a valid hex code").default('#000000'),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
 // Type exports
 export type LocationData = z.infer<typeof LocationSchema>;
 export type AssetData = z.infer<typeof AssetSchema>;
 export type FloorPlanData = z.infer<typeof FloorPlanSchema>;
 export type MarkerData = z.infer<typeof MarkerSchema>;
 export type CalibrationData = z.infer<typeof CalibrationSchema>;
+export type CategoryData = z.infer<typeof CategorySchema>;

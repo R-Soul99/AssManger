@@ -17,7 +17,7 @@ export class Asset {
 
   get id(): string { return this.data.id; }
   get tag(): string { return this.data.tag; }
-  get category(): string { return this.data.category; }
+  get categoryId(): number { return this.data.categoryId; }
   get description(): string { return this.data.description; }
   get locationId(): string { return this.data.locationId; }
   get serialNumber(): string | undefined { return this.data.serialNumber; }

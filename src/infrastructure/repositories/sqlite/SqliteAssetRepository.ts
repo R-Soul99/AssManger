@@ -1,9 +1,9 @@
-import { eq, like, or, and, ne, count } from 'drizzle-orm';
+import { eq, like, or, and, ne, count, sql } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import { IAssetRepository, AssetFilters } from '../interfaces/IAssetRepository';
+import { IAssetRepository, AssetFilters, AssetWithRelations } from '../interfaces/IAssetRepository';
 import { Asset } from '@/domain/entities';
-import { AssetData } from '@/domain/validators';
-import { assets } from '@/infrastructure/database/schema';
+import { AssetData, CategoryData, LocationData } from '@/domain/validators';
+import { assets, categories, locations } from '@/infrastructure/database/schema';
 import * as schema from '@/infrastructure/database/schema';
 
 export class SqliteAssetRepository implements IAssetRepository {
@@ -27,8 +27,8 @@ export class SqliteAssetRepository implements IAssetRepository {
       if (filters.locationId) {
         conditions.push(eq(assets.locationId, filters.locationId));
       }
-      if (filters.category) {
-        conditions.push(eq(assets.category, filters.category));
+      if (filters.categoryId) {
+        conditions.push(eq(assets.categoryId, filters.categoryId));
       }
       if (filters.status) {
         conditions.push(eq(assets.status, filters.status as any));
@@ -53,6 +53,86 @@ export class SqliteAssetRepository implements IAssetRepository {
 
     const rows = await query;
     return rows.map(row => this.mapRowToEntity(row));
+  }
+
+  async findAllWithRelations(filters?: AssetFilters): Promise<AssetWithRelations[]> {
+    const conditions = [];
+
+    if (filters) {
+      if (filters.locationId) {
+        conditions.push(eq(assets.locationId, filters.locationId));
+      }
+      if (filters.categoryId) {
+        conditions.push(eq(assets.categoryId, filters.categoryId));
+      }
+      if (filters.status) {
+        conditions.push(eq(assets.status, filters.status as any));
+      }
+      if (filters.searchTerm) {
+        const term = `%${filters.searchTerm}%`;
+        conditions.push(
+          or(
+            like(assets.tag, term),
+            like(assets.description, term),
+            like(assets.serialNumber, term),
+            like(assets.phoneExtension, term)
+          )
+        );
+      }
+    }
+
+    let query = this.db
+      .select({
+        asset: assets,
+        category: categories,
+        location: locations,
+      })
+      .from(assets)
+      .leftJoin(categories, eq(assets.categoryId, categories.id))
+      .leftJoin(locations, eq(assets.locationId, locations.id));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    const rows = await query;
+
+    // Build location paths for each asset
+    const results: AssetWithRelations[] = [];
+    for (const row of rows) {
+      const asset = this.mapRowToEntity(row.asset);
+      const locationPath = row.location ? await this.buildLocationPath(row.location.id) : undefined;
+
+      results.push({
+        asset,
+        category: row.category || null,
+        location: row.location || null,
+        locationPath,
+      });
+    }
+
+    return results;
+  }
+
+  private async buildLocationPath(locationId: string): Promise<string> {
+    const path: string[] = [];
+    let currentId: string | null = locationId;
+
+    while (currentId) {
+      const locationRows = await this.db
+        .select()
+        .from(locations)
+        .where(eq(locations.id, currentId))
+        .limit(1);
+
+      if (locationRows.length === 0) break;
+
+      const loc = locationRows[0];
+      path.unshift(loc.name);
+      currentId = loc.parentId;
+    }
+
+    return path.join(' > ');
   }
 
   async findByLocation(locationId: string): Promise<Asset[]> {
@@ -94,7 +174,7 @@ export class SqliteAssetRepository implements IAssetRepository {
     await this.db.insert(assets).values({
       id: asset.id,
       tag: asset.tag,
-      category: asset.category,
+      categoryId: asset.categoryId,
       description: asset.description,
       locationId: asset.locationId,
       serialNumber: asset.serialNumber ?? null,
@@ -129,7 +209,7 @@ export class SqliteAssetRepository implements IAssetRepository {
 
     if (filters) {
       if (filters.locationId) conditions.push(eq(assets.locationId, filters.locationId));
-      if (filters.category) conditions.push(eq(assets.category, filters.category));
+      if (filters.categoryId) conditions.push(eq(assets.categoryId, filters.categoryId));
       if (filters.status) conditions.push(eq(assets.status, filters.status as any));
       if (filters.searchTerm) {
         const term = `%${filters.searchTerm}%`;
@@ -157,7 +237,7 @@ export class SqliteAssetRepository implements IAssetRepository {
     const result = Asset.create({
       id: row.id,
       tag: row.tag,
-      category: row.category,
+      categoryId: row.categoryId,
       description: row.description,
       locationId: row.locationId,
       serialNumber: row.serialNumber ?? undefined,

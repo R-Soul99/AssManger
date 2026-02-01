@@ -9,25 +9,25 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Foundation & Data Model
 
-- [ ] **FOUN-01**: Domain entities implemented (Asset, FloorPlan, Marker, Location hierarchy, Calibration)
-- [ ] **FOUN-02**: Repository interfaces defined for database abstraction (IAssetRepository, IFloorPlanRepository, IMarkerRepository, IFileStorageRepository)
-- [ ] **FOUN-03**: SQLite repository implementations with database migrations
-- [ ] **FOUN-04**: Normalized coordinate system (0.0-1.0 range) with pixel transformation service
-- [ ] **FOUN-05**: Local file storage service for floor plan images with relative path handling
+- [x] **FOUN-01**: Domain entities implemented (Asset, FloorPlan, Marker, Location hierarchy, Calibration)
+- [x] **FOUN-02**: Repository interfaces defined for database abstraction (IAssetRepository, IFloorPlanRepository, IMarkerRepository, IFileStorageRepository)
+- [x] **FOUN-03**: SQLite repository implementations with database migrations
+- [x] **FOUN-04**: Normalized coordinate system (0.0-1.0 range) with pixel transformation service
+- [x] **FOUN-05**: Local file storage service for floor plan images with relative path handling
 
 ### Location Hierarchy
 
-- [ ] **LOC-01**: User can create/edit/delete sites
-- [ ] **LOC-02**: User can create/edit/delete buildings within sites
-- [ ] **LOC-03**: User can create/edit/delete floors within buildings
-- [ ] **LOC-04**: User can create/edit/delete rooms within floors
-- [ ] **LOC-05**: System enforces hierarchical integrity (no orphaned locations)
+- [x] **LOC-01**: User can create/edit/delete sites
+- [x] **LOC-02**: User can create/edit/delete buildings within sites
+- [x] **LOC-03**: User can create/edit/delete floors within buildings
+- [x] **LOC-04**: User can create/edit/delete rooms within floors
+- [x] **LOC-05**: System enforces hierarchical integrity (no orphaned locations)
 
 ### Equipment Categories
 
-- [ ] **CAT-01**: User can create/edit/delete equipment categories
-- [ ] **CAT-02**: User can assign icon and color to each category
-- [ ] **CAT-03**: Categories have name, description, and default metadata fields
+- [x] **CAT-01**: User can create/edit/delete equipment categories
+- [x] **CAT-02**: User can assign icon and color to each category
+- [x] **CAT-03**: Categories have name, description, and default metadata fields
 
 ### Asset Management
 
@@ -104,12 +104,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Database & Project Management
 
-- [ ] **DB-01**: User can create new database file at chosen location
-- [ ] **DB-02**: User can open existing database file
-- [ ] **DB-03**: System remembers recently opened databases
-- [ ] **DB-04**: System detects if database path is in cloud-synced folder (OneDrive/SharePoint) and warns user
-- [ ] **DB-05**: System recommends storing database in %LOCALAPPDATA% for single-user scenarios
-- [ ] **DB-06**: User can backup database (copy file to chosen location)
+- [x] **DB-01**: User can create new database file at chosen location
+- [x] **DB-02**: User can open existing database file
+- [x] **DB-03**: System remembers recently opened databases
+- [x] **DB-04**: System detects if database path is in cloud-synced folder (OneDrive/SharePoint) and warns user
+- [x] **DB-05**: System recommends storing database in %LOCALAPPDATA% for single-user scenarios
+- [x] **DB-06**: User can backup database (copy file to chosen location)
 
 ## v2 Requirements
 
@@ -183,25 +183,25 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUN-01 | Phase 1 | Pending |
-| FOUN-02 | Phase 1 | Pending |
-| FOUN-03 | Phase 1 | Pending |
-| FOUN-04 | Phase 1 | Pending |
-| FOUN-05 | Phase 1 | Pending |
-| DB-01 | Phase 1 | Pending |
-| DB-02 | Phase 1 | Pending |
-| DB-03 | Phase 1 | Pending |
-| DB-04 | Phase 1 | Pending |
-| DB-05 | Phase 1 | Pending |
-| DB-06 | Phase 1 | Pending |
-| LOC-01 | Phase 2 | Pending |
-| LOC-02 | Phase 2 | Pending |
-| LOC-03 | Phase 2 | Pending |
-| LOC-04 | Phase 2 | Pending |
-| LOC-05 | Phase 2 | Pending |
-| CAT-01 | Phase 2 | Pending |
-| CAT-02 | Phase 2 | Pending |
-| CAT-03 | Phase 2 | Pending |
+| FOUN-01 | Phase 1 | Complete |
+| FOUN-02 | Phase 1 | Complete |
+| FOUN-03 | Phase 1 | Complete |
+| FOUN-04 | Phase 1 | Complete |
+| FOUN-05 | Phase 1 | Complete |
+| DB-01 | Phase 1 | Complete |
+| DB-02 | Phase 1 | Complete |
+| DB-03 | Phase 1 | Complete |
+| DB-04 | Phase 1 | Complete |
+| DB-05 | Phase 1 | Complete |
+| DB-06 | Phase 1 | Complete |
+| LOC-01 | Phase 2 | Complete |
+| LOC-02 | Phase 2 | Complete |
+| LOC-03 | Phase 2 | Complete |
+| LOC-04 | Phase 2 | Complete |
+| LOC-05 | Phase 2 | Complete |
+| CAT-01 | Phase 2 | Complete |
+| CAT-02 | Phase 2 | Complete |
+| CAT-03 | Phase 2 | Complete |
 | AST-01 | Phase 3 | Pending |
 | AST-02 | Phase 3 | Pending |
 | AST-03 | Phase 3 | Pending |

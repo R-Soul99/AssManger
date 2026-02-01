@@ -12,8 +12,8 @@ This roadmap delivers a desktop application for visual asset management with int
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Database Setup** - Establish architecture foundations and database infrastructure
-- [ ] **Phase 2: Location Hierarchy & Categories** - Build organizational structure and equipment classification
+- [x] **Phase 1: Foundation & Database Setup** - Establish architecture foundations and database infrastructure
+- [x] **Phase 2: Location Hierarchy & Categories** - Build organizational structure and equipment classification
 - [ ] **Phase 3: Asset Management & CSV Export** - Implement core asset CRUD and data export
 - [ ] **Phase 4: Floor Plan Management** - Enable floor plan import and metadata management
 - [ ] **Phase 5: Floor Plan Viewer** - Build interactive viewer with pan/zoom and marker display
@@ -39,12 +39,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 6 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Tauri scaffolding, dependencies, and project structure
-- [ ] 01-02-PLAN.md — Domain entities with Zod validation
-- [ ] 01-03-PLAN.md — Database schema, connection, and migrations
-- [ ] 01-04-PLAN.md — Repository interfaces and SQLite implementations
-- [ ] 01-05-PLAN.md — Application services (coordinates, cloud detection, file storage)
-- [ ] 01-06-PLAN.md — Project management service and UI components
+- [x] 01-01-PLAN.md — Tauri scaffolding, dependencies, and project structure
+- [x] 01-02-PLAN.md — Domain entities with Zod validation
+- [x] 01-03-PLAN.md — Database schema, connection, and migrations
+- [x] 01-04-PLAN.md — Repository interfaces and SQLite implementations
+- [x] 01-05-PLAN.md — Application services (coordinates, cloud detection, file storage)
+- [x] 01-06-PLAN.md — Project management service and UI components
 
 ### Phase 2: Location Hierarchy & Categories
 **Goal**: Users can organize assets by physical location hierarchy and classify equipment by category with visual styling.
@@ -60,10 +60,13 @@ Plans:
   4. User can edit and delete categories
   5. Location and category data persists correctly in database through repository layer
 
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD during phase planning
+- [x] 02-01-PLAN.md — Implement Categories CRUD
+- [x] 02-02-PLAN.md — Implement Locations as a flat list (CRUD)
+- [x] 02-03-PLAN.md — Implement Location Hierarchy (parent/child relationships)
+- [x] 02-04-PLAN.md — Link Assets to Categories and Locations
 
 ### Phase 3: Asset Management & CSV Export
 **Goal**: Users can manage complete asset inventory with full CRUD operations, filtering, search, and Excel-compatible data export.
@@ -178,8 +181,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Database Setup | 0/6 | Planned | - |
-| 2. Location Hierarchy & Categories | 0/TBD | Not started | - |
+| 1. Foundation & Database Setup | 6/6 | Complete | 2026-01-29 |
+| 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
 | 3. Asset Management & CSV Export | 0/TBD | Not started | - |
 | 4. Floor Plan Management | 0/TBD | Not started | - |
 | 5. Floor Plan Viewer | 0/TBD | Not started | - |
@@ -188,4 +191,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-28 (Phase 1 planned)*
+*Last updated: 2026-02-01 (Phase 2 complete)*

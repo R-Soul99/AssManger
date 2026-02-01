@@ -2,10 +2,10 @@
 export interface Category {
   id: number;
   name: string;
-  parentId?: number;
-  description?: string;
+  parentId: number | null;
+  description: string | null;
   icon: string;
   color: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }

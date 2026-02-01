@@ -7,6 +7,7 @@ import {
   IFloorPlanRepository,
   IMarkerRepository,
   ICalibrationRepository,
+  ICategoryRepository,
 } from './interfaces';
 import {
   SqliteLocationRepository,
@@ -14,6 +15,7 @@ import {
   SqliteFloorPlanRepository,
   SqliteMarkerRepository,
   SqliteCalibrationRepository,
+  SqliteCategoryRepository,
 } from './sqlite';
 
 /**
@@ -29,6 +31,7 @@ export class RepositoryFactory {
   private floorPlanRepo: IFloorPlanRepository | null = null;
   private markerRepo: IMarkerRepository | null = null;
   private calibrationRepo: ICalibrationRepository | null = null;
+  private categoryRepo: ICategoryRepository | null = null;
 
   private constructor(private db: BetterSQLite3Database<typeof schema>) {}
 
@@ -76,5 +79,12 @@ export class RepositoryFactory {
       this.calibrationRepo = new SqliteCalibrationRepository(this.db);
     }
     return this.calibrationRepo;
+  }
+
+  getCategoryRepository(): ICategoryRepository {
+    if (!this.categoryRepo) {
+      this.categoryRepo = new SqliteCategoryRepository(this.db);
+    }
+    return this.categoryRepo;
   }
 }

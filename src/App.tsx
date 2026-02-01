@@ -1,7 +1,11 @@
 import { useState } from 'react';
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { CreateProjectDialog, OpenProjectDialog, RecentProjectsList } from '@/presentation/components/project';
 import { projectService } from '@/application/services/ProjectService';
+import CategoryManager from '@/presentation/components/category/CategoryManager';
 import './App.css';
+
+const theme = createTheme();
 
 console.log('[App] Component loaded');
 
@@ -10,6 +14,7 @@ function App() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isOpenDialogOpen, setIsOpenDialogOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState<{ path: string; name: string } | null>(null);
+  const [showCategories, setShowCategories] = useState(false);
 
   const handleProjectCreated = (path: string) => {
     const name = path.split(/[/\\]/).pop()?.replace(/\.(assetmap|db|sqlite)$/i, '') || 'Project';
@@ -33,7 +38,8 @@ function App() {
   // Welcome screen when no project is open
   if (!currentProject) {
     return (
-      <>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
         <div className="container">
           <h1>Visual Asset Mapper</h1>
           <div className="welcome-actions">
@@ -57,18 +63,26 @@ function App() {
           onClose={() => setIsOpenDialogOpen(false)}
           onProjectOpened={handleProjectOpened}
         />
-      </>
+      </ThemeProvider>
     );
   }
 
   // Main application view when project is open
   return (
-    <div className="container">
-      <h1>Visual Asset Mapper</h1>
-      <p>Current Project: {currentProject.name}</p>
-      <p className="project-path">{currentProject.path}</p>
-      <p>Phase 1: Foundation & Database Setup</p>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div className="container">
+        <h1>Visual Asset Mapper</h1>
+        <p>Current Project: {currentProject.name}</p>
+        <p className="project-path">{currentProject.path}</p>
+        <div style={{ marginTop: '2rem' }}>
+          <button onClick={() => setShowCategories(!showCategories)}>
+            {showCategories ? 'Hide Categories' : 'Manage Categories'}
+          </button>
+        </div>
+        {showCategories && <CategoryManager />}
+      </div>
+    </ThemeProvider>
   );
 }
 

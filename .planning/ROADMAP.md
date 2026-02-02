@@ -83,10 +83,13 @@ Plans:
   5. User can view asset detail page showing all fields and linked floor plan markers
   6. User can export assets, locations, and categories to UTF-8 BOM CSV that opens correctly in Excel
 
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD during phase planning
+- [ ] 03-01-PLAN.md — Enhanced asset list with filtering, search, and sorting
+- [ ] 03-02-PLAN.md — Asset detail drawer with edit and dirty state tracking
+- [ ] 03-03-PLAN.md — Configurable columns and bulk selection
+- [ ] 03-04-PLAN.md — CSV export with UTF-8 BOM and Explorer reveal
 
 ### Phase 4: Floor Plan Management
 **Goal**: Users can import floor plan images, organize them by building/floor, and manage floor plan metadata.
@@ -177,13 +180,13 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Database Setup | 6/6 | Complete | 2026-01-29 |
 | 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
-| 3. Asset Management & CSV Export | 0/TBD | Not started | - |
+| 3. Asset Management & CSV Export | 0/4 | Planned | - |
 | 4. Floor Plan Management | 0/TBD | Not started | - |
 | 5. Floor Plan Viewer | 0/TBD | Not started | - |
 | 6. Marker Management | 0/TBD | Not started | - |
@@ -191,4 +194,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-01 (Phase 2 complete)*
+*Last updated: 2026-02-02 (Phase 3 planned)*

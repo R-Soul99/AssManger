@@ -17,18 +17,18 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 3 of 7 (Asset Management & CSV Export) - IN PROGRESS
-Plan: 03-02 complete (03-01 and 03-02 done)
-Status: Wave 1 executing
-Last activity: 2026-02-03 - Completed 03-02 (asset detail drawer with row-click integration)
+Plan: 03-03 complete (03-01, 03-02, 03-03 done; 03-04 in progress)
+Status: Wave 2 executing
+Last activity: 2026-02-03 - Completed 03-03 (configurable columns and bulk selection)
 
-Progress: [████░░░░░░] 36%
+Progress: [█████░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 14 min
-- Total execution time: 2.5 hours
+- Total plans completed: 12
+- Average duration: 13 min
+- Total execution time: 2.6 hours
 
 **By Phase:**
 
@@ -36,11 +36,11 @@ Progress: [████░░░░░░] 36%
 |-------|-------|-------|----------|
 | 01 | 5 | 23min | 5min |
 | 02 | 4 | 103min | 26min |
-| 03 | 2 | 9min | 5min |
+| 03 | 3 | 14min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 14min, 61min, 6min, 5min, 4min
-- Trend: Phase 3 moving fast - React Hook Form patterns established, MUI integration well understood
+- Last 5 plans: 61min, 6min, 5min, 4min, 5min
+- Trend: Phase 3 consistently fast - MUI patterns, hook composition, and clean architecture well established
 
 *Updated after each plan completion*
 
@@ -99,6 +99,9 @@ Recent decisions affecting current work:
 - Plan 03-02: Form schema uses z.string() for text fields (not .optional()) with DTO conversion at submit (avoids zodResolver type mismatch)
 - Plan 03-02: Row click opens detail drawer; standalone edit button removed (drawer is single editing entry point)
 - Plan 03-02: assignableLocations filtered to Room/Floor before passing to drawer (consistent with 02-04 pattern)
+- Plan 03-03: CsvExportService stub created for parallel plan dependency (03-04 overwrites with full implementation)
+- Plan 03-03: Sequential delete loop in bulk actions (SQLite write safety, simpler error handling than Promise.all)
+- Plan 03-03: Column visibility merge strategy on init (new columns get defaults without wiping stored prefs)
 
 ### Pending Todos
 
@@ -131,7 +134,8 @@ Recent decisions affecting current work:
 - ✓ Asset list with search, filter, sort hooks complete (03-01)
 - ✓ Asset detail drawer with inline editing, validation, dirty-state, floor plan markers placeholder (03-02)
 - ✓ CategoryData and AssetWithRelations barrel exports fixed (pre-existing bugs, resolved in 03-02)
-- Next: CSV export functionality (03-03)
+- ✓ Column visibility (10 columns, localStorage persisted), bulk selection, bulk delete, bulk export (03-03)
+- In progress: CSV export service and dialog (03-04 — parallel with 03-03)
 
 **Phase 5 Viewer Performance:**
 - Canvas performance degradation expected with 500+ markers - requires viewport culling implementation
@@ -143,10 +147,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-03 (phase 3, plan 03-02 complete)
-Stopped at: Completed 03-02 - asset detail drawer with row-click integration
+Last session: 2026-02-03 (phase 3, plan 03-03 complete)
+Stopped at: Completed 03-03 - configurable columns and bulk selection
 Resume file: None
-Next: Plan 03-03 (CSV export)
+Next: Plan 03-04 (CSV export service and dialog) — in progress in parallel
 
 ---
 *State initialized: 2026-01-28*

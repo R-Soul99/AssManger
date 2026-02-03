@@ -13,8 +13,9 @@ import {
   IconButton,
   Chip,
   Alert,
+  TableSortLabel,
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
   FaBox,
   FaDesktop,
@@ -40,7 +41,11 @@ import {
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { AssetService } from '@/application/services/AssetService';
 import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
+import { CategoryData, LocationData } from '@/domain/validators';
 import CreateAssetForm from './CreateAssetForm';
+import AssetDetailDrawer from './AssetDetailDrawer';
+import { AssetListToolbar } from './AssetListToolbar';
+import { useAssetFilters, useAssetSort, useDebounce } from './hooks';
 
 const ICON_MAP: Record<string, any> = {
   Box: FaBox,
@@ -74,22 +79,63 @@ const STATUS_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default' 
 };
 
 const AssetList: React.FC = () => {
+  // Data State
   const [assets, setAssets] = useState<AssetWithRelations[]>([]);
+  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [locations, setLocations] = useState<LocationData[]>([]);
+  
+  // UI State
   const [formOpen, setFormOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<AssetWithRelations | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Search State
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 300);
 
-  const assetRepo = RepositoryFactory.getInstance().getAssetRepository();
+  // Filter & Sort Hooks
+  const { filters, updateFilter, clearFilters, applyFilters } = useAssetFilters();
+  const { sortState, toggleSort, sortAssets } = useAssetSort();
+
+  // Services
+  const repoFactory = RepositoryFactory.getInstance();
+  const assetRepo = repoFactory.getAssetRepository();
+  const categoryRepo = repoFactory.getCategoryRepository();
+  const locationRepo = repoFactory.getLocationRepository();
   const assetService = new AssetService(assetRepo);
 
+  // Initial Data Load
+  useEffect(() => {
+    loadReferenceData();
+  }, []);
+
+  // Reload assets when search term changes (server-side filter)
   useEffect(() => {
     loadAssets();
-  }, []);
+  }, [debouncedSearch]);
+
+  const loadReferenceData = async () => {
+    try {
+      const [cats, locs] = await Promise.all([
+        categoryRepo.findAll(),
+        locationRepo.findAll(),
+      ]);
+      setCategories(cats);
+      setLocations(locs);
+    } catch (err) {
+      console.error('Failed to load reference data', err);
+      setError('Failed to load categories and locations');
+    }
+  };
 
   const loadAssets = async () => {
     setLoading(true);
     setError(null);
-    const result = await assetService.getAssetsWithRelations();
+    // Pass search term to repository for efficient text search
+    const result = await assetService.getAssetsWithRelations({
+      searchTerm: debouncedSearch || undefined,
+    });
     setLoading(false);
 
     if (result.success) {
@@ -126,7 +172,23 @@ const AssetList: React.FC = () => {
     loadAssets();
   };
 
-  if (loading) {
+  const handleClearFilters = () => {
+    setSearchInput('');
+    clearFilters();
+  };
+
+  // Apply client-side filters (category, status, location hierarchy)
+  const filteredAssets = applyFilters(assets, locations);
+
+  // Apply sorting
+  const sortedAssets = sortAssets(filteredAssets);
+
+  // Locations assignable to assets (Room and Floor only)
+  const assignableLocations = locations.filter(
+    (loc) => loc.type === 'room' || loc.type === 'floor'
+  );
+
+  if (loading && assets.length === 0) {
     return (
       <Box sx={{ p: 3 }}>
         <Typography>Loading assets...</Typography>
@@ -151,11 +213,23 @@ const AssetList: React.FC = () => {
         </Alert>
       )}
 
+      <AssetListToolbar
+        filters={filters}
+        onFilterChange={updateFilter}
+        onClearFilters={handleClearFilters}
+        searchTerm={searchInput}
+        onSearchChange={setSearchInput}
+        categories={categories}
+        locations={locations}
+        assetCount={assets.length}
+        filteredCount={filteredAssets.length}
+      />
+
       <TableContainer component={Paper} elevation={2}>
-        {assets.length === 0 ? (
+        {assets.length === 0 && !loading ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="body1" color="text.secondary">
-              No assets yet. Create your first asset to get started.
+              No assets found. Create your first asset to get started.
             </Typography>
           </Box>
         ) : (
@@ -163,68 +237,134 @@ const AssetList: React.FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Icon</TableCell>
-                <TableCell>Tag</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortState.field === 'tag'}
+                    direction={sortState.field === 'tag' ? sortState.direction : 'asc'}
+                    onClick={() => toggleSort('tag')}
+                  >
+                    Tag
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortState.field === 'description'}
+                    direction={sortState.field === 'description' ? sortState.direction : 'asc'}
+                    onClick={() => toggleSort('description')}
+                  >
+                    Description
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortState.field === 'category'}
+                    direction={sortState.field === 'category' ? sortState.direction : 'asc'}
+                    onClick={() => toggleSort('category')}
+                  >
+                    Category
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortState.field === 'location'}
+                    direction={sortState.field === 'location' ? sortState.direction : 'asc'}
+                    onClick={() => toggleSort('location')}
+                  >
+                    Location
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortState.field === 'status'}
+                    direction={sortState.field === 'status' ? sortState.direction : 'asc'}
+                    onClick={() => toggleSort('status')}
+                  >
+                    Status
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {assets.map(({ asset, category, locationPath }) => {
-                const IconComponent = category ? getIconComponent(category.icon) : FaBox;
-                return (
-                  <TableRow key={asset.id} hover>
-                    <TableCell>
-                      <Box sx={{ color: category?.color || '#000000', fontSize: 24 }}>
-                        <IconComponent />
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="bold">
-                        {asset.tag}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{asset.description}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{category?.name || 'N/A'}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {locationPath || 'N/A'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={asset.status}
-                        color={STATUS_COLORS[asset.status]}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton size="small" aria-label="edit" sx={{ mr: 1 }}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        aria-label="delete"
-                        onClick={() => handleDelete(asset.id, asset.tag)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {sortedAssets.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                    <Typography color="text.secondary">
+                      No assets match your filters
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sortedAssets.map((assetWithRelations) => {
+                  const { asset, category, locationPath } = assetWithRelations;
+                  const IconComponent = category ? getIconComponent(category.icon) : FaBox;
+                  return (
+                    <TableRow
+                      key={asset.id}
+                      hover
+                      onClick={() => setSelectedAsset(assetWithRelations)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell>
+                        <Box sx={{ color: category?.color || '#000000', fontSize: 24 }}>
+                          <IconComponent />
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="bold">
+                          {asset.tag}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{asset.description}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{category?.name || 'N/A'}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {locationPath || 'N/A'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={asset.status}
+                          color={STATUS_COLORS[asset.status]}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          size="small"
+                          aria-label="delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(asset.id, asset.tag);
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         )}
       </TableContainer>
 
       <CreateAssetForm open={formOpen} onClose={handleCloseForm} onAssetCreated={handleAssetCreated} />
+
+      <AssetDetailDrawer
+        asset={selectedAsset}
+        onClose={() => setSelectedAsset(null)}
+        onSave={() => {
+          loadAssets();
+        }}
+        categories={categories}
+        locations={assignableLocations}
+      />
     </Box>
   );
 };

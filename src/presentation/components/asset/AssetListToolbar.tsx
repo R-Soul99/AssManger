@@ -34,7 +34,6 @@ interface AssetListToolbarProps {
   locations: LocationData[];
   assetCount: number;
   filteredCount: number;
-  // Column visibility
   columns: ColumnConfig[];
   visibleColumns: Record<string, boolean>;
   onToggleColumn: (key: ColumnKey) => void;
@@ -64,7 +63,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
 }) => {
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
 
-  // Helper to filter locations by type and parent
   const getLocations = (type: 'site' | 'building' | 'floor' | 'room', parentId?: string) => {
     return locations.filter(
       (l) => l.type === type && (!parentId || l.parentId === parentId)
@@ -81,7 +79,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
   return (
     <Box sx={{ mb: 3 }}>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
-        {/* Search */}
         <TextField
           placeholder="Search assets..."
           size="small"
@@ -97,7 +94,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
           }}
         />
 
-        {/* Category Filter */}
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel>Category</InputLabel>
           <Select
@@ -116,7 +112,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
           </Select>
         </FormControl>
 
-        {/* Status Filter */}
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel>Status</InputLabel>
           <Select
@@ -135,7 +130,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
           </Select>
         </FormControl>
 
-        {/* Clear Button */}
         {hasActiveFilters && (
           <Button
             variant="outlined"
@@ -147,7 +141,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
           </Button>
         )}
 
-        {/* Column Visibility Toggle */}
         <IconButton
           onClick={(e) => setColumnMenuAnchor(e.currentTarget)}
           title="Column visibility"
@@ -171,7 +164,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
       </Stack>
 
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
-        {/* Location Hierarchy Filters */}
         <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
           Location:
         </Typography>
@@ -183,7 +175,6 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
             label="Site"
             onChange={(e) => {
               onFilterChange('siteId', e.target.value || undefined);
-              // Reset children
               onFilterChange('buildingId', undefined);
               onFilterChange('floorId', undefined);
               onFilterChange('roomId', undefined);

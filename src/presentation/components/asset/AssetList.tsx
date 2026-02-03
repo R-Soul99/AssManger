@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import {
   Chip,
   Alert,
   TableSortLabel,
+  Checkbox,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
@@ -45,7 +46,8 @@ import { CategoryData, LocationData } from '@/domain/validators';
 import CreateAssetForm from './CreateAssetForm';
 import AssetDetailDrawer from './AssetDetailDrawer';
 import { AssetListToolbar } from './AssetListToolbar';
-import { useAssetFilters, useAssetSort, useDebounce } from './hooks';
+import { AssetBulkActions } from './AssetBulkActions';
+import { useAssetFilters, useAssetSort, useDebounce, useColumnVisibility } from './hooks';
 
 const ICON_MAP: Record<string, any> = {
   Box: FaBox,
@@ -83,13 +85,13 @@ const AssetList: React.FC = () => {
   const [assets, setAssets] = useState<AssetWithRelations[]>([]);
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [locations, setLocations] = useState<LocationData[]>([]);
-  
+
   // UI State
   const [formOpen, setFormOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithRelations | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Search State
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce(searchInput, 300);
@@ -97,6 +99,12 @@ const AssetList: React.FC = () => {
   // Filter & Sort Hooks
   const { filters, updateFilter, clearFilters, applyFilters } = useAssetFilters();
   const { sortState, toggleSort, sortAssets } = useAssetSort();
+
+  // Column Visibility
+  const { visibleColumns, toggleColumn, isColumnVisible, COLUMNS } = useColumnVisibility();
+
+  // Bulk Selection State
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Services
   const repoFactory = RepositoryFactory.getInstance();
@@ -115,6 +123,11 @@ const AssetList: React.FC = () => {
     loadAssets();
   }, [debouncedSearch]);
 
+  // Clear selection when filters or search change
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [debouncedSearch, filters]);
+
   const loadReferenceData = async () => {
     try {
       const [cats, locs] = await Promise.all([
@@ -132,7 +145,6 @@ const AssetList: React.FC = () => {
   const loadAssets = async () => {
     setLoading(true);
     setError(null);
-    // Pass search term to repository for efficient text search
     const result = await assetService.getAssetsWithRelations({
       searchTerm: debouncedSearch || undefined,
     });
@@ -177,16 +189,48 @@ const AssetList: React.FC = () => {
     clearFilters();
   };
 
+  // ── Header checkbox: select / deselect all visible (sorted+filtered) rows ──
+  const handleHeaderCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(sortedAssets.map((a) => a.asset.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  // ── Row checkbox toggle ──
+  const handleRowCheckbox = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds((prev) => [...prev, id]);
+    } else {
+      setSelectedIds((prev) => prev.filter((existingId) => existingId !== id));
+    }
+  };
+
   // Apply client-side filters (category, status, location hierarchy)
   const filteredAssets = applyFilters(assets, locations);
 
   // Apply sorting
   const sortedAssets = sortAssets(filteredAssets);
 
+  // Compute full asset objects for the current selection (needed by bulk export)
+  const selectedAssets = useMemo(
+    () => assets.filter((a) => selectedIds.includes(a.asset.id)),
+    [assets, selectedIds]
+  );
+
   // Locations assignable to assets (Room and Floor only)
   const assignableLocations = locations.filter(
     (loc) => loc.type === 'room' || loc.type === 'floor'
   );
+
+  // Header checkbox state
+  const allVisibleSelected = sortedAssets.length > 0 && selectedIds.length === sortedAssets.length;
+  const someVisibleSelected = selectedIds.length > 0 && selectedIds.length < sortedAssets.length;
+
+  // Dynamic colSpan: checkbox col + visible data columns + actions col
+  const visibleColCount = COLUMNS.filter((c) => isColumnVisible(c.key)).length;
+  const totalColSpan = 1 /* checkbox */ + visibleColCount + 1; /* actions */
 
   if (loading && assets.length === 0) {
     return (
@@ -223,7 +267,22 @@ const AssetList: React.FC = () => {
         locations={locations}
         assetCount={assets.length}
         filteredCount={filteredAssets.length}
+        columns={COLUMNS}
+        visibleColumns={visibleColumns}
+        onToggleColumn={toggleColumn}
       />
+
+      {/* Bulk actions bar — only visible when rows are selected */}
+      {selectedIds.length > 0 && (
+        <AssetBulkActions
+          selectedIds={selectedIds}
+          selectedAssets={selectedAssets}
+          filteredAssets={sortedAssets}
+          allAssets={assets}
+          onSelectionChange={setSelectedIds}
+          onBulkDelete={loadAssets}
+        />
+      )}
 
       <TableContainer component={Paper} elevation={2}>
         {assets.length === 0 && !loading ? (
@@ -236,59 +295,93 @@ const AssetList: React.FC = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Icon</TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortState.field === 'tag'}
-                    direction={sortState.field === 'tag' ? sortState.direction : 'asc'}
-                    onClick={() => toggleSort('tag')}
-                  >
-                    Tag
-                  </TableSortLabel>
+                {/* Select-all checkbox */}
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    indeterminate={someVisibleSelected}
+                    checked={allVisibleSelected}
+                    onChange={handleHeaderCheckbox}
+                    inputProps={{ 'aria-label': 'select all' }}
+                  />
                 </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortState.field === 'description'}
-                    direction={sortState.field === 'description' ? sortState.direction : 'asc'}
-                    onClick={() => toggleSort('description')}
-                  >
-                    Description
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortState.field === 'category'}
-                    direction={sortState.field === 'category' ? sortState.direction : 'asc'}
-                    onClick={() => toggleSort('category')}
-                  >
-                    Category
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortState.field === 'location'}
-                    direction={sortState.field === 'location' ? sortState.direction : 'asc'}
-                    onClick={() => toggleSort('location')}
-                  >
-                    Location
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sortState.field === 'status'}
-                    direction={sortState.field === 'status' ? sortState.direction : 'asc'}
-                    onClick={() => toggleSort('status')}
-                  >
-                    Status
-                  </TableSortLabel>
-                </TableCell>
+
+                {/* Conditionally rendered header cells */}
+                {isColumnVisible('icon') && <TableCell>Icon</TableCell>}
+                {isColumnVisible('tag') && (
+                  <TableCell>
+                    <TableSortLabel
+                      active={sortState.field === 'tag'}
+                      direction={sortState.field === 'tag' ? sortState.direction : 'asc'}
+                      onClick={() => toggleSort('tag')}
+                    >
+                      Tag
+                    </TableSortLabel>
+                  </TableCell>
+                )}
+                {isColumnVisible('description') && (
+                  <TableCell>
+                    <TableSortLabel
+                      active={sortState.field === 'description'}
+                      direction={sortState.field === 'description' ? sortState.direction : 'asc'}
+                      onClick={() => toggleSort('description')}
+                    >
+                      Description
+                    </TableSortLabel>
+                  </TableCell>
+                )}
+                {isColumnVisible('category') && (
+                  <TableCell>
+                    <TableSortLabel
+                      active={sortState.field === 'category'}
+                      direction={sortState.field === 'category' ? sortState.direction : 'asc'}
+                      onClick={() => toggleSort('category')}
+                    >
+                      Category
+                    </TableSortLabel>
+                  </TableCell>
+                )}
+                {isColumnVisible('location') && (
+                  <TableCell>
+                    <TableSortLabel
+                      active={sortState.field === 'location'}
+                      direction={sortState.field === 'location' ? sortState.direction : 'asc'}
+                      onClick={() => toggleSort('location')}
+                    >
+                      Location
+                    </TableSortLabel>
+                  </TableCell>
+                )}
+                {isColumnVisible('status') && (
+                  <TableCell>
+                    <TableSortLabel
+                      active={sortState.field === 'status'}
+                      direction={sortState.field === 'status' ? sortState.direction : 'asc'}
+                      onClick={() => toggleSort('status')}
+                    >
+                      Status
+                    </TableSortLabel>
+                  </TableCell>
+                )}
+                {isColumnVisible('serialNumber') && (
+                  <TableCell>Serial Number</TableCell>
+                )}
+                {isColumnVisible('phone') && (
+                  <TableCell>Phone/Ext</TableCell>
+                )}
+                {isColumnVisible('owner') && (
+                  <TableCell>Owner</TableCell>
+                )}
+                {isColumnVisible('costCentre') && (
+                  <TableCell>Cost Centre</TableCell>
+                )}
+
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {sortedAssets.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                  <TableCell colSpan={totalColSpan} align="center" sx={{ py: 3 }}>
                     <Typography color="text.secondary">
                       No assets match your filters
                     </Typography>
@@ -298,41 +391,95 @@ const AssetList: React.FC = () => {
                 sortedAssets.map((assetWithRelations) => {
                   const { asset, category, locationPath } = assetWithRelations;
                   const IconComponent = category ? getIconComponent(category.icon) : FaBox;
+                  const isSelected = selectedIds.includes(asset.id);
+
                   return (
                     <TableRow
                       key={asset.id}
                       hover
+                      selected={isSelected}
                       onClick={() => setSelectedAsset(assetWithRelations)}
                       sx={{ cursor: 'pointer' }}
                     >
-                      <TableCell>
-                        <Box sx={{ color: category?.color || '#000000', fontSize: 24 }}>
-                          <IconComponent />
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="bold">
-                          {asset.tag}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{asset.description}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{category?.name || 'N/A'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {locationPath || 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={asset.status}
-                          color={STATUS_COLORS[asset.status]}
-                          size="small"
+                      {/* Row checkbox — stopPropagation prevents opening the detail drawer */}
+                      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={(e) => handleRowCheckbox(asset.id, e.target.checked)}
+                          inputProps={{ 'aria-label': `select ${asset.tag}` }}
                         />
                       </TableCell>
+
+                      {/* Conditionally rendered data cells */}
+                      {isColumnVisible('icon') && (
+                        <TableCell>
+                          <Box sx={{ color: category?.color || '#000000', fontSize: 24 }}>
+                            <IconComponent />
+                          </Box>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('tag') && (
+                        <TableCell>
+                          <Typography variant="body2" fontWeight="bold">
+                            {asset.tag}
+                          </Typography>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('description') && (
+                        <TableCell>
+                          <Typography variant="body2">{asset.description}</Typography>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('category') && (
+                        <TableCell>
+                          <Typography variant="body2">{category?.name || 'N/A'}</Typography>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('location') && (
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {locationPath || 'N/A'}
+                          </Typography>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('status') && (
+                        <TableCell>
+                          <Chip
+                            label={asset.status}
+                            color={STATUS_COLORS[asset.status]}
+                            size="small"
+                          />
+                        </TableCell>
+                      )}
+                      {isColumnVisible('serialNumber') && (
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {asset.serialNumber || '—'}
+                          </Typography>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('phone') && (
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {asset.phoneExtension || '—'}
+                          </Typography>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('owner') && (
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {asset.owner || '—'}
+                          </Typography>
+                        </TableCell>
+                      )}
+                      {isColumnVisible('costCentre') && (
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {asset.costCentre || '—'}
+                          </Typography>
+                        </TableCell>
+                      )}
+
                       <TableCell align="right">
                         <IconButton
                           size="small"

@@ -19,6 +19,7 @@ import {
   Search as SearchIcon,
   FilterListOff as ClearIcon,
   ViewColumn as ViewColumnIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import { CategoryData, LocationData } from '@/domain/validators';
 import { useAssetFilters } from './hooks/useAssetFilters';
@@ -37,6 +38,8 @@ interface AssetListToolbarProps {
   columns: ColumnConfig[];
   visibleColumns: Record<string, boolean>;
   onToggleColumn: (key: ColumnKey) => void;
+  // Export
+  onOpenExport: () => void;
 }
 
 const STATUS_OPTIONS = [
@@ -60,6 +63,7 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
   columns,
   visibleColumns,
   onToggleColumn,
+  onOpenExport,
 }) => {
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -161,6 +165,16 @@ export const AssetListToolbar: React.FC<AssetListToolbarProps> = ({
             </MenuItem>
           ))}
         </Menu>
+
+        {/* Export Button */}
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<DownloadIcon />}
+          onClick={onOpenExport}
+        >
+          Export
+        </Button>
       </Stack>
 
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">

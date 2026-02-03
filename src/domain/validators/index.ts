@@ -4,6 +4,7 @@ export {
   FloorPlanSchema,
   MarkerSchema,
   CalibrationSchema,
+  CategorySchema,
   NormalizedCoordinateSchema,
   type LocationType,
   type LocationData,
@@ -11,4 +12,5 @@ export {
   type FloorPlanData,
   type MarkerData,
   type CalibrationData,
+  type CategoryData,
 } from './schemas';

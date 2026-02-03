@@ -28,3 +28,5 @@ export {
   type CreateLocationDto,
   type MoveLocationDto,
 } from './LocationService';
+
+export { CsvExportService } from './CsvExportService';

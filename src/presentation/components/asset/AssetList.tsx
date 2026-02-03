@@ -47,6 +47,8 @@ import CreateAssetForm from './CreateAssetForm';
 import AssetDetailDrawer from './AssetDetailDrawer';
 import { AssetListToolbar } from './AssetListToolbar';
 import { AssetBulkActions } from './AssetBulkActions';
+import { ExportDialog } from './ExportDialog';
+import { CsvExportService } from '@/application/services/CsvExportService';
 import { useAssetFilters, useAssetSort, useDebounce, useColumnVisibility } from './hooks';
 
 const ICON_MAP: Record<string, any> = {
@@ -189,6 +191,26 @@ const AssetList: React.FC = () => {
     clearFilters();
   };
 
+  // ── Export Dialog ──
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const csvExportService = new CsvExportService();
+
+  const handleExportAssets = async (exportAll: boolean) => {
+    const assetsToExport = exportAll ? assets : sortedAssets;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    return csvExportService.exportAssets(assetsToExport, `assets-${timestamp}.csv`);
+  };
+
+  const handleExportLocations = async () => {
+    const timestamp = new Date().toISOString().slice(0, 10);
+    return csvExportService.exportLocations(locations, `locations-${timestamp}.csv`);
+  };
+
+  const handleExportCategories = async () => {
+    const timestamp = new Date().toISOString().slice(0, 10);
+    return csvExportService.exportCategories(categories, `categories-${timestamp}.csv`);
+  };
+
   // ── Header checkbox: select / deselect all visible (sorted+filtered) rows ──
   const handleHeaderCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -270,6 +292,7 @@ const AssetList: React.FC = () => {
         columns={COLUMNS}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
+        onOpenExport={() => setExportDialogOpen(true)}
       />
 
       {/* Bulk actions bar — only visible when rows are selected */}
@@ -511,6 +534,16 @@ const AssetList: React.FC = () => {
         }}
         categories={categories}
         locations={assignableLocations}
+      />
+
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        filteredAssetCount={sortedAssets.length}
+        totalAssetCount={assets.length}
+        onExportAssets={handleExportAssets}
+        onExportLocations={handleExportLocations}
+        onExportCategories={handleExportCategories}
       />
     </Box>
   );

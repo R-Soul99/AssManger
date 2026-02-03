@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { IAssetRepository, AssetWithRelations } from '@/infrastructure/repositories/interfaces';
+import { IAssetRepository, AssetWithRelations, AssetFilters } from '@/infrastructure/repositories/interfaces';
 import { Asset } from '@/domain/entities';
 import { AssetData } from '@/domain/validators';
 
@@ -151,9 +151,9 @@ export class AssetService {
   /**
    * Get all assets with their category and location information.
    */
-  async getAssetsWithRelations(): Promise<ServiceResult<AssetWithRelations[]>> {
+  async getAssetsWithRelations(filters?: AssetFilters): Promise<ServiceResult<AssetWithRelations[]>> {
     try {
-      const assets = await this.assetRepository.findAllWithRelations();
+      const assets = await this.assetRepository.findAllWithRelations(filters);
       return { success: true, data: assets };
     } catch (error) {
       return {

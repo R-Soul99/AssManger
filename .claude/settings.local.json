@@ -9,7 +9,26 @@
       "Bash(git commit:*)",
       "Bash(npx tsc:*)",
       "Bash(git push:*)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(cat:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build)",
+      "Bash(git rev-parse:*)",
+      "Bash(ls:*)",
+      "WebSearch",
+      "WebFetch(domain:mui.com)",
+      "Bash(dir:*)",
+      "Bash(PHASE=\"03\":*)",
+      "Bash(if [ ! -d \".planning/phases/03-asset-management-and-csv-export\" ])",
+      "Bash(then mkdir -p \".planning/phases/03-asset-management-and-csv-export\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(git checkout:*)",
+      "Bash(grep:*)",
+      "Bash(echo:*)",
+      "Bash(node -p:*)"
     ]
   }
 }

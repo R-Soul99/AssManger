@@ -1,3 +1,9 @@
+# Environment
+
+- Rust, Node, and Gemini CLI are installed and on PATH.
+- Do not re-run installation or version check commands.
+- Assume `rustc`, `cargo`, `node`, `npm`, and `gemini` all work.
+
 # Project State
 
 ## Project Reference
@@ -10,19 +16,19 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 2 of 7 (Location Hierarchy & Categories) - COMPLETE
-Plan: All 4 plans complete
-Status: Phase verified and complete
-Last activity: 2026-02-01 - Phase 2 verified (5/5 success criteria met)
+Phase: 3 of 7 (Asset Management & CSV Export) - IN PROGRESS
+Plan: 03-02 complete (03-01 and 03-02 done)
+Status: Wave 1 executing
+Last activity: 2026-02-03 - Completed 03-02 (asset detail drawer with row-click integration)
 
-Progress: [███░░░░░░░] 29%
+Progress: [████░░░░░░] 36%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 15 min
-- Total execution time: 2.3 hours
+- Total plans completed: 11
+- Average duration: 14 min
+- Total execution time: 2.5 hours
 
 **By Phase:**
 
@@ -30,10 +36,11 @@ Progress: [███░░░░░░░] 29%
 |-------|-------|-------|----------|
 | 01 | 5 | 23min | 5min |
 | 02 | 4 | 103min | 26min |
+| 03 | 2 | 9min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 22min, 14min, 61min, 6min
-- Trend: Phase 2 complete - UI integration velocity improving as MUI patterns established
+- Last 5 plans: 14min, 61min, 6min, 5min, 4min
+- Trend: Phase 3 moving fast - React Hook Form patterns established, MUI integration well understood
 
 *Updated after each plan completion*
 
@@ -86,6 +93,12 @@ Recent decisions affecting current work:
 - Plan 02-04: Recursive location path building in repository layer (centralized, cache-friendly)
 - Plan 02-04: Dialog-based asset creation form (consistent with Category/Location UX pattern)
 - Plan 02-04: Icon map shared across components for DRY principle and visual consistency
+- Plan 03-01: Hybrid filtering strategy (DB handles text search, client handles hierarchical location filtering)
+- Plan 03-01: Debounce search input by 300ms (prevents excessive database queries on every keystroke)
+- Plan 03-01: Cascading location dropdowns (guides user through Site -> Building -> Floor -> Room hierarchy)
+- Plan 03-02: Form schema uses z.string() for text fields (not .optional()) with DTO conversion at submit (avoids zodResolver type mismatch)
+- Plan 03-02: Row click opens detail drawer; standalone edit button removed (drawer is single editing entry point)
+- Plan 03-02: assignableLocations filtered to Room/Floor before passing to drawer (consistent with 02-04 pattern)
 
 ### Pending Todos
 
@@ -115,7 +128,10 @@ Recent decisions affecting current work:
 - ✓ Asset list view with joined category/location data display (02-04)
 
 **Phase 3 Asset Management & CSV Export:**
-- Ready to begin - categories and locations complete for asset filtering and display
+- ✓ Asset list with search, filter, sort hooks complete (03-01)
+- ✓ Asset detail drawer with inline editing, validation, dirty-state, floor plan markers placeholder (03-02)
+- ✓ CategoryData and AssetWithRelations barrel exports fixed (pre-existing bugs, resolved in 03-02)
+- Next: CSV export functionality (03-03)
 
 **Phase 5 Viewer Performance:**
 - Canvas performance degradation expected with 500+ markers - requires viewport culling implementation
@@ -127,11 +143,11 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-01 (phase 2 execution complete)
-Stopped at: Phase 2 verified and complete - all 5 success criteria met
+Last session: 2026-02-03 (phase 3, plan 03-02 complete)
+Stopped at: Completed 03-02 - asset detail drawer with row-click integration
 Resume file: None
-Next: Plan Phase 3 (Asset Management & CSV Export)
+Next: Plan 03-03 (CSV export)
 
 ---
 *State initialized: 2026-01-28*
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-03*

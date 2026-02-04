@@ -1,5 +1,5 @@
 import { open } from '@tauri-apps/plugin-dialog';
-import { exists, mkdir, copyFile } from '@tauri-apps/plugin-fs';
+import { exists, mkdir, copyFile, writeTextFile } from '@tauri-apps/plugin-fs';
 import { join, basename, dirname } from '@tauri-apps/api/path';
 // TEMPORARY: Using mocks for checkpoint verification
 // TODO: Replace with Tauri commands in Rust backend
@@ -74,6 +74,11 @@ export class ProjectService {
 
       // Run migrations to create tables
       await runMigrations();
+
+      // Ensure file exists on disk (mock initializeDatabase may skip file creation)
+      if (!await exists(dbPath)) {
+        await writeTextFile(dbPath, '');
+      }
 
       // Initialize file storage
       // MOCK: Disabled for checkpoint

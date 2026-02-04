@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { CreateProjectDialog, OpenProjectDialog, RecentProjectsList } from '@/presentation/components/project';
 import { projectService } from '@/application/services/ProjectService';
@@ -19,6 +19,18 @@ function App() {
   const [showCategories, setShowCategories] = useState(false);
   const [showLocations, setShowLocations] = useState(false);
   const [showAssets, setShowAssets] = useState(false);
+
+  // Auto-restore: re-enter the most recent project on mount (survives page refresh)
+  useEffect(() => {
+    const recent = projectService.getRecentProjects();
+    if (recent.length === 0) return;
+    const last = recent[0];
+    projectService.openExistingProject(last.path).then(result => {
+      if (result.success) {
+        setCurrentProject({ path: result.path, name: result.name });
+      }
+    });
+  }, []);
 
   const handleProjectCreated = (path: string) => {
     const name = path.split(/[/\\]/).pop()?.replace(/\.(assetmap|db|sqlite)$/i, '') || 'Project';

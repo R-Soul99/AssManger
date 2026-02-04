@@ -1,4 +1,4 @@
-import { eq, count } from 'drizzle-orm';
+import { eq, isNull, asc, count } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { IFloorPlanRepository } from '../interfaces/IFloorPlanRepository';
 import { FloorPlan } from '@/domain/entities';
@@ -29,7 +29,18 @@ export class SqliteFloorPlanRepository implements IFloorPlanRepository {
     const rows = await this.db
       .select()
       .from(floorPlans)
-      .where(eq(floorPlans.locationId, locationId));
+      .where(eq(floorPlans.locationId, locationId))
+      .orderBy(asc(floorPlans.displayOrder), asc(floorPlans.createdAt));
+
+    return rows.map(row => this.mapRowToEntity(row));
+  }
+
+  async findUnassigned(): Promise<FloorPlan[]> {
+    const rows = await this.db
+      .select()
+      .from(floorPlans)
+      .where(isNull(floorPlans.locationId))
+      .orderBy(asc(floorPlans.createdAt));
 
     return rows.map(row => this.mapRowToEntity(row));
   }
@@ -42,6 +53,7 @@ export class SqliteFloorPlanRepository implements IFloorPlanRepository {
       imageRelativePath: floorPlan.imageRelativePath,
       imageWidth: floorPlan.imageWidth,
       imageHeight: floorPlan.imageHeight,
+      displayOrder: floorPlan.displayOrder ?? 0,
       createdAt: floorPlan.createdAt,
       updatedAt: floorPlan.updatedAt,
     });
@@ -79,6 +91,16 @@ export class SqliteFloorPlanRepository implements IFloorPlanRepository {
     return result[0].count;
   }
 
+  async reorder(_locationId: string, orderedIds: string[]): Promise<void> {
+    // Sequential updates for SQLite write safety
+    for (let i = 0; i < orderedIds.length; i++) {
+      await this.db
+        .update(floorPlans)
+        .set({ displayOrder: i, updatedAt: new Date() })
+        .where(eq(floorPlans.id, orderedIds[i]));
+    }
+  }
+
   private mapRowToEntity(row: any): FloorPlan {
     const result = FloorPlan.create({
       id: row.id,
@@ -87,12 +109,13 @@ export class SqliteFloorPlanRepository implements IFloorPlanRepository {
       imageRelativePath: row.imageRelativePath,
       imageWidth: row.imageWidth,
       imageHeight: row.imageHeight,
+      displayOrder: row.displayOrder,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
 
     if (!result.success) {
-      throw new Error(`Failed to map database row to FloorPlan: ${result.errors.join(', ')}`);
+      throw new Error('Failed to map database row to FloorPlan: ' + result.errors.join(', '));
     }
 
     return result.entity;

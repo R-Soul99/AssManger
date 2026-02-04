@@ -17,7 +17,8 @@ export class FloorPlan {
 
   get id(): string { return this.data.id; }
   get name(): string { return this.data.name; }
-  get locationId(): string { return this.data.locationId; }
+  get locationId(): string | null { return this.data.locationId; }
+  get displayOrder(): number { return this.data.displayOrder ?? 0; }
   get imageRelativePath(): string { return this.data.imageRelativePath; }
   get imageWidth(): number { return this.data.imageWidth; }
   get imageHeight(): number { return this.data.imageHeight; }

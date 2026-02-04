@@ -37,10 +37,11 @@ export const assets = sqliteTable('assets', {
 export const floorPlans = sqliteTable('floor_plans', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  locationId: text('location_id').notNull().references(() => locations.id, { onDelete: 'cascade' }),
+  locationId: text('location_id').references(() => locations.id, { onDelete: 'set null' }),
   imageRelativePath: text('image_relative_path').notNull(),
   imageWidth: integer('image_width').notNull(),
   imageHeight: integer('image_height').notNull(),
+  displayOrder: integer('display_order').notNull().default(0),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });

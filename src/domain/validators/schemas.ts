@@ -43,10 +43,11 @@ export const NormalizedCoordinateSchema = z.number()
 export const FloorPlanSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, "Floor plan name is required"),
-  locationId: z.string().uuid("Location is required"), // building or floor
+  locationId: z.string().uuid().nullable(),
   imageRelativePath: z.string().min(1, "Image path is required"),
   imageWidth: z.number().int().positive("Image width must be positive"),
   imageHeight: z.number().int().positive("Image height must be positive"),
+  displayOrder: z.number().int().default(0),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

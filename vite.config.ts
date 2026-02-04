@@ -6,10 +6,13 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
 
-  // Path resolution for @ alias
+  // Path resolution for @ alias + stubs for Node-only modules (not available in WebView)
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "drizzle-orm/better-sqlite3/migrator": path.resolve(__dirname, "./src/_stubs/drizzle-orm-better-sqlite3-migrator.ts"),
+      "drizzle-orm/better-sqlite3": path.resolve(__dirname, "./src/_stubs/drizzle-orm-better-sqlite3.ts"),
+      "better-sqlite3": path.resolve(__dirname, "./src/_stubs/better-sqlite3.ts"),
     },
   },
 

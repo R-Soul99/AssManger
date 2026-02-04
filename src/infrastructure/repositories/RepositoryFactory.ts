@@ -17,6 +17,7 @@ import {
   SqliteCalibrationRepository,
   SqliteCategoryRepository,
 } from './sqlite';
+import { MockCategoryRepository, MockLocationRepository, MockAssetRepository } from './mock';
 
 /**
  * Factory for creating repository instances.
@@ -33,11 +34,17 @@ export class RepositoryFactory {
   private calibrationRepo: ICalibrationRepository | null = null;
   private categoryRepo: ICategoryRepository | null = null;
 
-  private constructor(private db: BetterSQLite3Database<typeof schema>) {}
+  private constructor(private db: BetterSQLite3Database<typeof schema> | null) {}
 
   static getInstance(): RepositoryFactory {
     if (!this.instance) {
-      this.instance = new RepositoryFactory(getDatabase());
+      let db: BetterSQLite3Database<typeof schema> | null = null;
+      try {
+        db = getDatabase();
+      } catch {
+        // Database unavailable (e.g. WebView without native addon) — mock repos used below
+      }
+      this.instance = new RepositoryFactory(db);
     }
     return this.instance;
   }
@@ -48,19 +55,20 @@ export class RepositoryFactory {
 
   getLocationRepository(): ILocationRepository {
     if (!this.locationRepo) {
-      this.locationRepo = new SqliteLocationRepository(this.db);
+      this.locationRepo = this.db ? new SqliteLocationRepository(this.db) : new MockLocationRepository();
     }
     return this.locationRepo;
   }
 
   getAssetRepository(): IAssetRepository {
     if (!this.assetRepo) {
-      this.assetRepo = new SqliteAssetRepository(this.db);
+      this.assetRepo = this.db ? new SqliteAssetRepository(this.db) : new MockAssetRepository();
     }
     return this.assetRepo;
   }
 
   getFloorPlanRepository(): IFloorPlanRepository {
+    if (!this.db) throw new Error('FloorPlanRepository requires a database connection');
     if (!this.floorPlanRepo) {
       this.floorPlanRepo = new SqliteFloorPlanRepository(this.db);
     }
@@ -68,6 +76,7 @@ export class RepositoryFactory {
   }
 
   getMarkerRepository(): IMarkerRepository {
+    if (!this.db) throw new Error('MarkerRepository requires a database connection');
     if (!this.markerRepo) {
       this.markerRepo = new SqliteMarkerRepository(this.db);
     }
@@ -75,6 +84,7 @@ export class RepositoryFactory {
   }
 
   getCalibrationRepository(): ICalibrationRepository {
+    if (!this.db) throw new Error('CalibrationRepository requires a database connection');
     if (!this.calibrationRepo) {
       this.calibrationRepo = new SqliteCalibrationRepository(this.db);
     }
@@ -83,7 +93,7 @@ export class RepositoryFactory {
 
   getCategoryRepository(): ICategoryRepository {
     if (!this.categoryRepo) {
-      this.categoryRepo = new SqliteCategoryRepository(this.db);
+      this.categoryRepo = this.db ? new SqliteCategoryRepository(this.db) : new MockCategoryRepository();
     }
     return this.categoryRepo;
   }

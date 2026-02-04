@@ -30,3 +30,9 @@ export {
 } from './LocationService';
 
 export { CsvExportService } from './CsvExportService';
+
+export {
+  FloorPlanService,
+  type ImportFloorPlanDto,
+  type UpdateFloorPlanDto,
+} from './FloorPlanService';

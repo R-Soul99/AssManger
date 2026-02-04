@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Visual, spatially-aware asset tracking with calibrated measurements that makes equipment location and details instantly accessible.
 
-**Current focus:** Phase 3 - Asset Management & CSV Export
+**Current focus:** Phase 4 - Floor Plan Management
 
 ## Current Position
 
-Phase: 3 of 7 (Asset Management & CSV Export) - IN PROGRESS
-Plan: 03-03 complete (03-01, 03-02, 03-03 done; 03-04 in progress)
-Status: Wave 2 executing
-Last activity: 2026-02-03 - Completed 03-03 (configurable columns and bulk selection)
+Phase: 4 of 7 (Floor Plan Management) - NOT STARTED
+Plan: Phase 3 complete (all 4 plans + UAT passed 2026-02-04)
+Status: Ready to plan Phase 4
+Last activity: 2026-02-04 - Phase 3 UAT all 8 items passed, phase closed
 
-Progress: [█████░░░░░] 40%
+Progress: [████░░░░░░] 43%
 
 ## Performance Metrics
 
@@ -135,7 +135,8 @@ Recent decisions affecting current work:
 - ✓ Asset detail drawer with inline editing, validation, dirty-state, floor plan markers placeholder (03-02)
 - ✓ CategoryData and AssetWithRelations barrel exports fixed (pre-existing bugs, resolved in 03-02)
 - ✓ Column visibility (10 columns, localStorage persisted), bulk selection, bulk delete, bulk export (03-03)
-- In progress: CSV export service and dialog (03-04 — parallel with 03-03)
+- ✓ CSV export service with column-visibility-aware export, UTF-8 BOM, Explorer reveal (03-04)
+- ✓ UAT: all 8 items passed (2026-02-04) — mock repos used for WebView testing
 
 **Phase 5 Viewer Performance:**
 - Canvas performance degradation expected with 500+ markers - requires viewport culling implementation
@@ -147,11 +148,11 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-03 (phase 3, plan 03-03 complete)
-Stopped at: Completed 03-03 - configurable columns and bulk selection
+Last session: 2026-02-04 (phase 3 complete, UAT passed)
+Stopped at: Phase 3 closed — all 8 UAT items passed
 Resume file: None
-Next: Plan 03-04 (CSV export service and dialog) — in progress in parallel
+Next: Plan Phase 4 (Floor Plan Management)
 
 ---
 *State initialized: 2026-01-28*
-*Last updated: 2026-02-03*
+*Last updated: 2026-02-04*

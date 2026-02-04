@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Database Setup** - Establish architecture foundations and database infrastructure
 - [x] **Phase 2: Location Hierarchy & Categories** - Build organizational structure and equipment classification
-- [ ] **Phase 3: Asset Management & CSV Export** - Implement core asset CRUD and data export
+- [x] **Phase 3: Asset Management & CSV Export** - Implement core asset CRUD and data export
 - [ ] **Phase 4: Floor Plan Management** - Enable floor plan import and metadata management
 - [ ] **Phase 5: Floor Plan Viewer** - Build interactive viewer with pan/zoom and marker display
 - [ ] **Phase 6: Marker Management** - Add spatial editing capabilities for equipment placement
@@ -86,10 +86,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Enhanced asset list with filtering, search, and sorting
-- [ ] 03-02-PLAN.md — Asset detail drawer with edit and dirty state tracking
-- [ ] 03-03-PLAN.md — Configurable columns and bulk selection
-- [ ] 03-04-PLAN.md — CSV export with UTF-8 BOM and Explorer reveal
+- [x] 03-01-PLAN.md — Enhanced asset list with filtering, search, and sorting
+- [x] 03-02-PLAN.md — Asset detail drawer with edit and dirty state tracking
+- [x] 03-03-PLAN.md — Configurable columns and bulk selection
+- [x] 03-04-PLAN.md — CSV export with UTF-8 BOM and Explorer reveal
 
 ### Phase 4: Floor Plan Management
 **Goal**: Users can import floor plan images, organize them by building/floor, and manage floor plan metadata.
@@ -186,7 +186,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 |-------|----------------|--------|-----------|
 | 1. Foundation & Database Setup | 6/6 | Complete | 2026-01-29 |
 | 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
-| 3. Asset Management & CSV Export | 0/4 | Planned | - |
+| 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
 | 4. Floor Plan Management | 0/TBD | Not started | - |
 | 5. Floor Plan Viewer | 0/TBD | Not started | - |
 | 6. Marker Management | 0/TBD | Not started | - |
@@ -194,4 +194,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-02 (Phase 3 planned)*
+*Last updated: 2026-02-04 (Phase 3 complete, UAT passed)*

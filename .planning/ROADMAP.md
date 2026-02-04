@@ -99,17 +99,20 @@ Plans:
 **Requirements**: FLP-01, FLP-02, FLP-03, FLP-04, FLP-05, FLP-06
 
 **Success Criteria** (what must be TRUE):
-  1. User can import floor plan image (PNG/JPEG) and assign to building/floor
+  1. User can import floor plan image (PNG/JPEG/BMP/TIF) and assign to building/floor
   2. User can view list of all floor plans organized by site/building/floor hierarchy
   3. User can edit floor plan metadata (name, building/floor assignment)
   4. User can delete floor plan with warning if markers exist
   5. System stores floor plan images with database-relative paths for portability
   6. System supports multiple floor plans per floor (different areas/zones)
 
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD during phase planning
+- [ ] 04-01-PLAN.md — Schema, service, and mock repository for floor plans
+- [ ] 04-02-PLAN.md — Import workflow with image conversion
+- [ ] 04-03-PLAN.md — Card list view with drag-to-reorder and detail view
+- [ ] 04-04-PLAN.md — Delete safety and bulk actions
 
 ### Phase 5: Floor Plan Viewer
 **Goal**: Users can view floor plans with interactive pan/zoom, see all placed markers with category styling, and filter/toggle marker visibility.
@@ -187,11 +190,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Foundation & Database Setup | 6/6 | Complete | 2026-01-29 |
 | 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
 | 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
-| 4. Floor Plan Management | 0/TBD | Not started | - |
+| 4. Floor Plan Management | 0/4 | Planned | - |
 | 5. Floor Plan Viewer | 0/TBD | Not started | - |
 | 6. Marker Management | 0/TBD | Not started | - |
 | 7. Calibration & Measurement | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-04 (Phase 3 complete, UAT passed)*
+*Last updated: 2026-02-04 (Phase 4 planned with 4 plans)*

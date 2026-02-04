@@ -39,51 +39,43 @@ function formatTimestamp(value: Date | string | null | undefined): string {
   return String(value);
 }
 
+// Column definitions for asset export — keys match useColumnVisibility keys
+type AssetColumnKey = 'tag' | 'description' | 'category' | 'location' | 'status' | 'serialNumber' | 'phone' | 'owner' | 'costCentre';
+
+const ASSET_COLUMN_DEFS: Record<AssetColumnKey, { header: string; extract: (item: AssetWithRelations) => string | number | null | undefined }> = {
+  tag:          { header: 'Asset Tag',        extract: ({ asset })        => asset.tag },
+  description:  { header: 'Description',      extract: ({ asset })        => asset.description },
+  category:     { header: 'Category',         extract: ({ category })     => category?.name ?? null },
+  location:     { header: 'Location',         extract: ({ locationPath }) => locationPath ?? null },
+  status:       { header: 'Status',           extract: ({ asset })        => asset.status },
+  serialNumber: { header: 'Serial Number',    extract: ({ asset })        => asset.serialNumber ?? null },
+  phone:        { header: 'Phone/Extension',  extract: ({ asset })        => asset.phoneExtension ?? null },
+  owner:        { header: 'Owner',            extract: ({ asset })        => asset.owner ?? null },
+  costCentre:   { header: 'Cost Centre',      extract: ({ asset })        => asset.costCentre ?? null },
+};
+
+const ALL_ASSET_COLUMNS: AssetColumnKey[] = ['tag', 'description', 'category', 'location', 'status', 'serialNumber', 'phone', 'owner', 'costCentre'];
+
 export class CsvExportService {
   /** UTF-8 BOM character - ensures Excel opens the file with correct encoding */
   private static readonly UTF8_BOM = '\uFEFF';
 
   /**
-   * Export a list of assets (with joined category and location path) to a CSV file.
-   * Opens a save dialog, writes the file, then reveals it in the OS file explorer.
+   * Export assets to CSV.  `columns` controls which fields appear — defaults to
+   * all when omitted.  Keys match the column-visibility keys used in the asset
+   * table (minus 'icon', which has no data value).
    */
   async exportAssets(
     assets: AssetWithRelations[],
-    filename: string = 'assets.csv'
+    filename: string = 'assets.csv',
+    columns: string[] = ALL_ASSET_COLUMNS
   ): Promise<{ success: true; path: string } | { success: false; error: string }> {
-    const headers = [
-      'Asset Tag',
-      'Description',
-      'Category',
-      'Location',
-      'Status',
-      'Serial Number',
-      'Phone/Extension',
-      'Owner',
-      'Cost Centre',
-      'Cost',
-      'Purchase Date',
-      'Notes',
-      'Created',
-      'Updated',
-    ];
+    const cols = columns.filter((k): k is AssetColumnKey => k in ASSET_COLUMN_DEFS);
 
-    const rows = assets.map(({ asset, category, locationPath }) => [
-      escapeCsvField(asset.tag),
-      escapeCsvField(asset.description),
-      escapeCsvField(category?.name ?? null),
-      escapeCsvField(locationPath ?? null),
-      escapeCsvField(asset.status),
-      escapeCsvField(asset.serialNumber ?? null),
-      escapeCsvField(asset.phoneExtension ?? null),
-      escapeCsvField(asset.owner ?? null),
-      escapeCsvField(asset.costCentre ?? null),
-      escapeCsvField(asset.cost ?? null),
-      escapeCsvField(formatDate(asset.purchaseDate)),
-      escapeCsvField(asset.notes ?? null),
-      escapeCsvField(formatTimestamp(asset.createdAt)),
-      escapeCsvField(formatTimestamp(asset.updatedAt)),
-    ]);
+    const headers = cols.map(k => ASSET_COLUMN_DEFS[k].header);
+    const rows = assets.map(item =>
+      cols.map(k => escapeCsvField(ASSET_COLUMN_DEFS[k].extract(item)))
+    );
 
     return this.writeCSV(headers, rows, filename);
   }

@@ -198,7 +198,8 @@ const AssetList: React.FC = () => {
   const handleExportAssets = async (exportAll: boolean) => {
     const assetsToExport = exportAll ? assets : sortedAssets;
     const timestamp = new Date().toISOString().slice(0, 10);
-    return csvExportService.exportAssets(assetsToExport, `assets-${timestamp}.csv`);
+    const exportCols = COLUMNS.filter(c => isColumnVisible(c.key) && c.key !== 'icon').map(c => c.key);
+    return csvExportService.exportAssets(assetsToExport, `assets-${timestamp}.csv`, exportCols);
   };
 
   const handleExportLocations = async () => {

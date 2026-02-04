@@ -17,7 +17,7 @@ import {
   SqliteCalibrationRepository,
   SqliteCategoryRepository,
 } from './sqlite';
-import { MockCategoryRepository, MockLocationRepository, MockAssetRepository } from './mock';
+import { MockCategoryRepository, MockLocationRepository, MockAssetRepository, MockFloorPlanRepository } from './mock';
 
 /**
  * Factory for creating repository instances.
@@ -68,9 +68,10 @@ export class RepositoryFactory {
   }
 
   getFloorPlanRepository(): IFloorPlanRepository {
-    if (!this.db) throw new Error('FloorPlanRepository requires a database connection');
     if (!this.floorPlanRepo) {
-      this.floorPlanRepo = new SqliteFloorPlanRepository(this.db);
+      this.floorPlanRepo = this.db
+        ? new SqliteFloorPlanRepository(this.db)
+        : new MockFloorPlanRepository();
     }
     return this.floorPlanRepo;
   }

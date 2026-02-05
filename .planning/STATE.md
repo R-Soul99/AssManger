@@ -17,18 +17,18 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 4 of 7 (Floor Plan Management) - IN PROGRESS
-Plan: 04-02 of 4 complete (Floor Plan Import Workflow)
-Status: Wave 2 complete, ready for 04-03
-Last activity: 2026-02-05 - Completed 04-02-PLAN.md
+Plan: 04-03 of 4 complete (Floor Plan Card List)
+Status: Wave 3 complete, ready for 04-04
+Last activity: 2026-02-05 - Completed 04-03-PLAN.md
 
-Progress: [█████░░░░░] 46%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 12 min
-- Total execution time: 2.7 hours
+- Total plans completed: 15
+- Average duration: 11 min
+- Total execution time: 2.8 hours
 
 **By Phase:**
 
@@ -37,10 +37,10 @@ Progress: [█████░░░░░] 46%
 | 01 | 5 | 23min | 5min |
 | 02 | 4 | 103min | 26min |
 | 03 | 3 | 14min | 5min |
-| 04 | 2 | 9min | 5min |
+| 04 | 3 | 14min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 6min, 5min, 4min, 5min, 5min
+- Last 5 plans: 5min, 4min, 5min, 5min, 5min
 - Trend: Consistent 5min execution - established patterns, clean architecture, type-safe utilities
 
 *Updated after each plan completion*
@@ -108,6 +108,11 @@ Recent decisions affecting current work:
 - Plan 04-02: Canvas API + tiff.js for universal image format support (PNG/JPEG/BMP/TIFF)
 - Plan 04-02: Max 4096px auto-resize prevents memory issues with large images
 - Plan 04-02: Object URL cleanup via useEffect prevents blob URL memory leaks
+- Plan 04-03: Separate DndContext per location group (drag-to-reorder only within same location)
+- Plan 04-03: Full-page detail view instead of drawer (floor plan images need more preview space)
+- Plan 04-03: Unassigned floor plans in non-sortable group (no locationId = no ordering context)
+- Plan 04-03: Location dropdown filters to floor/building types (floor plans attach to physical layouts)
+- Plan 04-03: 8px drag activation distance (prevents accidental drag when clicking to view details)
 
 ### Pending Todos
 
@@ -147,6 +152,7 @@ Recent decisions affecting current work:
 **Phase 4 Floor Plan Management:**
 - ✓ Schema + Service + Mock complete (04-01) — nullable locationId, displayOrder, MockFloorPlanRepository
 - ✓ Import workflow complete (04-02) — FloorPlanImportDialog, imageUtils, tiff.js integration, canvas processing
+- ✓ Card list UI complete (04-03) — FloorPlanList, grouped by location, drag-to-reorder, detail/edit view, dnd-kit integration
 
 **Phase 5 Viewer Performance:**
 - Canvas performance degradation expected with 500+ markers - requires viewport culling implementation
@@ -158,10 +164,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-05 (phase 4 wave 2 complete)
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-02-05 (phase 4 wave 3 complete)
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
-Next: Execute 04-03 (Floor Plan Card List)
+Next: Execute 04-04 (Viewer Canvas)
 
 ---
 *State initialized: 2026-01-28*

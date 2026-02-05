@@ -16,19 +16,19 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 4 of 7 (Floor Plan Management) - NOT STARTED
-Plan: Phase 3 complete (all 4 plans + UAT passed 2026-02-04)
-Status: Ready to plan Phase 4
-Last activity: 2026-02-04 - Phase 3 UAT all 8 items passed, phase closed
+Phase: 4 of 7 (Floor Plan Management) - IN PROGRESS
+Plan: 04-02 of 4 complete (Floor Plan Import Workflow)
+Status: Wave 2 complete, ready for 04-03
+Last activity: 2026-02-05 - Completed 04-02-PLAN.md
 
-Progress: [████░░░░░░] 43%
+Progress: [█████░░░░░] 46%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 13 min
-- Total execution time: 2.6 hours
+- Total plans completed: 14
+- Average duration: 12 min
+- Total execution time: 2.7 hours
 
 **By Phase:**
 
@@ -37,10 +37,11 @@ Progress: [████░░░░░░] 43%
 | 01 | 5 | 23min | 5min |
 | 02 | 4 | 103min | 26min |
 | 03 | 3 | 14min | 5min |
+| 04 | 2 | 9min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 61min, 6min, 5min, 4min, 5min
-- Trend: Phase 3 consistently fast - MUI patterns, hook composition, and clean architecture well established
+- Last 5 plans: 6min, 5min, 4min, 5min, 5min
+- Trend: Consistent 5min execution - established patterns, clean architecture, type-safe utilities
 
 *Updated after each plan completion*
 
@@ -102,6 +103,11 @@ Recent decisions affecting current work:
 - Plan 03-03: CsvExportService stub created for parallel plan dependency (03-04 overwrites with full implementation)
 - Plan 03-03: Sequential delete loop in bulk actions (SQLite write safety, simpler error handling than Promise.all)
 - Plan 03-03: Column visibility merge strategy on init (new columns get defaults without wiping stored prefs)
+- Plan 04-01: locationId nullable at import time (assigned later in detail view)
+- Plan 04-01: display_order INTEGER DEFAULT 0 for drag-to-reorder persistence
+- Plan 04-02: Canvas API + tiff.js for universal image format support (PNG/JPEG/BMP/TIFF)
+- Plan 04-02: Max 4096px auto-resize prevents memory issues with large images
+- Plan 04-02: Object URL cleanup via useEffect prevents blob URL memory leaks
 
 ### Pending Todos
 
@@ -138,6 +144,10 @@ Recent decisions affecting current work:
 - ✓ CSV export service with column-visibility-aware export, UTF-8 BOM, Explorer reveal (03-04)
 - ✓ UAT: all 8 items passed (2026-02-04) — mock repos used for WebView testing
 
+**Phase 4 Floor Plan Management:**
+- ✓ Schema + Service + Mock complete (04-01) — nullable locationId, displayOrder, MockFloorPlanRepository
+- ✓ Import workflow complete (04-02) — FloorPlanImportDialog, imageUtils, tiff.js integration, canvas processing
+
 **Phase 5 Viewer Performance:**
 - Canvas performance degradation expected with 500+ markers - requires viewport culling implementation
 - Research suggests R-Tree spatial indexing may be needed for fast marker lookup
@@ -148,11 +158,11 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-04 (phase 3 complete, UAT passed)
-Stopped at: Phase 3 closed — all 8 UAT items passed
+Last session: 2026-02-05 (phase 4 wave 2 complete)
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
-Next: Plan Phase 4 (Floor Plan Management)
+Next: Execute 04-03 (Floor Plan Card List)
 
 ---
 *State initialized: 2026-01-28*
-*Last updated: 2026-02-04*
+*Last updated: 2026-02-05*

@@ -5,6 +5,7 @@ import { projectService } from '@/application/services/ProjectService';
 import CategoryManager from '@/presentation/components/category/CategoryManager';
 import LocationManager from '@/presentation/components/location/LocationManager';
 import { AssetList } from '@/presentation/components/asset';
+import { FloorPlanList } from '@/presentation/components/floorplan';
 import './App.css';
 
 const theme = createTheme();
@@ -19,6 +20,7 @@ function App() {
   const [showCategories, setShowCategories] = useState(false);
   const [showLocations, setShowLocations] = useState(false);
   const [showAssets, setShowAssets] = useState(false);
+  const [showFloorPlans, setShowFloorPlans] = useState(false);
 
   // Auto-restore: re-enter the most recent project on mount (survives page refresh)
   useEffect(() => {
@@ -101,10 +103,14 @@ function App() {
           <button onClick={() => setShowLocations(!showLocations)}>
             {showLocations ? 'Hide Locations' : 'Manage Locations'}
           </button>
+          <button onClick={() => setShowFloorPlans(!showFloorPlans)}>
+            {showFloorPlans ? 'Hide Floor Plans' : 'Manage Floor Plans'}
+          </button>
         </div>
         {showAssets && <AssetList />}
         {showCategories && <CategoryManager />}
         {showLocations && <LocationManager />}
+        {showFloorPlans && <FloorPlanList />}
       </div>
     </ThemeProvider>
   );

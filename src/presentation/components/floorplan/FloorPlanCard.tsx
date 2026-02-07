@@ -7,6 +7,7 @@ import {
   Box,
   Chip,
   Skeleton,
+  Checkbox,
 } from '@mui/material';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -19,29 +20,62 @@ interface FloorPlanCardProps {
   markerCount: number;
   onClick: () => void;
   isDragging?: boolean;
+  selected?: boolean;
+  onSelectionToggle?: (planId: string) => void;
 }
 
 // Base card component (used for both sortable and non-sortable contexts)
 export const FloorPlanCardContent = forwardRef<HTMLDivElement, FloorPlanCardProps & {
   style?: React.CSSProperties;
   dragHandleProps?: Record<string, unknown>;
-}>(({ plan, locationPath, markerCount, onClick, isDragging, style, dragHandleProps, ...props }, ref) => {
+}>(({ plan, locationPath, markerCount, onClick, isDragging, selected, onSelectionToggle, style, dragHandleProps, ...props }, ref) => {
   const { imageUrl, loading } = useFloorPlanImage(plan.imageRelativePath);
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelectionToggle?.(plan.id);
+  };
+
+  const handleCardClick = () => {
+    if (onSelectionToggle) {
+      onSelectionToggle(plan.id);
+    } else {
+      onClick();
+    }
+  };
 
   return (
     <Card
       ref={ref}
-      onClick={onClick}
+      onClick={handleCardClick}
       sx={{
         cursor: 'pointer',
         width: 280,
         opacity: isDragging ? 0.5 : 1,
+        position: 'relative',
+        border: selected ? 2 : 1,
+        borderColor: selected ? 'primary.main' : 'divider',
         '&:hover': { boxShadow: 4 },
       }}
       style={style}
       {...props}
       {...dragHandleProps}
     >
+      {onSelectionToggle && (
+        <Checkbox
+          checked={selected || false}
+          onChange={() => {}}
+          onClick={handleCheckboxClick}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 1,
+            backgroundColor: 'background.paper',
+            '&:hover': { backgroundColor: 'background.paper' },
+          }}
+        />
+      )}
       {loading ? (
         <Skeleton variant="rectangular" height={160} />
       ) : (

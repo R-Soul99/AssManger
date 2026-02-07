@@ -7,7 +7,7 @@ import {
   Alert,
   Paper,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, CheckBox as CheckBoxIcon } from '@mui/icons-material';
 import {
   DndContext,
   closestCenter,
@@ -28,6 +28,7 @@ import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFacto
 import { FloorPlanImportDialog } from './FloorPlanImportDialog';
 import { FloorPlanDetailView } from './FloorPlanDetailView';
 import { SortableFloorPlanCard, FloorPlanCard } from './FloorPlanCard';
+import { FloorPlanBulkActions } from './FloorPlanBulkActions';
 
 interface FloorPlanGroup {
   locationId: string | null;
@@ -46,6 +47,8 @@ export function FloorPlanList() {
   const [error, setError] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPlanIds, setSelectedPlanIds] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -158,6 +161,36 @@ export function FloorPlanList() {
     }
   };
 
+  const handleSelectionToggle = (planId: string) => {
+    setSelectedPlanIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(planId)) {
+        newSet.delete(planId);
+      } else {
+        newSet.add(planId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleToggleSelectionMode = () => {
+    setSelectionMode((prev) => !prev);
+    setSelectedPlanIds(new Set());
+  };
+
+  const handleClearSelection = () => {
+    setSelectedPlanIds(new Set());
+  };
+
+  const handleDeleteComplete = () => {
+    setSelectionMode(false);
+    setSelectedPlanIds(new Set());
+    loadFloorPlans();
+  };
+
+  // Get selected plans for bulk actions
+  const selectedPlans = groups.flatMap((g) => g.plans).filter((p) => selectedPlanIds.has(p.id));
+
   // Show detail view if a plan is selected
   if (selectedPlanId) {
     return (
@@ -181,14 +214,32 @@ export function FloorPlanList() {
     <Box sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5">Floor Plans</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setImportDialogOpen(true)}
-        >
-          Import Floor Plan
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant={selectionMode ? 'contained' : 'outlined'}
+            startIcon={<CheckBoxIcon />}
+            onClick={handleToggleSelectionMode}
+          >
+            {selectionMode ? 'Exit Selection' : 'Select'}
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setImportDialogOpen(true)}
+          >
+            Import Floor Plan
+          </Button>
+        </Box>
       </Box>
+
+      {selectionMode && (
+        <FloorPlanBulkActions
+          selectedPlans={selectedPlans}
+          markerCounts={markerCounts}
+          onClearSelection={handleClearSelection}
+          onDeleteComplete={handleDeleteComplete}
+        />
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -227,6 +278,8 @@ export function FloorPlanList() {
                         locationPath={group.locationPath}
                         markerCount={markerCounts[plan.id] || 0}
                         onClick={() => setSelectedPlanId(plan.id)}
+                        selected={selectedPlanIds.has(plan.id)}
+                        onSelectionToggle={selectionMode ? handleSelectionToggle : undefined}
                       />
                     ))}
                   </Box>
@@ -242,6 +295,8 @@ export function FloorPlanList() {
                     locationPath=""
                     markerCount={markerCounts[plan.id] || 0}
                     onClick={() => setSelectedPlanId(plan.id)}
+                    selected={selectedPlanIds.has(plan.id)}
+                    onSelectionToggle={selectionMode ? handleSelectionToggle : undefined}
                   />
                 ))}
               </Box>

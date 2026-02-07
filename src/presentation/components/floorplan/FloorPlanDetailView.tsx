@@ -12,13 +12,14 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { FloorPlan } from '@/domain/entities';
 import { Location } from '@/domain/entities';
 import { FloorPlanService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { useFloorPlanImage } from './hooks/useFloorPlanImage';
+import { FloorPlanDeleteDialog } from './FloorPlanDeleteDialog';
 
 interface FloorPlanDetailViewProps {
   floorPlanId: string;
@@ -38,9 +39,11 @@ export function FloorPlanDetailView({
 }: FloorPlanDetailViewProps) {
   const [floorPlan, setFloorPlan] = useState<FloorPlan | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [markerCount, setMarkerCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { control, handleSubmit, reset, formState: { isDirty } } = useForm<FormData>({
     defaultValues: {
@@ -62,6 +65,7 @@ export function FloorPlanDetailView({
           RepositoryFactory.getInstance().getFloorPlanRepository()
         );
         const locationRepo = RepositoryFactory.getInstance().getLocationRepository();
+        const floorPlanRepo = RepositoryFactory.getInstance().getFloorPlanRepository();
 
         const [fpResult, allLocations] = await Promise.all([
           floorPlanService.getFloorPlanById(floorPlanId),
@@ -74,6 +78,10 @@ export function FloorPlanDetailView({
 
         setFloorPlan(fpResult.data);
         setLocations(allLocations);
+
+        // Load marker count
+        const count = await floorPlanRepo.getMarkerCount(floorPlanId);
+        setMarkerCount(count);
 
         // Initialize form with floor plan data
         reset({
@@ -117,6 +125,12 @@ export function FloorPlanDetailView({
     }
   };
 
+  const handleDeleteSuccess = () => {
+    setDeleteDialogOpen(false);
+    onUpdated();
+    onBack();
+  };
+
   // Filter locations to floor and building types (floor plans attach to floors or buildings)
   const assignableLocations = locations.filter(
     (l) => l.type === 'floor' || l.type === 'building'
@@ -156,9 +170,19 @@ export function FloorPlanDetailView({
 
   return (
     <Box sx={{ p: 2 }}>
-      <Button startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ mb: 2 }}>
-        Back to Floor Plans
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={onBack}>
+          Back to Floor Plans
+        </Button>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<DeleteIcon />}
+          onClick={() => setDeleteDialogOpen(true)}
+        >
+          Delete Floor Plan
+        </Button>
+      </Box>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -257,6 +281,17 @@ export function FloorPlanDetailView({
           </Box>
         </form>
       </Paper>
+
+      {floorPlan && (
+        <FloorPlanDeleteDialog
+          open={deleteDialogOpen}
+          floorPlanId={floorPlan.id}
+          floorPlanName={floorPlan.name}
+          markerCount={markerCount}
+          onClose={() => setDeleteDialogOpen(false)}
+          onDeleted={handleDeleteSuccess}
+        />
+      )}
     </Box>
   );
 }

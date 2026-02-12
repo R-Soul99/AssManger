@@ -81,8 +81,7 @@ export class ProjectService {
       }
 
       // Initialize file storage
-      // MOCK: Disabled for checkpoint
-      // await localFileStorage.initialize({ basePath: options.location });
+      await localFileStorage.initialize({ basePath: options.location });
 
       // Reset repository factory for new database
       // RepositoryFactory.reset(); // MOCK: Disabled for checkpoint
@@ -139,9 +138,8 @@ export class ProjectService {
       await runMigrations();
 
       // Initialize file storage
-      // const dbDir = await dirname(dbPath);
-      // MOCK: Disabled for checkpoint
-      // await localFileStorage.initialize({ basePath: dbDir });
+      const dbDir = await dirname(dbPath);
+      await localFileStorage.initialize({ basePath: dbDir });
 
       // Reset repository factory for new database
       // RepositoryFactory.reset(); // MOCK: Disabled for checkpoint
@@ -235,7 +233,7 @@ export class ProjectService {
    */
   async closeCurrentProject(): Promise<void> {
     await closeDatabase();
-    RepositoryFactory.reset();
+    // RepositoryFactory.reset(); // MOCK: Disabled for checkpoint
   }
 
   /**

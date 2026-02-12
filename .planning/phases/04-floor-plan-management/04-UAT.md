@@ -98,6 +98,14 @@ skipped: 2
   reason: "User reported: decode is not a function"
   severity: major
   test: 2
-  artifacts: []
-  missing: []
+  root_cause: "Incorrect import syntax for tiff.js - using named import { decode } but tiff.js exports default with decode as method"
+  artifacts:
+    - path: "src/presentation/components/floorplan/utils/imageUtils.ts"
+      issue: "Line 55: const { decode } = await import('tiff.js') - wrong import pattern"
+    - path: "src/types/tiff.d.ts"
+      issue: "Type declaration incorrect - should declare default export not named export"
+  missing:
+    - "Change import to: const Tiff = await import('tiff.js'); then use Tiff.default.decode()"
+    - "Or use static import: import Tiff from 'tiff.js'; then Tiff.decode()"
+    - "Update tiff.d.ts to declare default export: declare module 'tiff.js' { export default class Tiff { static decode(buffer: ArrayBuffer): TiffPage[] } }"
   debug_session: ""

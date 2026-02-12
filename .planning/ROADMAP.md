@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Database Setup** - Establish architecture foundations and database infrastructure
 - [x] **Phase 2: Location Hierarchy & Categories** - Build organizational structure and equipment classification
 - [x] **Phase 3: Asset Management & CSV Export** - Implement core asset CRUD and data export
-- [ ] **Phase 4: Floor Plan Management** - Enable floor plan import and metadata management
+- [x] **Phase 4: Floor Plan Management** - Enable floor plan import and metadata management
 - [ ] **Phase 5: Floor Plan Viewer** - Build interactive viewer with pan/zoom and marker display
 - [ ] **Phase 6: Marker Management** - Add spatial editing capabilities for equipment placement
 - [ ] **Phase 7: Calibration & Measurement** - Enable real-world measurements with scale calibration
@@ -109,10 +109,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Schema, service, and mock repository for floor plans
-- [ ] 04-02-PLAN.md — Import workflow with image conversion
-- [ ] 04-03-PLAN.md — Card list view with drag-to-reorder and detail view
-- [ ] 04-04-PLAN.md — Delete safety and bulk actions
+- [x] 04-01-PLAN.md — Schema, service, and mock repository for floor plans
+- [x] 04-02-PLAN.md — Import workflow with image conversion
+- [x] 04-03-PLAN.md — Card list view with drag-to-reorder and detail view
+- [x] 04-04-PLAN.md — Delete safety and bulk actions
 
 ### Phase 5: Floor Plan Viewer
 **Goal**: Users can view floor plans with interactive pan/zoom, see all placed markers with category styling, and filter/toggle marker visibility.
@@ -190,11 +190,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Foundation & Database Setup | 6/6 | Complete | 2026-01-29 |
 | 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
 | 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
-| 4. Floor Plan Management | 0/4 | Planned | - |
+| 4. Floor Plan Management | 4/4 | Complete | 2026-02-07 |
 | 5. Floor Plan Viewer | 0/TBD | Not started | - |
 | 6. Marker Management | 0/TBD | Not started | - |
 | 7. Calibration & Measurement | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-04 (Phase 4 planned with 4 plans)*
+*Last updated: 2026-02-12 (Phase 4 complete)*

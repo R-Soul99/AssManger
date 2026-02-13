@@ -136,7 +136,7 @@ const AssetList: React.FC = () => {
         categoryRepo.findAll(),
         locationRepo.findAll(),
       ]);
-      setCategories(cats);
+      setCategories(cats as any);
       setLocations(locs);
     } catch (err) {
       console.error('Failed to load reference data', err);

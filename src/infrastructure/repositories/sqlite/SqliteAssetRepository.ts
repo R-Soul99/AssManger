@@ -105,8 +105,8 @@ export class SqliteAssetRepository implements IAssetRepository {
 
       results.push({
         asset,
-        category: row.category || null,
-        location: row.location || null,
+        category: row.category ? { ...row.category, description: row.category.description ?? undefined } : null,
+        location: row.location ? { ...row.location, description: row.location.description ?? undefined } : null,
         locationPath,
       });
     }

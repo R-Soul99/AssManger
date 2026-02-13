@@ -60,7 +60,7 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
       ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
 
       console.log(
-        \`[FloorPlanCanvas] Rendered floor plan: logical=\${canvas.width}x\${canvas.height}, display=\${width}x\${height}\`
+        `[FloorPlanCanvas] Rendered floor plan: logical=${canvas.width}x${canvas.height}, display=${width}x${height}`
       );
     }, [imageData, floorPlan.imageWidth, floorPlan.imageHeight, width, height]);
 
@@ -97,7 +97,7 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
     // Log aspect ratio mismatch (informational)
     if (Math.abs(aspectRatio - displayAspectRatio) > 0.01) {
       console.warn(
-        \`[FloorPlanCanvas] Aspect ratio mismatch: image=\${aspectRatio.toFixed(2)}, display=\${displayAspectRatio.toFixed(2)}\`
+        `[FloorPlanCanvas] Aspect ratio mismatch: image=${aspectRatio.toFixed(2)}, display=${displayAspectRatio.toFixed(2)}`
       );
     }
 
@@ -128,8 +128,8 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
           <canvas
             ref={canvasRef}
             style={{
-              width: \`\${width}px\`,
-              height: \`\${height}px\`,
+              width: `${width}px`,
+              height: `${height}px`,
               display: 'block',
             }}
           />

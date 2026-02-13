@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, CircularProgress, Alert } from '@mui/material';
+import { Box, CircularProgress, Alert, IconButton, Tooltip } from '@mui/material';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import { ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { FloorPlan } from '@/domain/entities';
 import { FloorPlanService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
@@ -23,6 +27,7 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
   const [error, setError] = useState<string | null>(null);
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 800, height: 600 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const transformRef = useRef<ReactZoomPanPinchRef>(null);
 
   // Fetch floor plan data
   useEffect(() => {
@@ -105,6 +110,61 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
     };
   }, [floorPlan]);
 
+  // Keyboard shortcuts for pan/zoom
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!transformRef.current) return;
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          transformRef.current.setTransform(
+            transformRef.current.state.positionX,
+            transformRef.current.state.positionY + 50,
+            transformRef.current.state.scale
+          );
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          transformRef.current.setTransform(
+            transformRef.current.state.positionX,
+            transformRef.current.state.positionY - 50,
+            transformRef.current.state.scale
+          );
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          transformRef.current.setTransform(
+            transformRef.current.state.positionX + 50,
+            transformRef.current.state.positionY,
+            transformRef.current.state.scale
+          );
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          transformRef.current.setTransform(
+            transformRef.current.state.positionX - 50,
+            transformRef.current.state.positionY,
+            transformRef.current.state.scale
+          );
+          break;
+        case '+':
+        case '=':
+          e.preventDefault();
+          transformRef.current.zoomIn(0.2);
+          break;
+        case '-':
+        case '_':
+          e.preventDefault();
+          transformRef.current.zoomOut(0.2);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Show loading state
   if (loading) {
     return (
@@ -154,10 +214,57 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
       }}
     >
       <FloorPlanCanvas
+        ref={transformRef}
         floorPlan={floorPlan}
         width={canvasDimensions.width}
         height={canvasDimensions.height}
       />
+
+      {/* Zoom control toolbar */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          backgroundColor: 'white',
+          borderRadius: 1,
+          boxShadow: 2,
+          p: 0.5,
+        }}
+      >
+        <Tooltip title="Zoom In (+)" placement="left">
+          <IconButton
+            size="small"
+            onClick={() => transformRef.current?.zoomIn(0.2)}
+            aria-label="Zoom in"
+          >
+            <ZoomInIcon />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Zoom Out (-)" placement="left">
+          <IconButton
+            size="small"
+            onClick={() => transformRef.current?.zoomOut(0.2)}
+            aria-label="Zoom out"
+          >
+            <ZoomOutIcon />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Reset Zoom" placement="left">
+          <IconButton
+            size="small"
+            onClick={() => transformRef.current?.resetTransform()}
+            aria-label="Reset zoom"
+          >
+            <CenterFocusStrongIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
     </Box>
   );
 }

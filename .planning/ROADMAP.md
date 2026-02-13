@@ -130,10 +130,14 @@ Plans:
   6. User can filter markers by asset status with filtered markers highlighted on floor plan
   7. Viewer performs smoothly with 500+ markers through viewport culling
 
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD during phase planning
+- [ ] 05-01-PLAN.md — Canvas infrastructure and floor plan rendering
+- [ ] 05-02-PLAN.md — Pan/zoom controls integration
+- [ ] 05-03-PLAN.md — Marker rendering with category styling
+- [ ] 05-04-PLAN.md — Interactive marker popups and navigation
+- [ ] 05-05-PLAN.md — Filtering and visibility controls
 
 ### Phase 6: Marker Management
 **Goal**: Users can place equipment markers on floor plans, link them to assets, reposition markers, and manage marker lifecycle.
@@ -191,10 +195,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
 | 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
 | 4. Floor Plan Management | 4/4 | Complete | 2026-02-07 |
-| 5. Floor Plan Viewer | 0/TBD | Not started | - |
+| 5. Floor Plan Viewer | 0/5 | Planning complete | - |
 | 6. Marker Management | 0/TBD | Not started | - |
 | 7. Calibration & Measurement | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-12 (Phase 4 complete)*
+*Last updated: 2026-02-12 (Phase 5 planning complete)*

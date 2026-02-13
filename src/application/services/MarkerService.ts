@@ -18,15 +18,16 @@ export interface MarkerWithDetails {
  * associated assets and categories, enabling category-specific styling.
  */
 export class MarkerService {
-  private markerRepository: IMarkerRepository;
-  private assetRepository: IAssetRepository;
-  private categoryRepository: ICategoryRepository;
+  private get markerRepository(): IMarkerRepository {
+    return RepositoryFactory.getInstance().getMarkerRepository();
+  }
 
-  constructor() {
-    const factory = RepositoryFactory.getInstance();
-    this.markerRepository = factory.getMarkerRepository();
-    this.assetRepository = factory.getAssetRepository();
-    this.categoryRepository = factory.getCategoryRepository();
+  private get assetRepository(): IAssetRepository {
+    return RepositoryFactory.getInstance().getAssetRepository();
+  }
+
+  private get categoryRepository(): ICategoryRepository {
+    return RepositoryFactory.getInstance().getCategoryRepository();
   }
 
   /**

@@ -1,13 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Box, CircularProgress, Alert, IconButton, Tooltip } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import { ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
-import { FloorPlan } from '@/domain/entities';
+import { FloorPlan, Category } from '@/domain/entities';
 import { FloorPlanService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
+import { FloorPlanViewerToolbar } from './FloorPlanViewerToolbar';
+import { FloorPlanFilterSidebar } from './FloorPlanFilterSidebar';
+import { useMarkers } from '@/presentation/hooks/useMarkers';
 import AssetDetailDrawer from '@/presentation/components/asset/AssetDetailDrawer';
 import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
 
@@ -16,10 +19,17 @@ interface FloorPlanViewerProps {
 }
 
 /**
- * Container component for floor plan viewing.
+ * Container component for floor plan viewing with filtering controls.
  *
  * Fetches floor plan data, calculates canvas dimensions to fit viewport,
  * and renders the floor plan on canvas with proper aspect ratio.
+ *
+ * Features:
+ * - Toolbar with category visibility toggles
+ * - Sidebar with status filters
+ * - Filtered markers dimmed to 30% opacity
+ * - Pan/zoom controls
+ * - Asset detail drawer
  *
  * @param floorPlanId - ID of the floor plan to display
  */
@@ -34,6 +44,15 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
   const [selectedAsset, setSelectedAsset] = useState<AssetWithRelations | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
+
+  // Filter state
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+  const [visibleCategories, setVisibleCategories] = useState<Set<number>>(new Set());
+  const [selectedStatus, setSelectedStatus] = useState<string | 'all'>('all');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Fetch markers for marker counts
+  const { markers } = useMarkers(floorPlanId);
 
   // Fetch floor plan data
   useEffect(() => {
@@ -64,6 +83,45 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
 
     loadFloorPlan();
   }, [floorPlanId]);
+
+  // Load all categories on mount and initialize visibleCategories
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoryRepo = RepositoryFactory.getInstance().getCategoryRepository();
+        const cats = await categoryRepo.findAll();
+        setAllCategories(cats);
+        // Initialize with all categories visible
+        setVisibleCategories(new Set(cats.map((c) => c.id)));
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  // Calculate marker counts per status
+  const markerCounts = useMemo(() => {
+    const counts: { [status: string]: number } = {};
+    markers.forEach(({ asset }) => {
+      counts[asset.status] = (counts[asset.status] || 0) + 1;
+    });
+    return counts;
+  }, [markers]);
+
+  // Toggle category visibility
+  const handleToggleCategory = (categoryId: number) => {
+    setVisibleCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  };
 
   // Calculate canvas dimensions when floor plan loads or window resizes
   useEffect(() => {
@@ -260,6 +318,25 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
         width={canvasDimensions.width}
         height={canvasDimensions.height}
         onAssetSelected={(assetId) => setSelectedAssetId(assetId)}
+        visibleCategories={visibleCategories}
+        selectedStatus={selectedStatus}
+      />
+
+      {/* Filter toolbar */}
+      <FloorPlanViewerToolbar
+        categories={allCategories}
+        visibleCategories={visibleCategories}
+        onToggleCategory={handleToggleCategory}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
+
+      {/* Filter sidebar */}
+      <FloorPlanFilterSidebar
+        open={sidebarOpen}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        onClose={() => setSidebarOpen(false)}
+        markerCounts={markerCounts}
       />
 
       {/* Zoom control toolbar */}

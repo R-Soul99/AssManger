@@ -1,7 +1,7 @@
 import { useRef, useEffect, forwardRef, useState } from 'react';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
-import { FloorPlan, Marker, Category } from '@/domain/entities';
+import { FloorPlan, Marker, Category, Asset } from '@/domain/entities';
 import { useFloorPlanImage } from '@/presentation/hooks/useFloorPlanImage';
 import { useMarkers } from '@/presentation/hooks/useMarkers';
 import { MarkerPopup } from './MarkerPopup';
@@ -12,31 +12,49 @@ interface FloorPlanCanvasProps {
   width: number;
   height: number;
   onAssetSelected?: (assetId: string) => void;
+  visibleCategories: Set<number>;
+  selectedStatus: string | 'all';
 }
 
 /**
- * Helper function to draw a marker on the canvas.
+ * Helper function to draw a marker on the canvas with filter support.
  *
  * @param ctx - Canvas 2D context
  * @param marker - Marker entity with normalized coordinates
+ * @param asset - Asset entity with status info
  * @param category - Category entity with color and styling info
  * @param isSelected - Whether this marker is selected
  * @param canvasWidth - Logical canvas width (for coordinate conversion)
  * @param canvasHeight - Logical canvas height (for coordinate conversion)
+ * @param visibleCategories - Set of visible category IDs
+ * @param selectedStatus - Currently selected status filter
  */
 function drawMarker(
   ctx: CanvasRenderingContext2D,
   marker: Marker,
+  asset: Asset,
   category: Category,
   isSelected: boolean,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
+  visibleCategories: Set<number>,
+  selectedStatus: string | 'all'
 ) {
   // Convert normalized coords (0-1) to canvas pixels
   const x = marker.normalizedX * canvasWidth;
   const y = marker.normalizedY * canvasHeight;
 
   const radius = 12; // Marker size in pixels
+
+  // Calculate opacity based on filters
+  const categoryVisible = visibleCategories.has(category.id);
+  const statusMatches = selectedStatus === 'all' || asset.status === selectedStatus;
+
+  // Per plan: dim non-matching to 30% opacity (not hide)
+  const opacity = categoryVisible && statusMatches ? 1.0 : 0.3;
+
+  // Apply opacity
+  ctx.globalAlpha = opacity;
 
   // Draw marker circle
   ctx.beginPath();
@@ -57,6 +75,9 @@ function drawMarker(
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(category.name[0].toUpperCase(), x, y);
+
+  // Reset opacity
+  ctx.globalAlpha = 1.0;
 }
 
 /**
@@ -77,14 +98,17 @@ function drawMarker(
  * - Markers displayed as colored circles with category initial
  * - Click to select marker (shows selection ring)
  * - Markers scale with floor plan during pan/zoom
+ * - Markers dim to 30% opacity when filtered out (not hidden completely)
  *
  * @param floorPlan - FloorPlan entity with image dimensions and path
  * @param width - Display width in pixels
  * @param height - Display height in pixels
+ * @param visibleCategories - Set of visible category IDs
+ * @param selectedStatus - Currently selected status filter
  * @param ref - Forward ref to TransformWrapper for zoom control
  */
 export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasProps>(
-  ({ floorPlan, width, height, onAssetSelected }, ref) => {
+  ({ floorPlan, width, height, onAssetSelected, visibleCategories, selectedStatus }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { imageData, loading, error } = useFloorPlanImage(floorPlan.imageRelativePath);
     const { markers, loading: markersLoading, error: markersError } = useMarkers(floorPlan.id);
@@ -115,17 +139,38 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
       // Draw floor plan image at full logical size
       ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
 
-      // Draw markers on top of floor plan
+      // Draw markers on top of floor plan with filter support
       if (!markersLoading && markers.length > 0) {
-        markers.forEach(({ marker, category }) => {
-          drawMarker(ctx, marker, category, selectedMarker?.marker.id === marker.id, canvas.width, canvas.height);
+        markers.forEach(({ marker, asset, category }) => {
+          drawMarker(
+            ctx,
+            marker,
+            asset,
+            category,
+            selectedMarker?.marker.id === marker.id,
+            canvas.width,
+            canvas.height,
+            visibleCategories,
+            selectedStatus
+          );
         });
       }
 
       console.log(
-        `[FloorPlanCanvas] Rendered floor plan: logical=${canvas.width}x${canvas.height}, display=${width}x${height}, markers=${markers.length}`
+        `[FloorPlanCanvas] Rendered floor plan: logical=${canvas.width}x${canvas.height}, display=${width}x${height}, markers=${markers.length}, filters={categories:${visibleCategories.size}, status:${selectedStatus}}`
       );
-    }, [imageData, floorPlan.imageWidth, floorPlan.imageHeight, width, height, markers, markersLoading, selectedMarker]);
+    }, [
+      imageData,
+      floorPlan.imageWidth,
+      floorPlan.imageHeight,
+      width,
+      height,
+      markers,
+      markersLoading,
+      selectedMarker,
+      visibleCategories,
+      selectedStatus,
+    ]);
 
     // Handle canvas click for marker selection
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {

@@ -1,8 +1,9 @@
-import { useRef, useEffect, forwardRef } from 'react';
+import { useRef, useEffect, forwardRef, useState } from 'react';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
-import { FloorPlan } from '@/domain/entities';
+import { FloorPlan, Marker, Category } from '@/domain/entities';
 import { useFloorPlanImage } from '@/presentation/hooks/useFloorPlanImage';
+import { useMarkers } from '@/presentation/hooks/useMarkers';
 
 interface FloorPlanCanvasProps {
   floorPlan: FloorPlan;
@@ -11,7 +12,52 @@ interface FloorPlanCanvasProps {
 }
 
 /**
- * Canvas component for rendering floor plan images with pan/zoom controls.
+ * Helper function to draw a marker on the canvas.
+ *
+ * @param ctx - Canvas 2D context
+ * @param marker - Marker entity with normalized coordinates
+ * @param category - Category entity with color and styling info
+ * @param isSelected - Whether this marker is selected
+ * @param canvasWidth - Logical canvas width (for coordinate conversion)
+ * @param canvasHeight - Logical canvas height (for coordinate conversion)
+ */
+function drawMarker(
+  ctx: CanvasRenderingContext2D,
+  marker: Marker,
+  category: Category,
+  isSelected: boolean,
+  canvasWidth: number,
+  canvasHeight: number
+) {
+  // Convert normalized coords (0-1) to canvas pixels
+  const x = marker.normalizedX * canvasWidth;
+  const y = marker.normalizedY * canvasHeight;
+
+  const radius = 12; // Marker size in pixels
+
+  // Draw marker circle
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = category.color;
+  ctx.fill();
+
+  // Draw selection ring if selected
+  if (isSelected) {
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  // Draw category icon (simplified - use first letter of category name)
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(category.name[0].toUpperCase(), x, y);
+}
+
+/**
+ * Canvas component for rendering floor plan images with pan/zoom controls and markers.
  *
  * Implements coordinate system where:
  * - Canvas logical size = floor plan image dimensions (for 1:1 pixel mapping)
@@ -24,6 +70,11 @@ interface FloorPlanCanvasProps {
  * - Zoom range: 50%-500%
  * - Exposes ref for programmatic control (zoom in/out/reset)
  *
+ * Marker rendering:
+ * - Markers displayed as colored circles with category initial
+ * - Click to select marker (shows selection ring)
+ * - Markers scale with floor plan during pan/zoom
+ *
  * @param floorPlan - FloorPlan entity with image dimensions and path
  * @param width - Display width in pixels
  * @param height - Display height in pixels
@@ -33,8 +84,10 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
   ({ floorPlan, width, height }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { imageData, loading, error } = useFloorPlanImage(floorPlan.imageRelativePath);
+    const { markers, loading: markersLoading, error: markersError } = useMarkers(floorPlan.id);
+    const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
 
-    // Draw floor plan image on canvas when loaded
+    // Draw floor plan image and markers on canvas
     useEffect(() => {
       if (!canvasRef.current || !imageData) {
         return;
@@ -59,10 +112,50 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
       // Draw floor plan image at full logical size
       ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height);
 
+      // Draw markers on top of floor plan
+      if (!markersLoading && markers.length > 0) {
+        markers.forEach(({ marker, category }) => {
+          drawMarker(ctx, marker, category, selectedMarkerId === marker.id, canvas.width, canvas.height);
+        });
+      }
+
       console.log(
-        `[FloorPlanCanvas] Rendered floor plan: logical=${canvas.width}x${canvas.height}, display=${width}x${height}`
+        `[FloorPlanCanvas] Rendered floor plan: logical=${canvas.width}x${canvas.height}, display=${width}x${height}, markers=${markers.length}`
       );
-    }, [imageData, floorPlan.imageWidth, floorPlan.imageHeight, width, height]);
+    }, [imageData, floorPlan.imageWidth, floorPlan.imageHeight, width, height, markers, markersLoading, selectedMarkerId]);
+
+    // Handle canvas click for marker selection
+    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      // Get canvas bounding rect
+      const rect = canvas.getBoundingClientRect();
+
+      // Calculate scale factors (canvas logical size vs display size)
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      // Convert click coordinates from screen space to canvas logical space
+      const clickX = (e.clientX - rect.left) * scaleX;
+      const clickY = (e.clientY - rect.top) * scaleY;
+
+      // Find clicked marker (hit detection)
+      const clicked = markers.find(({ marker }) => {
+        const mx = marker.normalizedX * canvas.width;
+        const my = marker.normalizedY * canvas.height;
+        const dist = Math.sqrt((clickX - mx) ** 2 + (clickY - my) ** 2);
+        return dist <= 12; // marker radius
+      });
+
+      setSelectedMarkerId(clicked ? clicked.marker.id : null);
+
+      if (clicked) {
+        console.log(
+          `[FloorPlanCanvas] Marker selected: ${clicked.marker.id}, asset: ${clicked.asset.tag}`
+        );
+      }
+    };
 
     // Show loading state
     if (loading) {
@@ -88,6 +181,11 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
           <Alert severity="error">{error}</Alert>
         </Box>
       );
+    }
+
+    // Show marker loading error (non-blocking)
+    if (markersError) {
+      console.warn('[FloorPlanCanvas] Failed to load markers:', markersError);
     }
 
     // Calculate aspect ratio to verify display dimensions
@@ -127,10 +225,12 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
         >
           <canvas
             ref={canvasRef}
+            onClick={handleCanvasClick}
             style={{
               width: `${width}px`,
               height: `${height}px`,
               display: 'block',
+              cursor: 'pointer',
             }}
           />
         </TransformComponent>

@@ -1,4 +1,4 @@
-import { Box, Drawer, List, ListItem, ListItemText, IconButton, Typography, Divider } from '@mui/material';
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemText, IconButton, Typography, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 
@@ -79,20 +79,23 @@ export function FloorPlanFilterSidebar({
           return (
             <ListItem
               key={option.value}
-              button
-              selected={selectedStatus === option.value}
-              onClick={() => onStatusChange(option.value)}
+              disablePadding
               sx={{
                 borderLeft: `4px solid ${option.color}`,
                 mb: 0.5,
                 borderRadius: 1,
               }}
             >
-              <ListItemText
-                primary={option.label}
-                secondary={`${count} marker${count !== 1 ? 's' : ''}`}
-              />
-              {selectedStatus === option.value && <CheckIcon color="primary" />}
+              <ListItemButton
+                selected={selectedStatus === option.value}
+                onClick={() => onStatusChange(option.value)}
+              >
+                <ListItemText
+                  primary={option.label}
+                  secondary={`${count} marker${count !== 1 ? 's' : ''}`}
+                />
+                {selectedStatus === option.value && <CheckIcon color="primary" />}
+              </ListItemButton>
             </ListItem>
           );
         })}

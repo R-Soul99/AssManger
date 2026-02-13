@@ -8,6 +8,8 @@ import { FloorPlan } from '@/domain/entities';
 import { FloorPlanService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
+import AssetDetailDrawer from '@/presentation/components/asset/AssetDetailDrawer';
+import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
 
 interface FloorPlanViewerProps {
   floorPlanId: string;
@@ -28,6 +30,10 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 800, height: 600 });
   const containerRef = useRef<HTMLDivElement>(null);
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<AssetWithRelations | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
 
   // Fetch floor plan data
   useEffect(() => {
@@ -165,6 +171,41 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Fetch asset with relations when asset ID selected
+  useEffect(() => {
+    if (!selectedAssetId) {
+      setSelectedAsset(null);
+      return;
+    }
+
+    const loadAssetData = async () => {
+      try {
+        const factory = RepositoryFactory.getInstance();
+        const assetRepo = factory.getAssetRepository();
+        const categoryRepo = factory.getCategoryRepository();
+        const locationRepo = factory.getLocationRepository();
+
+        // Fetch asset with relations
+        const assets = await assetRepo.findAllWithRelations();
+        const asset = assets.find((a) => a.asset.id === selectedAssetId);
+
+        if (asset) {
+          setSelectedAsset(asset);
+        }
+
+        // Fetch categories and locations for the drawer
+        const cats = await categoryRepo.findAll();
+        const locs = await locationRepo.findAll();
+        setCategories(cats);
+        setLocations(locs);
+      } catch (err) {
+        console.error('Failed to load asset data:', err);
+      }
+    };
+
+    loadAssetData();
+  }, [selectedAssetId]);
+
   // Show loading state
   if (loading) {
     return (
@@ -218,6 +259,7 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
         floorPlan={floorPlan}
         width={canvasDimensions.width}
         height={canvasDimensions.height}
+        onAssetSelected={(assetId) => setSelectedAssetId(assetId)}
       />
 
       {/* Zoom control toolbar */}
@@ -265,6 +307,22 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
           </IconButton>
         </Tooltip>
       </Box>
+
+      {/* Asset detail drawer */}
+      {selectedAsset && (
+        <AssetDetailDrawer
+          asset={selectedAsset}
+          onClose={() => {
+            setSelectedAssetId(null);
+            setSelectedAsset(null);
+          }}
+          onSave={() => {
+            // Refresh not needed for floor plan viewer
+          }}
+          categories={categories}
+          locations={locations}
+        />
+      )}
     </Box>
   );
 }

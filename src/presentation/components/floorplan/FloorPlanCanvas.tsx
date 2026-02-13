@@ -4,11 +4,14 @@ import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'reac
 import { FloorPlan, Marker, Category } from '@/domain/entities';
 import { useFloorPlanImage } from '@/presentation/hooks/useFloorPlanImage';
 import { useMarkers } from '@/presentation/hooks/useMarkers';
+import { MarkerPopup } from './MarkerPopup';
+import { MarkerWithDetails } from '@/application/services/MarkerService';
 
 interface FloorPlanCanvasProps {
   floorPlan: FloorPlan;
   width: number;
   height: number;
+  onAssetSelected?: (assetId: string) => void;
 }
 
 /**
@@ -81,11 +84,11 @@ function drawMarker(
  * @param ref - Forward ref to TransformWrapper for zoom control
  */
 export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasProps>(
-  ({ floorPlan, width, height }, ref) => {
+  ({ floorPlan, width, height, onAssetSelected }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { imageData, loading, error } = useFloorPlanImage(floorPlan.imageRelativePath);
     const { markers, loading: markersLoading, error: markersError } = useMarkers(floorPlan.id);
-    const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+    const [selectedMarker, setSelectedMarker] = useState<MarkerWithDetails | null>(null);
 
     // Draw floor plan image and markers on canvas
     useEffect(() => {
@@ -115,14 +118,14 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
       // Draw markers on top of floor plan
       if (!markersLoading && markers.length > 0) {
         markers.forEach(({ marker, category }) => {
-          drawMarker(ctx, marker, category, selectedMarkerId === marker.id, canvas.width, canvas.height);
+          drawMarker(ctx, marker, category, selectedMarker?.marker.id === marker.id, canvas.width, canvas.height);
         });
       }
 
       console.log(
         `[FloorPlanCanvas] Rendered floor plan: logical=${canvas.width}x${canvas.height}, display=${width}x${height}, markers=${markers.length}`
       );
-    }, [imageData, floorPlan.imageWidth, floorPlan.imageHeight, width, height, markers, markersLoading, selectedMarkerId]);
+    }, [imageData, floorPlan.imageWidth, floorPlan.imageHeight, width, height, markers, markersLoading, selectedMarker]);
 
     // Handle canvas click for marker selection
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -148,13 +151,32 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
         return dist <= 12; // marker radius
       });
 
-      setSelectedMarkerId(clicked ? clicked.marker.id : null);
+      setSelectedMarker(clicked || null);
 
       if (clicked) {
         console.log(
           `[FloorPlanCanvas] Marker selected: ${clicked.marker.id}, asset: ${clicked.asset.tag}`
         );
       }
+    };
+
+    // Calculate marker screen position for popup anchor
+    const getMarkerScreenPosition = (markerDetails: MarkerWithDetails) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return { x: 0, y: 0 };
+
+      const rect = canvas.getBoundingClientRect();
+      const x = markerDetails.marker.normalizedX * canvas.width;
+      const y = markerDetails.marker.normalizedY * canvas.height;
+
+      // Convert canvas logical coords to screen coords
+      const scaleX = rect.width / canvas.width;
+      const scaleY = rect.height / canvas.height;
+
+      return {
+        x: rect.left + x * scaleX,
+        y: rect.top + y * scaleY,
+      };
     };
 
     // Show loading state
@@ -200,41 +222,57 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
     }
 
     return (
-      <TransformWrapper
-        ref={ref}
-        initialScale={1}
-        minScale={0.5}
-        maxScale={5}
-        wheel={{ step: 0.1 }}
-        panning={{ disabled: false }}
-        doubleClick={{ disabled: true }}
-        velocityAnimation={{ disabled: true }}
-      >
-        <TransformComponent
-          wrapperStyle={{
-            width: '100%',
-            height: '100%',
-          }}
-          contentStyle={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
+      <>
+        <TransformWrapper
+          ref={ref}
+          initialScale={1}
+          minScale={0.5}
+          maxScale={5}
+          wheel={{ step: 0.1 }}
+          panning={{ disabled: false }}
+          doubleClick={{ disabled: true }}
+          velocityAnimation={{ disabled: true }}
         >
-          <canvas
-            ref={canvasRef}
-            onClick={handleCanvasClick}
-            style={{
-              width: `${width}px`,
-              height: `${height}px`,
-              display: 'block',
-              cursor: 'pointer',
+          <TransformComponent
+            wrapperStyle={{
+              width: '100%',
+              height: '100%',
+            }}
+            contentStyle={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <canvas
+              ref={canvasRef}
+              onClick={handleCanvasClick}
+              style={{
+                width: `${width}px`,
+                height: `${height}px`,
+                display: 'block',
+                cursor: 'pointer',
+              }}
+            />
+          </TransformComponent>
+        </TransformWrapper>
+
+        {/* Marker popup */}
+        {selectedMarker && (
+          <MarkerPopup
+            asset={selectedMarker.asset}
+            category={selectedMarker.category}
+            anchorPosition={getMarkerScreenPosition(selectedMarker)}
+            onClose={() => setSelectedMarker(null)}
+            onViewDetails={(assetId) => {
+              onAssetSelected?.(assetId);
+              setSelectedMarker(null);
             }}
           />
-        </TransformComponent>
-      </TransformWrapper>
+        )}
+      </>
     );
   }
 );

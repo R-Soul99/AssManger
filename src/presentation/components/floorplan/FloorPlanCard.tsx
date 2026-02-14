@@ -8,7 +8,10 @@ import {
   Chip,
   Skeleton,
   Checkbox,
+  Button,
+  CardActions,
 } from '@mui/material';
+import { Visibility as VisibilityIcon, Edit as EditIcon } from '@mui/icons-material';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FloorPlan } from '@/domain/entities';
@@ -19,6 +22,7 @@ interface FloorPlanCardProps {
   locationPath: string;
   markerCount: number;
   onClick: () => void;
+  onView?: (planId: string) => void;
   isDragging?: boolean;
   selected?: boolean;
   onSelectionToggle?: (planId: string) => void;
@@ -28,7 +32,7 @@ interface FloorPlanCardProps {
 export const FloorPlanCardContent = forwardRef<HTMLDivElement, FloorPlanCardProps & {
   style?: React.CSSProperties;
   dragHandleProps?: Record<string, unknown>;
-}>(({ plan, locationPath, markerCount, onClick, isDragging, selected, onSelectionToggle, style, dragHandleProps, ...props }, ref) => {
+}>(({ plan, locationPath, markerCount, onClick, onView, isDragging, selected, onSelectionToggle, style, dragHandleProps, ...props }, ref) => {
   const { imageUrl, loading } = useFloorPlanImage(plan.imageRelativePath);
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
@@ -42,6 +46,16 @@ export const FloorPlanCardContent = forwardRef<HTMLDivElement, FloorPlanCardProp
     } else {
       onClick();
     }
+  };
+
+  const handleViewClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onView?.(plan.id);
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick();
   };
 
   return (
@@ -108,6 +122,28 @@ export const FloorPlanCardContent = forwardRef<HTMLDivElement, FloorPlanCardProp
           )}
         </Box>
       </CardContent>
+      {!onSelectionToggle && onView && (
+        <CardActions sx={{ pt: 0, px: 2, pb: 2 }}>
+          <Button
+            size="small"
+            startIcon={<VisibilityIcon />}
+            onClick={handleViewClick}
+            variant="contained"
+            fullWidth
+          >
+            View
+          </Button>
+          <Button
+            size="small"
+            startIcon={<EditIcon />}
+            onClick={handleEditClick}
+            variant="outlined"
+            fullWidth
+          >
+            Edit
+          </Button>
+        </CardActions>
+      )}
     </Card>
   );
 });

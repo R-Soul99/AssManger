@@ -3,6 +3,7 @@ import { Box, CircularProgress, Alert, IconButton, Tooltip } from '@mui/material
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { FloorPlan, Category } from '@/domain/entities';
 import { FloorPlanService } from '@/application/services';
@@ -16,6 +17,7 @@ import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAs
 
 interface FloorPlanViewerProps {
   floorPlanId: string;
+  onBack?: () => void;
 }
 
 /**
@@ -33,7 +35,7 @@ interface FloorPlanViewerProps {
  *
  * @param floorPlanId - ID of the floor plan to display
  */
-export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
+export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
   const [floorPlan, setFloorPlan] = useState<FloorPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -338,6 +340,32 @@ export function FloorPlanViewer({ floorPlanId }: FloorPlanViewerProps) {
         onClose={() => setSidebarOpen(false)}
         markerCounts={markerCounts}
       />
+
+      {/* Back button */}
+      {onBack && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            zIndex: 10,
+          }}
+        >
+          <Tooltip title="Back to Floor Plans" placement="right">
+            <IconButton
+              onClick={onBack}
+              aria-label="Back"
+              sx={{
+                backgroundColor: 'white',
+                boxShadow: 2,
+                '&:hover': { backgroundColor: 'grey.100' },
+              }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
 
       {/* Zoom control toolbar */}
       <Box

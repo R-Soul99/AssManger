@@ -27,6 +27,7 @@ import { FloorPlanService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { FloorPlanImportDialog } from './FloorPlanImportDialog';
 import { FloorPlanDetailView } from './FloorPlanDetailView';
+import { FloorPlanViewer } from './FloorPlanViewer';
 import { SortableFloorPlanCard, FloorPlanCard } from './FloorPlanCard';
 import { FloorPlanBulkActions } from './FloorPlanBulkActions';
 
@@ -47,6 +48,7 @@ export function FloorPlanList() {
   const [error, setError] = useState<string | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [viewingPlanId, setViewingPlanId] = useState<string | null>(null);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPlanIds, setSelectedPlanIds] = useState<Set<string>>(new Set());
 
@@ -191,6 +193,16 @@ export function FloorPlanList() {
   // Get selected plans for bulk actions
   const selectedPlans = groups.flatMap((g) => g.plans).filter((p) => selectedPlanIds.has(p.id));
 
+  // Show viewer if a plan is being viewed
+  if (viewingPlanId) {
+    return (
+      <FloorPlanViewer
+        floorPlanId={viewingPlanId}
+        onBack={() => setViewingPlanId(null)}
+      />
+    );
+  }
+
   // Show detail view if a plan is selected
   if (selectedPlanId) {
     return (
@@ -278,6 +290,7 @@ export function FloorPlanList() {
                         locationPath={group.locationPath}
                         markerCount={markerCounts[plan.id] || 0}
                         onClick={() => setSelectedPlanId(plan.id)}
+                        onView={(planId) => setViewingPlanId(planId)}
                         selected={selectedPlanIds.has(plan.id)}
                         onSelectionToggle={selectionMode ? handleSelectionToggle : undefined}
                       />
@@ -295,6 +308,7 @@ export function FloorPlanList() {
                     locationPath=""
                     markerCount={markerCounts[plan.id] || 0}
                     onClick={() => setSelectedPlanId(plan.id)}
+                    onView={(planId) => setViewingPlanId(planId)}
                     selected={selectedPlanIds.has(plan.id)}
                     onSelectionToggle={selectionMode ? handleSelectionToggle : undefined}
                   />

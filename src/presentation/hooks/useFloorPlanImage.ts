@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { convertFileSrc } from '@tauri-apps/api/core';
+import { localFileStorage } from '@/infrastructure/storage/LocalFileStorage';
 
 interface UseFloorPlanImageResult {
   imageData: HTMLImageElement | null;
@@ -10,7 +11,7 @@ interface UseFloorPlanImageResult {
 /**
  * Hook for loading floor plan images from Tauri file system.
  *
- * Converts relative file paths to valid Tauri URLs and loads the image.
+ * Converts relative file paths to absolute paths, then to valid Tauri URLs and loads the image.
  * Handles loading states and errors.
  *
  * @param imageRelativePath - Relative path to floor plan image (from FloorPlan entity)
@@ -23,6 +24,8 @@ export function useFloorPlanImage(imageRelativePath: string | null | undefined):
   const imageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     // Reset state when path changes
     setImageData(null);
     setError(null);
@@ -36,41 +39,55 @@ export function useFloorPlanImage(imageRelativePath: string | null | undefined):
 
     setLoading(true);
 
-    // Create new image element
-    const img = new Image();
-    imageRef.current = img;
+    async function loadImage() {
+      try {
+        // Resolve absolute path first
+        const absolutePath = await localFileStorage.getAbsolutePath(imageRelativePath!);
 
-    // Handle successful load
-    const handleLoad = () => {
-      setImageData(img);
-      setLoading(false);
-      setError(null);
-    };
+        if (cancelled) return;
 
-    // Handle load error
-    const handleError = () => {
-      setImageData(null);
-      setLoading(false);
-      setError(`Failed to load image: ${imageRelativePath}`);
-    };
+        // Create new image element
+        const img = new Image();
+        imageRef.current = img;
 
-    // Attach event listeners
-    img.addEventListener('load', handleLoad);
-    img.addEventListener('error', handleError);
+        // Handle successful load
+        const handleLoad = () => {
+          if (!cancelled) {
+            setImageData(img);
+            setLoading(false);
+            setError(null);
+          }
+        };
 
-    // Convert Tauri file path to valid src URL
-    try {
-      const imageSrc = convertFileSrc(imageRelativePath);
-      img.src = imageSrc;
-    } catch (err) {
-      setLoading(false);
-      setError(`Invalid image path: ${imageRelativePath}`);
+        // Handle load error
+        const handleError = () => {
+          if (!cancelled) {
+            setImageData(null);
+            setLoading(false);
+            setError(`Failed to load image: ${imageRelativePath}`);
+          }
+        };
+
+        // Attach event listeners
+        img.addEventListener('load', handleLoad);
+        img.addEventListener('error', handleError);
+
+        // Convert absolute Tauri file path to valid src URL
+        const imageSrc = convertFileSrc(absolutePath);
+        img.src = imageSrc;
+      } catch (err) {
+        if (!cancelled) {
+          setLoading(false);
+          setError(`Invalid image path: ${imageRelativePath}`);
+        }
+      }
     }
+
+    loadImage();
 
     // Cleanup function
     return () => {
-      img.removeEventListener('load', handleLoad);
-      img.removeEventListener('error', handleError);
+      cancelled = true;
       imageRef.current = null;
     };
   }, [imageRelativePath]);

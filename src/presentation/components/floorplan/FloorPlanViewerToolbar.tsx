@@ -34,7 +34,8 @@ export function FloorPlanViewerToolbar({
       sx={{
         position: 'absolute',
         top: 16,
-        left: 16,
+        left: 80, // Move right to make room for back button
+        right: 80, // Don't overlap with zoom controls
         backgroundColor: 'white',
         padding: 2,
         borderRadius: 1,
@@ -42,7 +43,6 @@ export function FloorPlanViewerToolbar({
         display: 'flex',
         gap: 1,
         alignItems: 'center',
-        maxWidth: '60%',
         flexWrap: 'wrap',
         zIndex: 1000,
       }}

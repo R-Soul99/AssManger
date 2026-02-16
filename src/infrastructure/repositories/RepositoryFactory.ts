@@ -77,7 +77,14 @@ export class RepositoryFactory {
   }
 
   getMarkerRepository(): IMarkerRepository {
-    if (!this.db) throw new Error('MarkerRepository requires a database connection');
+    // Try to get database if not already set
+    if (!this.db) {
+      try {
+        this.db = getDatabase();
+      } catch {
+        throw new Error('MarkerRepository requires a database connection');
+      }
+    }
     if (!this.markerRepo) {
       this.markerRepo = new SqliteMarkerRepository(this.db);
     }
@@ -85,7 +92,14 @@ export class RepositoryFactory {
   }
 
   getCalibrationRepository(): ICalibrationRepository {
-    if (!this.db) throw new Error('CalibrationRepository requires a database connection');
+    // Try to get database if not already set
+    if (!this.db) {
+      try {
+        this.db = getDatabase();
+      } catch {
+        throw new Error('CalibrationRepository requires a database connection');
+      }
+    }
     if (!this.calibrationRepo) {
       this.calibrationRepo = new SqliteCalibrationRepository(this.db);
     }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { convertFileSrc } from '@tauri-apps/api/core';
+import { readFile } from '@tauri-apps/plugin-fs';
 import { localFileStorage } from '@/infrastructure/storage/LocalFileStorage';
 
 interface UseFloorPlanImageResult {
@@ -11,7 +11,7 @@ interface UseFloorPlanImageResult {
 /**
  * Hook for loading floor plan images from Tauri file system.
  *
- * Converts relative file paths to absolute paths, then to valid Tauri URLs and loads the image.
+ * Reads the file using Tauri's readFile API and creates an object URL.
  * Handles loading states and errors.
  *
  * @param imageRelativePath - Relative path to floor plan image (from FloorPlan entity)
@@ -22,6 +22,7 @@ export function useFloorPlanImage(imageRelativePath: string | null | undefined):
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +46,34 @@ export function useFloorPlanImage(imageRelativePath: string | null | undefined):
         const absolutePath = await localFileStorage.getAbsolutePath(imageRelativePath!);
 
         if (cancelled) return;
+
+        // Read file as bytes
+        const fileData = await readFile(absolutePath);
+
+        if (cancelled) return;
+
+        // Detect MIME type from file extension
+        const extension = imageRelativePath!.toLowerCase().split('.').pop();
+        let mimeType = 'image/png'; // default
+        if (extension === 'jpg' || extension === 'jpeg') {
+          mimeType = 'image/jpeg';
+        } else if (extension === 'png') {
+          mimeType = 'image/png';
+        } else if (extension === 'bmp') {
+          mimeType = 'image/bmp';
+        } else if (extension === 'tiff' || extension === 'tif') {
+          mimeType = 'image/tiff';
+        }
+
+        // Create blob and object URL
+        const blob = new Blob([new Uint8Array(fileData)], { type: mimeType });
+        const objectUrl = URL.createObjectURL(blob);
+        objectUrlRef.current = objectUrl;
+
+        if (cancelled) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
 
         // Create new image element
         const img = new Image();
@@ -72,13 +101,12 @@ export function useFloorPlanImage(imageRelativePath: string | null | undefined):
         img.addEventListener('load', handleLoad);
         img.addEventListener('error', handleError);
 
-        // Convert absolute Tauri file path to valid src URL
-        const imageSrc = convertFileSrc(absolutePath);
-        img.src = imageSrc;
+        // Set object URL as source
+        img.src = objectUrl;
       } catch (err) {
         if (!cancelled) {
           setLoading(false);
-          setError(`Invalid image path: ${imageRelativePath}`);
+          setError(err instanceof Error ? err.message : `Failed to load image: ${imageRelativePath}`);
         }
       }
     }
@@ -89,6 +117,10 @@ export function useFloorPlanImage(imageRelativePath: string | null | undefined):
     return () => {
       cancelled = true;
       imageRef.current = null;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
     };
   }, [imageRelativePath]);
 

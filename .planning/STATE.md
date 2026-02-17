@@ -12,23 +12,23 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Visual, spatially-aware asset tracking with calibrated measurements that makes equipment location and details instantly accessible.
 
-**Current focus:** Phase 5 - Floor Plan Viewer
+**Current focus:** Phase 6 - Marker Management
 
 ## Current Position
 
-Phase: 5 of 7 (Floor Plan Viewer) - PLANNING COMPLETE
-Plan: 00-00 of 5 plans (ready to execute)
-Status: Plans created, awaiting execution
-Last activity: 2026-02-12 - Completed Phase 5 planning (5 plans, 5 waves)
+Phase: 6 of 7 (Marker Management) - NOT STARTED
+Plan: 00-00 of TBD plans (awaiting planning)
+Status: Phase 5 complete, ready to plan Phase 6
+Last activity: 2026-02-17 - Phase 5 artifacts reconstructed and phase marked complete
 
-Progress: [█████░░░░░] 57%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: 10 min
-- Total execution time: 2.9 hours
+- Total plans completed: 21
+- Average duration: ~10 min
+- Total execution time: ~3.5 hours
 
 **By Phase:**
 
@@ -38,6 +38,7 @@ Progress: [█████░░░░░] 57%
 | 02 | 4 | 103min | 26min |
 | 03 | 3 | 14min | 5min |
 | 04 | 4 | 19min | 5min |
+| 05 | 5 | ~45min | ~9min |
 
 **Recent Trend:**
 - Last 5 plans: 4min, 5min, 5min, 5min, 5min
@@ -158,9 +159,14 @@ Recent decisions affecting current work:
 - ✓ Card list UI complete (04-03) — FloorPlanList, grouped by location, drag-to-reorder, detail/edit view, dnd-kit integration
 - ✓ Delete safety complete (04-04) — FloorPlanDeleteDialog, FloorPlanBulkActions, selection mode, marker warnings, stepped confirmations
 
-**Phase 5 Viewer Performance:**
-- Canvas performance degradation expected with 500+ markers - requires viewport culling implementation
-- Research suggests R-Tree spatial indexing may be needed for fast marker lookup
+**Phase 5 Floor Plan Viewer:**
+- ✓ Canvas infrastructure with HTML5 canvas + 1:1 pixel mapping complete (05-01)
+- ✓ Pan/zoom with react-zoom-pan-pinch, direct feel, 50%-500% range (05-02)
+- ✓ Marker rendering with category colors, initial-letter icons, click detection (05-03)
+- ✓ MarkerPopup with react-laag edge-aware positioning, asset summary, View Details nav (05-04)
+- ✓ Category toggle chips + status filter sidebar + 30% opacity dimming (05-05)
+- ✓ FloorPlanCard View/Edit buttons + FloorPlanViewer back navigation wired
+- Note: Viewport culling deferred per CONTEXT.md — load-all approach ships faster, optimize on real usage
 
 **Phase 7 Calibration Accuracy:**
 - Two-point calibration UX must prevent user errors (clicking non-straight features, wrong units)
@@ -168,10 +174,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-12 (phase 5 planning complete)
-Stopped at: Phase 5 planning complete (5 plans created, research documented)
+Last session: 2026-02-17 (phase 5 artifacts reconstructed)
+Stopped at: Phase 5 marked complete — PLAN.md and SUMMARY.md files reconstructed from git history, ROADMAP.md and STATE.md updated
 Resume file: None
-Next: Execute Phase 5 (Floor Plan Viewer) - start with plan 05-01 or execute entire phase
+Next: Plan Phase 6 (Marker Management) — /gsd:plan-phase 6
 
 ---
 *State initialized: 2026-01-28*

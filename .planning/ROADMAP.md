@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Location Hierarchy & Categories** - Build organizational structure and equipment classification
 - [x] **Phase 3: Asset Management & CSV Export** - Implement core asset CRUD and data export
 - [x] **Phase 4: Floor Plan Management** - Enable floor plan import and metadata management
-- [ ] **Phase 5: Floor Plan Viewer** - Build interactive viewer with pan/zoom and marker display
+- [x] **Phase 5: Floor Plan Viewer** - Build interactive viewer with pan/zoom and marker display
 - [ ] **Phase 6: Marker Management** - Add spatial editing capabilities for equipment placement
 - [ ] **Phase 7: Calibration & Measurement** - Enable real-world measurements with scale calibration
 
@@ -133,11 +133,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Canvas infrastructure and floor plan rendering
-- [ ] 05-02-PLAN.md — Pan/zoom controls integration
-- [ ] 05-03-PLAN.md — Marker rendering with category styling
-- [ ] 05-04-PLAN.md — Interactive marker popups and navigation
-- [ ] 05-05-PLAN.md — Filtering and visibility controls
+- [x] 05-01-PLAN.md — Canvas infrastructure and floor plan rendering
+- [x] 05-02-PLAN.md — Pan/zoom controls integration
+- [x] 05-03-PLAN.md — Marker rendering with category styling
+- [x] 05-04-PLAN.md — Interactive marker popups and navigation
+- [x] 05-05-PLAN.md — Filtering and visibility controls
 
 ### Phase 6: Marker Management
 **Goal**: Users can place equipment markers on floor plans, link them to assets, reposition markers, and manage marker lifecycle.
@@ -195,10 +195,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
 | 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
 | 4. Floor Plan Management | 4/4 | Complete | 2026-02-07 |
-| 5. Floor Plan Viewer | 0/5 | Planning complete | - |
+| 5. Floor Plan Viewer | 5/5 | Complete | 2026-02-13 |
 | 6. Marker Management | 0/TBD | Not started | - |
 | 7. Calibration & Measurement | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-12 (Phase 5 planning complete)*
+*Last updated: 2026-02-17 (Phase 5 complete — artifacts reconstructed)*

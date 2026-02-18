@@ -83,14 +83,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Marker Management
 
-- [ ] **MRK-01**: User can click on floor plan to place new marker
+- [x] **MRK-01**: User can click on floor plan to place new marker
 - [ ] **MRK-02**: User can link new marker to existing asset (via search/dropdown)
 - [ ] **MRK-03**: User can create new asset directly from marker placement workflow
-- [ ] **MRK-04**: User can drag marker to reposition it on floor plan
-- [ ] **MRK-05**: User can delete marker from floor plan
-- [ ] **MRK-06**: System stores marker coordinates as normalized values (0.0-1.0)
-- [ ] **MRK-07**: System transforms normalized coordinates to pixels during rendering
-- [ ] **MRK-08**: Marker icons/colors automatically match linked asset's category
+- [x] **MRK-04**: User can drag marker to reposition it on floor plan
+- [x] **MRK-05**: User can delete marker from floor plan
+- [x] **MRK-06**: System stores marker coordinates as normalized values (0.0-1.0)
+- [x] **MRK-07**: System transforms normalized coordinates to pixels during rendering
+- [x] **MRK-08**: Marker icons/colors automatically match linked asset's category
 - [ ] **MRK-09**: User can see marker count per floor plan
 
 ### Distance Measurement
@@ -231,14 +231,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VWR-06 | Phase 5 | Pending |
 | VWR-07 | Phase 5 | Pending |
 | VWR-08 | Phase 5 | Pending |
-| MRK-01 | Phase 6 | Pending |
+| MRK-01 | Phase 6 | Complete |
 | MRK-02 | Phase 6 | Pending |
 | MRK-03 | Phase 6 | Pending |
-| MRK-04 | Phase 6 | Pending |
-| MRK-05 | Phase 6 | Pending |
-| MRK-06 | Phase 6 | Pending |
-| MRK-07 | Phase 6 | Pending |
-| MRK-08 | Phase 6 | Pending |
+| MRK-04 | Phase 6 | Complete |
+| MRK-05 | Phase 6 | Complete |
+| MRK-06 | Phase 6 | Complete |
+| MRK-07 | Phase 6 | Complete |
+| MRK-08 | Phase 6 | Complete |
 | MRK-09 | Phase 6 | Pending |
 | CAL-01 | Phase 7 | Pending |
 | CAL-02 | Phase 7 | Pending |

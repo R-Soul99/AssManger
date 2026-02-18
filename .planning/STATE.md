@@ -16,19 +16,19 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 6 of 7 (Marker Management) - NOT STARTED
-Plan: 00-00 of TBD plans (awaiting planning)
-Status: Phase 5 complete, ready to plan Phase 6
-Last activity: 2026-02-17 - Phase 5 artifacts reconstructed and phase marked complete
+Phase: 6 of 7 (Marker Management) - IN PROGRESS
+Plan: 01 of TBD plans (06-01 complete)
+Status: Plan 06-01 complete — MarkerService mutations + useMarkers refresh trigger
+Last activity: 2026-02-18 - Plan 06-01 executed (MarkerService mutations, useMarkers markerVersion)
 
-Progress: [███████░░░] 71%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
+- Total plans completed: 22
 - Average duration: ~10 min
-- Total execution time: ~3.5 hours
+- Total execution time: ~3.6 hours
 
 **By Phase:**
 
@@ -39,6 +39,7 @@ Progress: [███████░░░] 71%
 | 03 | 3 | 14min | 5min |
 | 04 | 4 | 19min | 5min |
 | 05 | 5 | ~45min | ~9min |
+| 06 | 1 | 8min | 8min |
 
 **Recent Trend:**
 - Last 5 plans: 4min, 5min, 5min, 5min, 5min
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - Plan 04-04: Sequential delete loop for bulk operations (SQLite write safety, simpler error handling)
 - Plan 04-04: Stepped per-plan confirmation for plans with markers (user sees marker count before confirming deletion)
 - Plan 04-04: Selection mode toggle pattern (cleaner UI when not selecting, prevents accidental selections)
+- Plan 06-01: Clamp coordinates in service moveMarker too (Marker.create clamps for placeMarker but update bypasses entity factory)
+- Plan 06-01: markerVersion defaults to 0 in useMarkers (preserves single-argument caller compatibility)
+- Plan 06-01: markerVersion increment pattern for hook re-fetch (setMarkerVersion(v => v + 1) triggers useEffect re-run)
 
 ### Pending Todos
 
@@ -168,16 +172,20 @@ Recent decisions affecting current work:
 - ✓ FloorPlanCard View/Edit buttons + FloorPlanViewer back navigation wired
 - Note: Viewport culling deferred per CONTEXT.md — load-all approach ships faster, optimize on real usage
 
+**Phase 6 Marker Management:**
+- ✓ MarkerService mutations: placeMarker (coordinate clamping + entity validation), moveMarker, deleteMarker, relinkMarker (06-01)
+- ✓ useMarkers markerVersion refresh trigger — optional second param with default 0, backward compatible (06-01)
+
 **Phase 7 Calibration Accuracy:**
 - Two-point calibration UX must prevent user errors (clicking non-straight features, wrong units)
 - Need sanity validation to catch unrealistic scales (e.g., 1 pixel = 100 meters)
 
 ## Session Continuity
 
-Last session: 2026-02-17 (phase 5 artifacts reconstructed)
-Stopped at: Phase 5 marked complete — PLAN.md and SUMMARY.md files reconstructed from git history, ROADMAP.md and STATE.md updated
+Last session: 2026-02-18 (plan 06-01 executed)
+Stopped at: Completed 06-01-PLAN.md — MarkerService mutations + useMarkers markerVersion refresh trigger
 Resume file: None
-Next: Plan Phase 6 (Marker Management) — /gsd:plan-phase 6
+Next: Execute Plan 06-02 (place marker canvas interaction)
 
 ---
 *State initialized: 2026-01-28*

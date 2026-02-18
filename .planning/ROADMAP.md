@@ -159,7 +159,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — MarkerService mutations and useMarkers refresh trigger
+- [x] 06-01-PLAN.md — MarkerService mutations and useMarkers refresh trigger
 - [ ] 06-02-PLAN.md — Edit mode toggle button and filtered marker count in toolbar
 - [ ] 06-03-PLAN.md — Canvas edit interactions: click-to-place, drag-to-reposition, Space+drag pan
 - [ ] 06-04-PLAN.md — AssetLinkDialog and QuickCreateAssetForm
@@ -200,9 +200,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
 | 4. Floor Plan Management | 4/4 | Complete | 2026-02-07 |
 | 5. Floor Plan Viewer | 5/5 | Complete | 2026-02-13 |
-| 6. Marker Management | 0/5 | Planned | - |
+| 6. Marker Management | 1/5 | In Progress | - |
 | 7. Calibration & Measurement | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-18 (Phase 6 planned — 5 plans across 3 waves)*
+*Last updated: 2026-02-18 (Phase 6 plan 06-01 complete — MarkerService mutations + useMarkers refresh)*

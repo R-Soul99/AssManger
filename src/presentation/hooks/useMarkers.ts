@@ -14,9 +14,17 @@ interface UseMarkersResult {
  * asset and category information, enabling category-specific styling.
  *
  * @param floorPlanId - Floor plan ID to fetch markers for (null to skip loading)
+ * @param markerVersion - Increment this value to trigger a re-fetch (default 0)
  * @returns Object containing markers array, loading state, and error state
+ *
+ * Usage with refresh:
+ * ```typescript
+ * const [markerVersion, setMarkerVersion] = useState(0);
+ * const { markers } = useMarkers(floorPlanId, markerVersion);
+ * const refreshMarkers = () => setMarkerVersion(v => v + 1);
+ * ```
  */
-export function useMarkers(floorPlanId: string | null): UseMarkersResult {
+export function useMarkers(floorPlanId: string | null, markerVersion: number = 0): UseMarkersResult {
   const [markers, setMarkers] = useState<MarkerWithDetails[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +56,7 @@ export function useMarkers(floorPlanId: string | null): UseMarkersResult {
       .finally(() => {
         setLoading(false);
       });
-  }, [floorPlanId]);
+  }, [floorPlanId, markerVersion]);
 
   return { markers, loading, error };
 }

@@ -17,16 +17,16 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 6 of 7 (Marker Management) - IN PROGRESS
-Plan: 01 of TBD plans (06-01 complete)
-Status: Plan 06-01 complete — MarkerService mutations + useMarkers refresh trigger
-Last activity: 2026-02-18 - Plan 06-01 executed (MarkerService mutations, useMarkers markerVersion)
+Plan: 02 of 5 complete (06-01, 06-02 done)
+Status: Plan 06-02 complete — Edit Markers toggle button and filtered marker count in toolbar
+Last activity: 2026-02-18 - Plan 06-02 executed (isEditMode state, filteredMarkerCount memo, EditLocationAlt toggle)
 
-Progress: [████████░░] 75%
+Progress: [████████░░] 76%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
+- Total plans completed: 23
 - Average duration: ~10 min
 - Total execution time: ~3.6 hours
 
@@ -39,11 +39,11 @@ Progress: [████████░░] 75%
 | 03 | 3 | 14min | 5min |
 | 04 | 4 | 19min | 5min |
 | 05 | 5 | ~45min | ~9min |
-| 06 | 1 | 8min | 8min |
+| 06 | 2 | ~10min | ~5min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 5min, 5min, 5min, 5min
-- Trend: Consistent 5min execution - established patterns, clean architecture, type-safe utilities
+- Last 5 plans: 4min, 5min, 5min, 5min, 2min
+- Trend: Consistent fast execution - established patterns, clean architecture, type-safe utilities
 
 *Updated after each plan completion*
 
@@ -121,6 +121,10 @@ Recent decisions affecting current work:
 - Plan 06-01: Clamp coordinates in service moveMarker too (Marker.create clamps for placeMarker but update bypasses entity factory)
 - Plan 06-01: markerVersion defaults to 0 in useMarkers (preserves single-argument caller compatibility)
 - Plan 06-01: markerVersion increment pattern for hook re-fetch (setMarkerVersion(v => v + 1) triggers useEffect re-run)
+- Plan 06-02: isEditMode state lives in FloorPlanViewer (not toolbar) so it flows down to FloorPlanCanvas in Plan 03
+- Plan 06-02: Deferred isEditMode prop pass-through to FloorPlanCanvas until Plan 03 adds the prop type (avoids TypeScript error)
+- Plan 06-02: EditLocationAltIcon chosen as most semantically accurate icon for marker placement/editing
+- Plan 06-02: Active edit mode uses primary.light background + primary color to distinguish from default icon state
 
 ### Pending Todos
 
@@ -173,8 +177,11 @@ Recent decisions affecting current work:
 - Note: Viewport culling deferred per CONTEXT.md — load-all approach ships faster, optimize on real usage
 
 **Phase 6 Marker Management:**
-- ✓ MarkerService mutations: placeMarker (coordinate clamping + entity validation), moveMarker, deleteMarker, relinkMarker (06-01)
-- ✓ useMarkers markerVersion refresh trigger — optional second param with default 0, backward compatible (06-01)
+- ✓ MarkerService mutations (place/move/delete) + useMarkers refresh trigger with markerVersion (06-01)
+- ✓ Edit Markers toggle button with active highlight + filteredMarkerCount display in toolbar (06-02)
+- Pending: Canvas edit interactions (click-to-place, drag-to-reposition) — Plan 06-03
+- Pending: AssetLinkDialog and QuickCreateAssetForm — Plan 06-04
+- Pending: MarkerEditPopup and full integration — Plan 06-05
 
 **Phase 7 Calibration Accuracy:**
 - Two-point calibration UX must prevent user errors (clicking non-straight features, wrong units)
@@ -182,11 +189,11 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-18 (plan 06-01 executed)
-Stopped at: Completed 06-01-PLAN.md — MarkerService mutations + useMarkers markerVersion refresh trigger
+Last session: 2026-02-18 (plan 06-02 complete)
+Stopped at: Plan 06-02 complete — Edit Markers toggle + filteredMarkerCount in FloorPlanViewerToolbar
 Resume file: None
-Next: Execute Plan 06-02 (place marker canvas interaction)
+Next: Execute Plan 06-03 (Canvas edit interactions: click-to-place, drag-to-reposition, Space+drag pan)
 
 ---
 *State initialized: 2026-01-28*
-*Last updated: 2026-02-12 (Phase 5 planning)*
+*Last updated: 2026-02-18 (Plan 06-02 complete)*

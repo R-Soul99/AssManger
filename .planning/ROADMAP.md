@@ -160,7 +160,7 @@ Plans:
 
 Plans:
 - [x] 06-01-PLAN.md — MarkerService mutations and useMarkers refresh trigger
-- [ ] 06-02-PLAN.md — Edit mode toggle button and filtered marker count in toolbar
+- [x] 06-02-PLAN.md — Edit mode toggle button and filtered marker count in toolbar
 - [ ] 06-03-PLAN.md — Canvas edit interactions: click-to-place, drag-to-reposition, Space+drag pan
 - [ ] 06-04-PLAN.md — AssetLinkDialog and QuickCreateAssetForm
 - [ ] 06-05-PLAN.md — MarkerEditPopup and full FloorPlanViewer integration

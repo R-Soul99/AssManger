@@ -91,7 +91,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **MRK-06**: System stores marker coordinates as normalized values (0.0-1.0)
 - [x] **MRK-07**: System transforms normalized coordinates to pixels during rendering
 - [x] **MRK-08**: Marker icons/colors automatically match linked asset's category
-- [ ] **MRK-09**: User can see marker count per floor plan
+- [x] **MRK-09**: User can see marker count per floor plan
 
 ### Distance Measurement
 
@@ -239,7 +239,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MRK-06 | Phase 6 | Complete |
 | MRK-07 | Phase 6 | Complete |
 | MRK-08 | Phase 6 | Complete |
-| MRK-09 | Phase 6 | Pending |
+| MRK-09 | Phase 6 | Complete |
 | CAL-01 | Phase 7 | Pending |
 | CAL-02 | Phase 7 | Pending |
 | CAL-03 | Phase 7 | Pending |

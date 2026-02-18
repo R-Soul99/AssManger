@@ -1,6 +1,7 @@
-import { Box, Chip, IconButton, Button, Typography, Divider } from '@mui/material';
+import { Box, Chip, IconButton, Button, Typography, Divider, Tooltip } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CheckIcon from '@mui/icons-material/Check';
+import EditLocationAltIcon from '@mui/icons-material/EditLocationAlt';
 import { Category } from '@/domain/entities';
 
 interface FloorPlanViewerToolbarProps {
@@ -8,26 +9,37 @@ interface FloorPlanViewerToolbarProps {
   visibleCategories: Set<number>;
   onToggleCategory: (categoryId: number) => void;
   onToggleSidebar: () => void;
+  isEditMode: boolean;
+  onToggleEditMode: () => void;
+  filteredMarkerCount: number;
 }
 
 /**
  * Toolbar component for floor plan viewer with category visibility toggles.
  *
  * Features:
- * - Category toggle chips with colors
  * - Filter sidebar toggle button
+ * - Edit Markers mode toggle with highlighted active state
+ * - Category toggle chips with colors
  * - Select All / Deselect All buttons
+ * - Filtered marker count display
  *
  * @param categories - All categories present in markers
  * @param visibleCategories - Currently visible category IDs
  * @param onToggleCategory - Callback to toggle category visibility
  * @param onToggleSidebar - Callback to open/close filter sidebar
+ * @param isEditMode - Whether edit mode is currently active
+ * @param onToggleEditMode - Callback to toggle edit mode on/off
+ * @param filteredMarkerCount - Number of markers currently visible given active filters
  */
 export function FloorPlanViewerToolbar({
   categories,
   visibleCategories,
   onToggleCategory,
   onToggleSidebar,
+  isEditMode,
+  onToggleEditMode,
+  filteredMarkerCount,
 }: FloorPlanViewerToolbarProps) {
   return (
     <Box
@@ -56,6 +68,26 @@ export function FloorPlanViewerToolbar({
       >
         <FilterListIcon />
       </IconButton>
+
+      {/* Edit Markers toggle button */}
+      <Tooltip title={isEditMode ? 'Exit Edit Mode' : 'Edit Markers'}>
+        <IconButton
+          size="small"
+          onClick={onToggleEditMode}
+          aria-label={isEditMode ? 'Exit edit mode' : 'Edit markers'}
+          color={isEditMode ? 'primary' : 'default'}
+          sx={
+            isEditMode
+              ? {
+                  backgroundColor: 'primary.light',
+                  '&:hover': { backgroundColor: 'primary.main', color: 'white' },
+                }
+              : {}
+          }
+        >
+          <EditLocationAltIcon />
+        </IconButton>
+      </Tooltip>
 
       <Divider orientation="vertical" flexItem />
 
@@ -87,7 +119,7 @@ export function FloorPlanViewerToolbar({
       })}
 
       {/* Select All / Deselect All buttons */}
-      <Box sx={{ ml: 'auto', display: 'flex', gap: 0.5 }}>
+      <Box sx={{ ml: 'auto', display: 'flex', gap: 0.5, alignItems: 'center' }}>
         <Button
           size="small"
           variant="text"
@@ -110,6 +142,13 @@ export function FloorPlanViewerToolbar({
         >
           None
         </Button>
+
+        <Divider orientation="vertical" flexItem />
+
+        {/* Filtered marker count */}
+        <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+          {filteredMarkerCount} marker{filteredMarkerCount !== 1 ? 's' : ''}
+        </Typography>
       </Box>
     </Box>
   );

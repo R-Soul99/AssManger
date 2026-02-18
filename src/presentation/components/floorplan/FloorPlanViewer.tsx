@@ -53,6 +53,9 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
   const [selectedStatus, setSelectedStatus] = useState<string | 'all'>('all');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+
   // Fetch markers for marker counts
   const { markers } = useMarkers(floorPlanId);
 
@@ -111,6 +114,15 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
     });
     return counts;
   }, [markers]);
+
+  // Calculate filtered marker count (respects category visibility and status filter)
+  const filteredMarkerCount = useMemo(() => {
+    return markers.filter(({ asset, category }) => {
+      const categoryVisible = visibleCategories.has(category.id);
+      const statusMatches = selectedStatus === 'all' || asset.status === selectedStatus;
+      return categoryVisible && statusMatches;
+    }).length;
+  }, [markers, visibleCategories, selectedStatus]);
 
   // Toggle category visibility
   const handleToggleCategory = (categoryId: number) => {
@@ -330,6 +342,9 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
         visibleCategories={visibleCategories}
         onToggleCategory={handleToggleCategory}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        isEditMode={isEditMode}
+        onToggleEditMode={() => setIsEditMode((prev) => !prev)}
+        filteredMarkerCount={filteredMarkerCount}
       />
 
       {/* Filter sidebar */}

@@ -1,4 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Marker, Asset, Category } from '@/domain/entities';
+import { MarkerData } from '@/domain/validators';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { IMarkerRepository, IAssetRepository, ICategoryRepository } from '@/infrastructure/repositories/interfaces';
 
@@ -97,6 +99,86 @@ export class MarkerService {
       console.error('[MarkerService] Error fetching markers with details:', error);
       throw error;
     }
+  }
+
+  /**
+   * Place a new marker on a floor plan at the given normalized coordinates.
+   *
+   * Coordinates are clamped to the 0.0-1.0 range before saving.
+   *
+   * @param floorPlanId - Floor plan to place the marker on
+   * @param assetId - Asset the marker represents
+   * @param normalizedX - Horizontal position (0.0 = left, 1.0 = right)
+   * @param normalizedY - Vertical position (0.0 = top, 1.0 = bottom)
+   * @returns The newly created Marker entity
+   */
+  async placeMarker(
+    floorPlanId: string,
+    assetId: string,
+    normalizedX: number,
+    normalizedY: number
+  ): Promise<Marker> {
+    const now = new Date();
+    const markerData: MarkerData = {
+      id: uuidv4(),
+      floorPlanId,
+      assetId,
+      normalizedX: Math.max(0, Math.min(1, normalizedX)),
+      normalizedY: Math.max(0, Math.min(1, normalizedY)),
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const result = Marker.create(markerData);
+    if (!result.success) {
+      throw new Error(result.errors.join(', '));
+    }
+
+    await this.markerRepository.save(markerData);
+    return result.entity;
+  }
+
+  /**
+   * Move an existing marker to a new position on the floor plan.
+   *
+   * Coordinates are clamped to the 0.0-1.0 range before saving.
+   *
+   * @param markerId - ID of the marker to move
+   * @param normalizedX - New horizontal position (0.0-1.0)
+   * @param normalizedY - New vertical position (0.0-1.0)
+   */
+  async moveMarker(
+    markerId: string,
+    normalizedX: number,
+    normalizedY: number
+  ): Promise<void> {
+    await this.markerRepository.update(markerId, {
+      normalizedX: Math.max(0, Math.min(1, normalizedX)),
+      normalizedY: Math.max(0, Math.min(1, normalizedY)),
+      updatedAt: new Date(),
+    });
+  }
+
+  /**
+   * Delete a marker from the database.
+   *
+   * @param markerId - ID of the marker to delete
+   */
+  async deleteMarker(markerId: string): Promise<void> {
+    await this.markerRepository.delete(markerId);
+  }
+
+  /**
+   * Relink a marker to a different asset.
+   *
+   * @param markerId - ID of the marker to update
+   * @param newAssetId - ID of the asset to link the marker to
+   */
+  async relinkMarker(markerId: string, newAssetId: string): Promise<void> {
+    await this.markerRepository.update(markerId, {
+      assetId: newAssetId,
+      updatedAt: new Date(),
+    });
   }
 
   /**

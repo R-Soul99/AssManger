@@ -17,9 +17,9 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 6 of 7 (Marker Management) - IN PROGRESS
-Plan: 04 of 5 complete (06-01, 06-02, 06-03, 06-04 done)
-Status: Plan 06-04 complete — AssetLinkDialog (Autocomplete search) and QuickCreateAssetForm (react-hook-form+zod, optional description/location)
-Last activity: 2026-02-19 - Plan 06-04 executed (AssetLinkDialog, QuickCreateAssetForm, CreateAssetDto.locationId optional)
+Plan: 05 of 5 complete (06-01, 06-02, 06-03, 06-04, 06-05 done — awaiting human verification checkpoint)
+Status: Plan 06-05 auto tasks complete — MarkerEditPopup, full FloorPlanViewer integration, FloorPlanCard marker count badge refresh. Checkpoint: human verify all 9 end-to-end scenarios.
+Last activity: 2026-02-19 - Plan 06-05 executed (MarkerEditPopup, FloorPlanViewer integration, FloorPlanList count refresh)
 
 Progress: [█████████░] 80%
 
@@ -133,6 +133,9 @@ Recent decisions affecting current work:
 - Plan 06-04: QuickCreateAssetForm description fallback to tag value (entity requires min(1) — silent UX fill)
 - Plan 06-04: CreateAssetDto.locationId changed to optional (string | undefined) to support optional location in quick-create
 - Plan 06-04: Zod v4 uses z.number().min(1, msg) not z.number({ required_error }) which is Zod v3 API
+- Plan 06-05: MarkerEditPopup reuses react-laag useLayer pattern from MarkerPopup for consistent edge-aware positioning
+- Plan 06-05: AssetLinkDialog shared between placement and relink flows — dual-mode via state branching in onLink handler
+- Plan 06-05: loadFloorPlans() called in onBack handler (already useCallback in scope) to refresh marker count badges after viewer session
 
 ### Pending Todos
 
@@ -189,7 +192,7 @@ Recent decisions affecting current work:
 - ✓ Edit Markers toggle button with active highlight + filteredMarkerCount display in toolbar (06-02)
 - ✓ Canvas edit interactions: click-to-place placeholders, drag-to-reposition linked markers, Space+drag pan (06-03)
 - ✓ AssetLinkDialog (Autocomplete search, createFilterOptions, onLink/onDiscard/onClose) + QuickCreateAssetForm (react-hook-form+zod, optional description/location) (06-04)
-- Pending: MarkerEditPopup and full integration — Plan 06-05
+- ✓ MarkerEditPopup (delete with confirmation, Change Asset) + full FloorPlanViewer integration + FloorPlanCard count badge refresh on back navigation (06-05) — awaiting human verification
 
 **Phase 7 Calibration Accuracy:**
 - Two-point calibration UX must prevent user errors (clicking non-straight features, wrong units)
@@ -197,10 +200,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-19 (plan 06-04 complete)
-Stopped at: Plan 06-04 complete — AssetLinkDialog and QuickCreateAssetForm
+Last session: 2026-02-19 (plan 06-05 auto tasks complete)
+Stopped at: Plan 06-05 checkpoint — human verification of complete marker management end-to-end
 Resume file: None
-Next: Execute Plan 06-05 (MarkerEditPopup and full integration)
+Next: Human verifies 9 test scenarios, then Phase 6 is complete; Phase 7 Calibration Accuracy
 
 ---
 *State initialized: 2026-01-28*

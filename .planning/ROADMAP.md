@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Asset Management & CSV Export** - Implement core asset CRUD and data export
 - [x] **Phase 4: Floor Plan Management** - Enable floor plan import and metadata management
 - [x] **Phase 5: Floor Plan Viewer** - Build interactive viewer with pan/zoom and marker display
-- [ ] **Phase 6: Marker Management** - Add spatial editing capabilities for equipment placement
+- [x] **Phase 6: Marker Management** - Add spatial editing capabilities for equipment placement (completed 2026-02-19)
 - [ ] **Phase 7: Calibration & Measurement** - Enable real-world measurements with scale calibration
 
 ## Phase Details
@@ -200,7 +200,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
 | 4. Floor Plan Management | 4/4 | Complete | 2026-02-07 |
 | 5. Floor Plan Viewer | 5/5 | Complete | 2026-02-13 |
-| 6. Marker Management | 4/5 | In Progress|  |
+| 6. Marker Management | 5/5 | Complete   | 2026-02-19 |
 | 7. Calibration & Measurement | 0/TBD | Not started | - |
 
 ---

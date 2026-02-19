@@ -8,4 +8,5 @@ export { FloorPlanViewer } from './FloorPlanViewer';
 export { FloorPlanCanvas } from './FloorPlanCanvas';
 export { AssetLinkDialog } from './AssetLinkDialog';
 export { QuickCreateAssetForm } from './QuickCreateAssetForm';
+export { MarkerEditPopup } from './MarkerEditPopup';
 export type { PlaceholderMarker } from './FloorPlanCanvas';

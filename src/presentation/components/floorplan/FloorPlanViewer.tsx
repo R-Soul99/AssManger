@@ -11,9 +11,12 @@ import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFacto
 import { FloorPlanCanvas, PlaceholderMarker } from './FloorPlanCanvas';
 import { FloorPlanViewerToolbar } from './FloorPlanViewerToolbar';
 import { FloorPlanFilterSidebar } from './FloorPlanFilterSidebar';
+import { AssetLinkDialog } from './AssetLinkDialog';
+import { MarkerEditPopup } from './MarkerEditPopup';
 import { useMarkers } from '@/presentation/hooks/useMarkers';
 import AssetDetailDrawer from '@/presentation/components/asset/AssetDetailDrawer';
 import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
+import { markerService, MarkerWithDetails } from '@/application/services/MarkerService';
 
 interface FloorPlanViewerProps {
   floorPlanId: string;
@@ -32,6 +35,7 @@ interface FloorPlanViewerProps {
  * - Filtered markers dimmed to 30% opacity
  * - Pan/zoom controls
  * - Asset detail drawer
+ * - Edit mode: click-to-place, drag-to-reposition, delete, relink
  *
  * @param floorPlanId - ID of the floor plan to display
  */
@@ -58,8 +62,12 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
 
   // Placeholder marker state (persists in viewer to survive re-renders)
   const [placeholders, setPlaceholders] = useState<PlaceholderMarker[]>([]);
-  // _selectedPlaceholder read by Plan 04 AssetLinkDialog — declared here so state lives in viewer
-  const [_selectedPlaceholder, setSelectedPlaceholder] = useState<PlaceholderMarker | null>(null);
+  const [selectedPlaceholder, setSelectedPlaceholder] = useState<PlaceholderMarker | null>(null);
+
+  // Edit popup state for linked markers
+  const [editingMarker, setEditingMarker] = useState<MarkerWithDetails | null>(null);
+  const [relinkingMarker, setRelinkingMarker] = useState<MarkerWithDetails | null>(null);
+  const [editMarkerScreenPos, setEditMarkerScreenPos] = useState<{ x: number; y: number } | null>(null);
 
   // Marker version trigger for post-mutation re-fetch
   const [markerVersion, setMarkerVersion] = useState(0);
@@ -348,8 +356,18 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
         onPlaceholderPlaced={(p) => setPlaceholders(prev => [...prev, p])}
         onPlaceholderSelect={(p) => setSelectedPlaceholder(p)}
         onMarkerEditSelect={(m) => {
-          // Plan 05 will handle this — for now, log it
-          console.log('[FloorPlanViewer] Marker selected for edit:', m.marker.id);
+          setEditingMarker(m);
+          // Calculate approximate screen position for the popup anchor
+          const canvasEl = document.querySelector('canvas');
+          if (canvasEl) {
+            const rect = canvasEl.getBoundingClientRect();
+            const x = rect.left + m.marker.normalizedX * rect.width;
+            const y = rect.top + m.marker.normalizedY * rect.height;
+            setEditMarkerScreenPos({ x, y });
+          } else {
+            // Fallback: center of viewport
+            setEditMarkerScreenPos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+          }
         }}
         onMarkerMoved={() => {
           refreshMarkers();
@@ -447,6 +465,65 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
           </IconButton>
         </Tooltip>
       </Box>
+
+      {/* AssetLinkDialog — opens for new placement OR relink */}
+      <AssetLinkDialog
+        open={selectedPlaceholder !== null || relinkingMarker !== null}
+        floorPlanId={floorPlanId}
+        placeholder={selectedPlaceholder}
+        onLink={async (assetId) => {
+          if (relinkingMarker) {
+            // Relink mode: swap the asset on the existing marker
+            await markerService.relinkMarker(relinkingMarker.marker.id, assetId);
+            setRelinkingMarker(null);
+          } else if (selectedPlaceholder) {
+            // Placement mode: persist a new marker
+            await markerService.placeMarker(
+              floorPlanId,
+              assetId,
+              selectedPlaceholder.normalizedX,
+              selectedPlaceholder.normalizedY
+            );
+            setPlaceholders(prev => prev.filter(p => p.id !== selectedPlaceholder.id));
+            setSelectedPlaceholder(null);
+          }
+          refreshMarkers();
+        }}
+        onDiscard={() => {
+          if (selectedPlaceholder) {
+            setPlaceholders(prev => prev.filter(p => p.id !== selectedPlaceholder.id));
+            setSelectedPlaceholder(null);
+          }
+          setRelinkingMarker(null);
+        }}
+        onClose={() => {
+          setSelectedPlaceholder(null);
+          setRelinkingMarker(null);
+        }}
+      />
+
+      {/* MarkerEditPopup — opens when user clicks a linked marker in edit mode */}
+      {editingMarker && editMarkerScreenPos && (
+        <MarkerEditPopup
+          markerDetails={editingMarker}
+          anchorPosition={editMarkerScreenPos}
+          onClose={() => {
+            setEditingMarker(null);
+            setEditMarkerScreenPos(null);
+          }}
+          onDelete={async () => {
+            await markerService.deleteMarker(editingMarker.marker.id);
+            setEditingMarker(null);
+            setEditMarkerScreenPos(null);
+            refreshMarkers();
+          }}
+          onRelink={() => {
+            setRelinkingMarker(editingMarker);
+            setEditingMarker(null);
+            setEditMarkerScreenPos(null);
+          }}
+        />
+      )}
 
       {/* Asset detail drawer */}
       {selectedAsset && (

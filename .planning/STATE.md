@@ -17,16 +17,16 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 6 of 7 (Marker Management) - IN PROGRESS
-Plan: 02 of 5 complete (06-01, 06-02 done)
-Status: Plan 06-02 complete — Edit Markers toggle button and filtered marker count in toolbar
-Last activity: 2026-02-18 - Plan 06-02 executed (isEditMode state, filteredMarkerCount memo, EditLocationAlt toggle)
+Plan: 03 of 5 complete (06-01, 06-02, 06-03 done)
+Status: Plan 06-03 complete — Canvas edit mode: click-to-place placeholders, drag-to-reposition, Space+drag pan
+Last activity: 2026-02-19 - Plan 06-03 executed (PlaceholderMarker, drawPlaceholderMarker, dragStateRef, markerVersion)
 
-Progress: [████████░░] 76%
+Progress: [█████████░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
+- Total plans completed: 24
 - Average duration: ~10 min
 - Total execution time: ~3.6 hours
 
@@ -39,7 +39,7 @@ Progress: [████████░░] 76%
 | 03 | 3 | 14min | 5min |
 | 04 | 4 | 19min | 5min |
 | 05 | 5 | ~45min | ~9min |
-| 06 | 2 | ~10min | ~5min |
+| 06 | 3 | ~17min | ~6min |
 
 **Recent Trend:**
 - Last 5 plans: 4min, 5min, 5min, 5min, 2min
@@ -125,6 +125,10 @@ Recent decisions affecting current work:
 - Plan 06-02: Deferred isEditMode prop pass-through to FloorPlanCanvas until Plan 03 adds the prop type (avoids TypeScript error)
 - Plan 06-02: EditLocationAltIcon chosen as most semantically accurate icon for marker placement/editing
 - Plan 06-02: Active edit mode uses primary.light background + primary color to distinguish from default icon state
+- Plan 06-03: dragStateRef + 6px DRAG_ACTIVATION_DISTANCE distinguishes click from drag without useState re-renders
+- Plan 06-03: _selectedPlaceholder prefix satisfies noUnusedLocals while keeping state in FloorPlanViewer for Plan 04
+- Plan 06-03: MarkerPopup rendered only in view mode (!isEditMode) — edit mode uses onMarkerEditSelect callback
+- Plan 06-03: DragState interface defined inside component (not exported) — internal implementation detail
 
 ### Pending Todos
 
@@ -179,7 +183,7 @@ Recent decisions affecting current work:
 **Phase 6 Marker Management:**
 - ✓ MarkerService mutations (place/move/delete) + useMarkers refresh trigger with markerVersion (06-01)
 - ✓ Edit Markers toggle button with active highlight + filteredMarkerCount display in toolbar (06-02)
-- Pending: Canvas edit interactions (click-to-place, drag-to-reposition) — Plan 06-03
+- ✓ Canvas edit interactions: click-to-place placeholders, drag-to-reposition linked markers, Space+drag pan (06-03)
 - Pending: AssetLinkDialog and QuickCreateAssetForm — Plan 06-04
 - Pending: MarkerEditPopup and full integration — Plan 06-05
 
@@ -189,10 +193,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-18 (plan 06-02 complete)
-Stopped at: Plan 06-02 complete — Edit Markers toggle + filteredMarkerCount in FloorPlanViewerToolbar
+Last session: 2026-02-19 (plan 06-03 complete)
+Stopped at: Plan 06-03 complete — Canvas edit interactions: PlaceholderMarker, drag-to-reposition, Space+drag pan
 Resume file: None
-Next: Execute Plan 06-03 (Canvas edit interactions: click-to-place, drag-to-reposition, Space+drag pan)
+Next: Execute Plan 06-04 (AssetLinkDialog and QuickCreateAssetForm)
 
 ---
 *State initialized: 2026-01-28*

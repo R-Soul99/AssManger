@@ -161,7 +161,7 @@ Plans:
 Plans:
 - [x] 06-01-PLAN.md — MarkerService mutations and useMarkers refresh trigger
 - [x] 06-02-PLAN.md — Edit mode toggle button and filtered marker count in toolbar
-- [ ] 06-03-PLAN.md — Canvas edit interactions: click-to-place, drag-to-reposition, Space+drag pan
+- [x] 06-03-PLAN.md — Canvas edit interactions: click-to-place, drag-to-reposition, Space+drag pan
 - [ ] 06-04-PLAN.md — AssetLinkDialog and QuickCreateAssetForm
 - [ ] 06-05-PLAN.md — MarkerEditPopup and full FloorPlanViewer integration
 
@@ -205,4 +205,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-02-18 (Phase 6 plan 06-01 complete — MarkerService mutations + useMarkers refresh)*
+*Last updated: 2026-02-19 (Phase 6 plan 06-03 complete — Canvas edit mode: click-to-place, drag-to-reposition, Space+drag pan)*

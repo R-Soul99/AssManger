@@ -17,16 +17,16 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 6 of 7 (Marker Management) - IN PROGRESS
-Plan: 03 of 5 complete (06-01, 06-02, 06-03 done)
-Status: Plan 06-03 complete — Canvas edit mode: click-to-place placeholders, drag-to-reposition, Space+drag pan
-Last activity: 2026-02-19 - Plan 06-03 executed (PlaceholderMarker, drawPlaceholderMarker, dragStateRef, markerVersion)
+Plan: 04 of 5 complete (06-01, 06-02, 06-03, 06-04 done)
+Status: Plan 06-04 complete — AssetLinkDialog (Autocomplete search) and QuickCreateAssetForm (react-hook-form+zod, optional description/location)
+Last activity: 2026-02-19 - Plan 06-04 executed (AssetLinkDialog, QuickCreateAssetForm, CreateAssetDto.locationId optional)
 
 Progress: [█████████░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
+- Total plans completed: 25
 - Average duration: ~10 min
 - Total execution time: ~3.6 hours
 
@@ -39,10 +39,10 @@ Progress: [█████████░] 80%
 | 03 | 3 | 14min | 5min |
 | 04 | 4 | 19min | 5min |
 | 05 | 5 | ~45min | ~9min |
-| 06 | 3 | ~17min | ~6min |
+| 06 | 4 | ~29min | ~7min |
 
 **Recent Trend:**
-- Last 5 plans: 4min, 5min, 5min, 5min, 2min
+- Last 5 plans: 5min, 5min, 5min, 2min, 12min
 - Trend: Consistent fast execution - established patterns, clean architecture, type-safe utilities
 
 *Updated after each plan completion*
@@ -129,6 +129,10 @@ Recent decisions affecting current work:
 - Plan 06-03: _selectedPlaceholder prefix satisfies noUnusedLocals while keeping state in FloorPlanViewer for Plan 04
 - Plan 06-03: MarkerPopup rendered only in view mode (!isEditMode) — edit mode uses onMarkerEditSelect callback
 - Plan 06-03: DragState interface defined inside component (not exported) — internal implementation detail
+- Plan 06-04: AssetLinkDialog fetches all assets on open (not mount) to ensure fresh data each open
+- Plan 06-04: QuickCreateAssetForm description fallback to tag value (entity requires min(1) — silent UX fill)
+- Plan 06-04: CreateAssetDto.locationId changed to optional (string | undefined) to support optional location in quick-create
+- Plan 06-04: Zod v4 uses z.number().min(1, msg) not z.number({ required_error }) which is Zod v3 API
 
 ### Pending Todos
 
@@ -184,7 +188,7 @@ Recent decisions affecting current work:
 - ✓ MarkerService mutations (place/move/delete) + useMarkers refresh trigger with markerVersion (06-01)
 - ✓ Edit Markers toggle button with active highlight + filteredMarkerCount display in toolbar (06-02)
 - ✓ Canvas edit interactions: click-to-place placeholders, drag-to-reposition linked markers, Space+drag pan (06-03)
-- Pending: AssetLinkDialog and QuickCreateAssetForm — Plan 06-04
+- ✓ AssetLinkDialog (Autocomplete search, createFilterOptions, onLink/onDiscard/onClose) + QuickCreateAssetForm (react-hook-form+zod, optional description/location) (06-04)
 - Pending: MarkerEditPopup and full integration — Plan 06-05
 
 **Phase 7 Calibration Accuracy:**
@@ -193,10 +197,10 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-19 (plan 06-03 complete)
-Stopped at: Plan 06-03 complete — Canvas edit interactions: PlaceholderMarker, drag-to-reposition, Space+drag pan
+Last session: 2026-02-19 (plan 06-04 complete)
+Stopped at: Plan 06-04 complete — AssetLinkDialog and QuickCreateAssetForm
 Resume file: None
-Next: Execute Plan 06-04 (AssetLinkDialog and QuickCreateAssetForm)
+Next: Execute Plan 06-05 (MarkerEditPopup and full integration)
 
 ---
 *State initialized: 2026-01-28*

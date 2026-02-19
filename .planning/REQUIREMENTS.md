@@ -84,8 +84,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Marker Management
 
 - [x] **MRK-01**: User can click on floor plan to place new marker
-- [ ] **MRK-02**: User can link new marker to existing asset (via search/dropdown)
-- [ ] **MRK-03**: User can create new asset directly from marker placement workflow
+- [x] **MRK-02**: User can link new marker to existing asset (via search/dropdown)
+- [x] **MRK-03**: User can create new asset directly from marker placement workflow
 - [x] **MRK-04**: User can drag marker to reposition it on floor plan
 - [x] **MRK-05**: User can delete marker from floor plan
 - [x] **MRK-06**: System stores marker coordinates as normalized values (0.0-1.0)
@@ -232,8 +232,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VWR-07 | Phase 5 | Pending |
 | VWR-08 | Phase 5 | Pending |
 | MRK-01 | Phase 6 | Complete |
-| MRK-02 | Phase 6 | Pending |
-| MRK-03 | Phase 6 | Pending |
+| MRK-02 | Phase 6 | Complete |
+| MRK-03 | Phase 6 | Complete |
 | MRK-04 | Phase 6 | Complete |
 | MRK-05 | Phase 6 | Complete |
 | MRK-06 | Phase 6 | Complete |

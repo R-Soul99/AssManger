@@ -200,7 +200,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
 | 4. Floor Plan Management | 4/4 | Complete | 2026-02-07 |
 | 5. Floor Plan Viewer | 5/5 | Complete | 2026-02-13 |
-| 6. Marker Management | 1/5 | In Progress | - |
+| 6. Marker Management | 4/5 | In Progress|  |
 | 7. Calibration & Measurement | 0/TBD | Not started | - |
 
 ---

@@ -92,6 +92,7 @@ Each task was committed atomically:
 
 1. **Task 1: MarkerEditPopup + FloorPlanViewer full integration** - `46e249e` (feat)
 2. **Task 2: FloorPlanList marker count refresh on back** - `84c3949` (feat)
+3. **Task 3 (bug-fix continuation): markers not rendering after placement + pan on touchpad** - `8d55e87` (fix)
 
 ## Files Created/Modified
 
@@ -118,6 +119,20 @@ Each task was committed atomically:
 - **Files modified:** src/presentation/components/floorplan/FloorPlanViewer.tsx
 - **Verification:** npx tsc --noEmit — zero new errors
 
+**2. [Rule 1 - Bug] FloorPlanCanvas had independent useMarkers() with no refresh trigger**
+- **Found during:** Task 3 human verification (user tested and markers did not appear after placement)
+- **Issue:** `FloorPlanCanvas` called `useMarkers(floorPlan.id)` internally without accepting `markerVersion` as a prop. `FloorPlanViewer` tracked `markerVersion` and called `refreshMarkers()` after every mutation, but this state was only used for the marker count badge in the toolbar. The canvas itself had a completely separate `useMarkers` call that was never told to re-fetch, so newly placed markers were saved to the database but the canvas never re-drew with the updated data.
+- **Fix:** Added `markerVersion?: number` prop to `FloorPlanCanvasProps`, destructured it in the component with default `0`, passed it to `useMarkers(floorPlan.id, markerVersion)`, and passed `markerVersion={markerVersion}` from `FloorPlanViewer` to `FloorPlanCanvas` in JSX.
+- **Files modified:** src/presentation/components/floorplan/FloorPlanCanvas.tsx, src/presentation/components/floorplan/FloorPlanViewer.tsx
+- **Commit:** 8d55e87
+
+**3. [Rule 1 - Bug] Space+drag panning broken on touchpads — markers could not be placed without accidental pan**
+- **Found during:** Task 3 human verification (user reported space key had no effect; touchpad scroll only zoomed)
+- **Issue:** `activationKeys: [' ']` in the `TransformWrapper` panning config made panning only work when the Space key was held AND the user dragged with a mouse. Touchpad users generate scroll events (not drag events) for panning, so `react-zoom-pan-pinch` never received the pan gesture. The result: in edit mode, dragging the touchpad zoomed the view (via scroll) but could not pan at all.
+- **Fix:** Removed the `activationKeys` restriction so `panning: { disabled: false }` applies universally. To prevent accidental marker placement after a pan gesture, added `isPanningRef` (a `useRef<boolean>`) tracking TransformWrapper's `onPanningStart`/`onPanningStop` callbacks. `handleCanvasClick` returns early if `isPanningRef.current` is true. A 50ms `setTimeout` in `onPanningStop` debounces the flag so the click event that fires after mouseup is suppressed correctly.
+- **Files modified:** src/presentation/components/floorplan/FloorPlanCanvas.tsx
+- **Commit:** 8d55e87
+
 ## Issues Encountered
 
 - Pre-existing TypeScript errors in App.debug.tsx (3 errors), CsvExportService.ts (1 error), and SqliteAssetRepository.ts (5 errors) remain unchanged from before this plan. Zero new errors introduced.
@@ -128,7 +143,7 @@ None - no external service configuration required.
 
 ## Checkpoint Pending
 
-Task 3 is a human verification checkpoint. The user needs to run `npm run tauri dev` and verify all 9 test scenarios covering the complete marker management end-to-end flow.
+Task 3 is a human verification checkpoint. Two bugs were found during initial testing and fixed in commit `8d55e87`. The user needs to re-verify the corrected implementation.
 
 ## Self-Check: PASSED
 

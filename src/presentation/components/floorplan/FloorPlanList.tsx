@@ -198,7 +198,10 @@ export function FloorPlanList() {
     return (
       <FloorPlanViewer
         floorPlanId={viewingPlanId}
-        onBack={() => setViewingPlanId(null)}
+        onBack={() => {
+          setViewingPlanId(null);
+          loadFloorPlans(); // refresh marker counts after any placements/deletions in viewer
+        }}
       />
     );
   }

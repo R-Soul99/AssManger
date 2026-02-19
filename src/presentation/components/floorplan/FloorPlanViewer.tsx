@@ -8,7 +8,7 @@ import { ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { FloorPlan, Category } from '@/domain/entities';
 import { FloorPlanService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
-import { FloorPlanCanvas } from './FloorPlanCanvas';
+import { FloorPlanCanvas, PlaceholderMarker } from './FloorPlanCanvas';
 import { FloorPlanViewerToolbar } from './FloorPlanViewerToolbar';
 import { FloorPlanFilterSidebar } from './FloorPlanFilterSidebar';
 import { useMarkers } from '@/presentation/hooks/useMarkers';
@@ -56,8 +56,17 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
 
+  // Placeholder marker state (persists in viewer to survive re-renders)
+  const [placeholders, setPlaceholders] = useState<PlaceholderMarker[]>([]);
+  // _selectedPlaceholder read by Plan 04 AssetLinkDialog — declared here so state lives in viewer
+  const [_selectedPlaceholder, setSelectedPlaceholder] = useState<PlaceholderMarker | null>(null);
+
+  // Marker version trigger for post-mutation re-fetch
+  const [markerVersion, setMarkerVersion] = useState(0);
+  const refreshMarkers = () => setMarkerVersion(v => v + 1);
+
   // Fetch markers for marker counts
-  const { markers } = useMarkers(floorPlanId);
+  const { markers } = useMarkers(floorPlanId, markerVersion);
 
   // Fetch floor plan data
   useEffect(() => {
@@ -334,6 +343,17 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
         onAssetSelected={(assetId) => setSelectedAssetId(assetId)}
         visibleCategories={visibleCategories}
         selectedStatus={selectedStatus}
+        isEditMode={isEditMode}
+        placeholders={placeholders}
+        onPlaceholderPlaced={(p) => setPlaceholders(prev => [...prev, p])}
+        onPlaceholderSelect={(p) => setSelectedPlaceholder(p)}
+        onMarkerEditSelect={(m) => {
+          // Plan 05 will handle this — for now, log it
+          console.log('[FloorPlanViewer] Marker selected for edit:', m.marker.id);
+        }}
+        onMarkerMoved={() => {
+          refreshMarkers();
+        }}
       />
 
       {/* Filter toolbar */}

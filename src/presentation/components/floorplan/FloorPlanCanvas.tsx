@@ -29,6 +29,7 @@ interface FloorPlanCanvasProps {
   onPlaceholderSelect?: (p: PlaceholderMarker) => void;  // user clicked a placeholder -> show link dialog
   onMarkerEditSelect?: (m: MarkerWithDetails) => void;   // user clicked linked marker in edit mode -> show edit popup
   onMarkerMoved?: () => void;                    // called after moveMarker() so parent can refresh
+  markerVersion?: number;                        // increment to trigger marker re-fetch after mutations
 }
 
 /**
@@ -165,12 +166,13 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
       onPlaceholderSelect,
       onMarkerEditSelect,
       onMarkerMoved,
+      markerVersion = 0,
     },
     ref
   ) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { imageData, loading, error } = useFloorPlanImage(floorPlan.imageRelativePath);
-    const { markers, loading: markersLoading, error: markersError } = useMarkers(floorPlan.id);
+    const { markers, loading: markersLoading, error: markersError } = useMarkers(floorPlan.id, markerVersion);
     const [selectedMarker, setSelectedMarker] = useState<MarkerWithDetails | null>(null);
     const [selectedPlaceholder, setSelectedPlaceholder] = useState<PlaceholderMarker | null>(null);
 
@@ -186,6 +188,8 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
 
     const dragStateRef = useRef<DragState | null>(null);
     const DRAG_ACTIVATION_DISTANCE = 6;
+    // Track whether TransformWrapper is actively panning (to suppress canvas click-to-place)
+    const isPanningRef = useRef(false);
 
     // Draw floor plan image and markers on canvas
     useEffect(() => {
@@ -348,6 +352,8 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
     const handleCanvasClick = async (e: React.MouseEvent<HTMLCanvasElement>) => {
       // Skip if drag was activated (mouseup already handled)
       if (dragStateRef.current?.activated) return;
+      // Skip if TransformWrapper was panning (avoids placing a marker after a pan gesture)
+      if (isPanningRef.current) return;
 
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -468,12 +474,14 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
           minScale={0.5}
           maxScale={5}
           wheel={{ step: 0.1 }}
-          panning={isEditMode
-            ? { activationKeys: [' '] }
-            : { disabled: false }
-          }
+          panning={{ disabled: false }}
           doubleClick={{ disabled: true }}
           velocityAnimation={{ disabled: true }}
+          onPanningStart={() => { isPanningRef.current = true; }}
+          onPanningStop={() => {
+            // Delay clearing the flag so the click event that fires after pan-stop is suppressed
+            setTimeout(() => { isPanningRef.current = false; }, 50);
+          }}
         >
           <TransformComponent
             wrapperStyle={{

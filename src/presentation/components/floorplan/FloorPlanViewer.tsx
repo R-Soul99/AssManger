@@ -353,6 +353,7 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
         selectedStatus={selectedStatus}
         isEditMode={isEditMode}
         placeholders={placeholders}
+        markerVersion={markerVersion}
         onPlaceholderPlaced={(p) => setPlaceholders(prev => [...prev, p])}
         onPlaceholderSelect={(p) => setSelectedPlaceholder(p)}
         onMarkerEditSelect={(m) => {

@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { useRef, useEffect, forwardRef, useState } from 'react';
 import { Box, CircularProgress, Alert } from '@mui/material';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
@@ -6,6 +7,14 @@ import { useFloorPlanImage } from '@/presentation/hooks/useFloorPlanImage';
 import { useMarkers } from '@/presentation/hooks/useMarkers';
 import { MarkerPopup } from './MarkerPopup';
 import { MarkerWithDetails } from '@/application/services/MarkerService';
+import { markerService } from '@/application/services/MarkerService';
+
+export interface PlaceholderMarker {
+  id: string;           // temporary uuidv4()
+  normalizedX: number;
+  normalizedY: number;
+  isPlaceholder: true;
+}
 
 interface FloorPlanCanvasProps {
   floorPlan: FloorPlan;
@@ -14,6 +23,12 @@ interface FloorPlanCanvasProps {
   onAssetSelected?: (assetId: string) => void;
   visibleCategories: Set<number>;
   selectedStatus: string | 'all';
+  isEditMode?: boolean;                          // false = view mode (default)
+  placeholders?: PlaceholderMarker[];            // unlinked placeholder markers from parent
+  onPlaceholderPlaced?: (p: PlaceholderMarker) => void;  // parent stores the new placeholder
+  onPlaceholderSelect?: (p: PlaceholderMarker) => void;  // user clicked a placeholder -> show link dialog
+  onMarkerEditSelect?: (m: MarkerWithDetails) => void;   // user clicked linked marker in edit mode -> show edit popup
+  onMarkerMoved?: () => void;                    // called after moveMarker() so parent can refresh
 }
 
 /**
@@ -80,6 +95,34 @@ function drawMarker(
   ctx.globalAlpha = 1.0;
 }
 
+function drawPlaceholderMarker(
+  ctx: CanvasRenderingContext2D,
+  placeholder: PlaceholderMarker,
+  canvasWidth: number,
+  canvasHeight: number,
+  isSelected: boolean
+) {
+  const x = placeholder.normalizedX * canvasWidth;
+  const y = placeholder.normalizedY * canvasHeight;
+  const radius = 12;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = isSelected ? '#1976d2' : '#666666';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = isSelected ? '#1976d2' : '#666666';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('+', x, y);
+  ctx.restore();
+}
+
 /**
  * Canvas component for rendering floor plan images with pan/zoom controls and markers.
  *
@@ -108,11 +151,41 @@ function drawMarker(
  * @param ref - Forward ref to TransformWrapper for zoom control
  */
 export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasProps>(
-  ({ floorPlan, width, height, onAssetSelected, visibleCategories, selectedStatus }, ref) => {
+  (
+    {
+      floorPlan,
+      width,
+      height,
+      onAssetSelected,
+      visibleCategories,
+      selectedStatus,
+      isEditMode = false,
+      placeholders,
+      onPlaceholderPlaced,
+      onPlaceholderSelect,
+      onMarkerEditSelect,
+      onMarkerMoved,
+    },
+    ref
+  ) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { imageData, loading, error } = useFloorPlanImage(floorPlan.imageRelativePath);
     const { markers, loading: markersLoading, error: markersError } = useMarkers(floorPlan.id);
     const [selectedMarker, setSelectedMarker] = useState<MarkerWithDetails | null>(null);
+    const [selectedPlaceholder, setSelectedPlaceholder] = useState<PlaceholderMarker | null>(null);
+
+    interface DragState {
+      markerId: string;
+      isPlaceholder: boolean;
+      startCanvasX: number;
+      startCanvasY: number;
+      currentCanvasX: number;
+      currentCanvasY: number;
+      activated: boolean;
+    }
+
+    const dragStateRef = useRef<DragState | null>(null);
+    const DRAG_ACTIVATION_DISTANCE = 6;
 
     // Draw floor plan image and markers on canvas
     useEffect(() => {
@@ -156,6 +229,13 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
         });
       }
 
+      // Draw placeholder markers in edit mode
+      if (isEditMode && placeholders && placeholders.length > 0) {
+        placeholders.forEach((p) => {
+          drawPlaceholderMarker(ctx, p, canvas.width, canvas.height, selectedPlaceholder?.id === p.id);
+        });
+      }
+
       console.log(
         `[FloorPlanCanvas] Rendered floor plan: logical=${canvas.width}x${canvas.height}, display=${width}x${height}, markers=${markers.length}, filters={categories:${visibleCategories.size}, status:${selectedStatus}}`
       );
@@ -170,38 +250,152 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
       selectedMarker,
       visibleCategories,
       selectedStatus,
+      placeholders,
+      isEditMode,
+      selectedPlaceholder,
     ]);
 
-    // Handle canvas click for marker selection
-    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      // Get canvas bounding rect
+    const screenToCanvas = (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current!;
       const rect = canvas.getBoundingClientRect();
-
-      // Calculate scale factors (canvas logical size vs display size)
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
+      return {
+        canvasX: (e.clientX - rect.left) * scaleX,
+        canvasY: (e.clientY - rect.top) * scaleY,
+      };
+    };
 
-      // Convert click coordinates from screen space to canvas logical space
+    const findHitAtPosition = (canvasX: number, canvasY: number) => {
+      const canvas = canvasRef.current!;
+      const MARKER_RADIUS = 12;
+
+      // Check linked markers
+      for (const m of markers) {
+        const mx = m.marker.normalizedX * canvas.width;
+        const my = m.marker.normalizedY * canvas.height;
+        if (Math.sqrt((canvasX - mx) ** 2 + (canvasY - my) ** 2) <= MARKER_RADIUS) {
+          return { type: 'linked' as const, marker: m };
+        }
+      }
+
+      // Check placeholder markers
+      for (const p of (placeholders || [])) {
+        const px = p.normalizedX * canvas.width;
+        const py = p.normalizedY * canvas.height;
+        if (Math.sqrt((canvasX - px) ** 2 + (canvasY - py) ** 2) <= MARKER_RADIUS) {
+          return { type: 'placeholder' as const, placeholder: p };
+        }
+      }
+
+      return null;
+    };
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!isEditMode) return;
+      const { canvasX, canvasY } = screenToCanvas(e);
+      const hit = findHitAtPosition(canvasX, canvasY);
+      if (hit) {
+        dragStateRef.current = {
+          markerId: hit.type === 'linked' ? hit.marker.marker.id : hit.placeholder.id,
+          isPlaceholder: hit.type === 'placeholder',
+          startCanvasX: canvasX,
+          startCanvasY: canvasY,
+          currentCanvasX: canvasX,
+          currentCanvasY: canvasY,
+          activated: false,
+        };
+      }
+    };
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!isEditMode || !dragStateRef.current) return;
+      const { canvasX, canvasY } = screenToCanvas(e);
+      dragStateRef.current.currentCanvasX = canvasX;
+      dragStateRef.current.currentCanvasY = canvasY;
+      if (!dragStateRef.current.activated) {
+        const dx = canvasX - dragStateRef.current.startCanvasX;
+        const dy = canvasY - dragStateRef.current.startCanvasY;
+        if (Math.sqrt(dx * dx + dy * dy) >= DRAG_ACTIVATION_DISTANCE) {
+          dragStateRef.current.activated = true;
+        }
+      }
+      // Redraw handled by existing useEffect — drag position visual feedback deferred
+    };
+
+    const handleMouseUp = async (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!isEditMode || !dragStateRef.current) return;
+      const { canvasX, canvasY } = screenToCanvas(e);
+      const state = dragStateRef.current;
+      dragStateRef.current = null;
+
+      if (state.activated && !state.isPlaceholder) {
+        // Save repositioned linked marker
+        const canvas = canvasRef.current!;
+        const normalizedX = Math.max(0, Math.min(1, canvasX / canvas.width));
+        const normalizedY = Math.max(0, Math.min(1, canvasY / canvas.height));
+        try {
+          await markerService.moveMarker(state.markerId, normalizedX, normalizedY);
+          onMarkerMoved?.();
+        } catch (err) {
+          console.error('[FloorPlanCanvas] Failed to move marker:', err);
+        }
+      }
+      // If not activated -> treat as click (handled in handleCanvasClick)
+    };
+
+    // Handle canvas click for marker selection
+    const handleCanvasClick = async (e: React.MouseEvent<HTMLCanvasElement>) => {
+      // Skip if drag was activated (mouseup already handled)
+      if (dragStateRef.current?.activated) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
       const clickX = (e.clientX - rect.left) * scaleX;
       const clickY = (e.clientY - rect.top) * scaleY;
 
-      // Find clicked marker (hit detection)
-      const clicked = markers.find(({ marker }) => {
-        const mx = marker.normalizedX * canvas.width;
-        const my = marker.normalizedY * canvas.height;
-        const dist = Math.sqrt((clickX - mx) ** 2 + (clickY - my) ** 2);
-        return dist <= 12; // marker radius
-      });
+      if (isEditMode) {
+        const hit = findHitAtPosition(clickX, clickY);
+        if (hit?.type === 'linked') {
+          // Edit mode: linked marker click -> show edit popup
+          onMarkerEditSelect?.(hit.marker);
+          setSelectedMarker(null);
+        } else if (hit?.type === 'placeholder') {
+          // Edit mode: placeholder click -> show asset link dialog
+          setSelectedPlaceholder(hit.placeholder);
+          onPlaceholderSelect?.(hit.placeholder);
+        } else {
+          // Edit mode: empty space click -> place new placeholder
+          const normalizedX = Math.max(0, Math.min(1, clickX / canvas.width));
+          const normalizedY = Math.max(0, Math.min(1, clickY / canvas.height));
+          const newPlaceholder: PlaceholderMarker = {
+            id: uuidv4(),
+            normalizedX,
+            normalizedY,
+            isPlaceholder: true,
+          };
+          onPlaceholderPlaced?.(newPlaceholder);
+          setSelectedPlaceholder(newPlaceholder);
+          onPlaceholderSelect?.(newPlaceholder);
+        }
+      } else {
+        // View mode: existing hit detection for marker popup
+        const clicked = markers.find(({ marker }) => {
+          const mx = marker.normalizedX * canvas.width;
+          const my = marker.normalizedY * canvas.height;
+          const dist = Math.sqrt((clickX - mx) ** 2 + (clickY - my) ** 2);
+          return dist <= 12;
+        });
+        setSelectedMarker(clicked || null);
 
-      setSelectedMarker(clicked || null);
-
-      if (clicked) {
-        console.log(
-          `[FloorPlanCanvas] Marker selected: ${clicked.marker.id}, asset: ${clicked.asset.tag}`
-        );
+        if (clicked) {
+          console.log(
+            `[FloorPlanCanvas] Marker selected: ${clicked.marker.id}, asset: ${clicked.asset.tag}`
+          );
+        }
       }
     };
 
@@ -274,7 +468,10 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
           minScale={0.5}
           maxScale={5}
           wheel={{ step: 0.1 }}
-          panning={{ disabled: false }}
+          panning={isEditMode
+            ? { activationKeys: [' '] }
+            : { disabled: false }
+          }
           doubleClick={{ disabled: true }}
           velocityAnimation={{ disabled: true }}
         >
@@ -294,18 +491,21 @@ export const FloorPlanCanvas = forwardRef<ReactZoomPanPinchRef, FloorPlanCanvasP
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
               style={{
                 width: `${width}px`,
                 height: `${height}px`,
                 display: 'block',
-                cursor: 'pointer',
+                cursor: isEditMode ? 'crosshair' : 'pointer',
               }}
             />
           </TransformComponent>
         </TransformWrapper>
 
-        {/* Marker popup */}
-        {selectedMarker && (
+        {/* Marker popup - only in view mode */}
+        {!isEditMode && selectedMarker && (
           <MarkerPopup
             asset={selectedMarker.asset}
             category={selectedMarker.category}

@@ -9,6 +9,7 @@ import {
   Divider,
   CircularProgress,
   IconButton,
+  Alert,
 } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -40,10 +41,12 @@ export const AssetLinkDialog: React.FC<AssetLinkDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [linking, setLinking] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setShowCreateForm(false);
+      setLinkError(null);
       loadAssets();
     }
   }, [open]);
@@ -63,11 +66,14 @@ export const AssetLinkDialog: React.FC<AssetLinkDialogProps> = ({
 
   const handleLinkAsset = async (assetId: string) => {
     setLinking(true);
+    setLinkError(null);
     try {
       await onLink(assetId);
       onClose();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error('[AssetLinkDialog] Failed to link asset:', err);
+      setLinkError(msg);
     } finally {
       setLinking(false);
     }
@@ -89,6 +95,9 @@ export const AssetLinkDialog: React.FC<AssetLinkDialogProps> = ({
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ pr: 6 }}>
         Link Marker to Asset
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 'normal' }}>
+          Search for an existing asset, or create a new one below
+        </Typography>
         <IconButton
           onClick={handleClose}
           disabled={linking}
@@ -98,6 +107,11 @@ export const AssetLinkDialog: React.FC<AssetLinkDialogProps> = ({
         </IconButton>
       </DialogTitle>
       <DialogContent>
+        {linkError && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setLinkError(null)}>
+            {linkError}
+          </Alert>
+        )}
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress />
@@ -133,15 +147,17 @@ export const AssetLinkDialog: React.FC<AssetLinkDialogProps> = ({
                 </li>
               )}
             />
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2 }}>
+              <Typography variant="caption" color="text.secondary">or</Typography>
+            </Divider>
             <Button
               startIcon={<AddIcon />}
               onClick={() => setShowCreateForm(true)}
-              variant="text"
+              variant="outlined"
               fullWidth
               disabled={linking}
             >
-              Create new asset
+              Create a new asset
             </Button>
           </>
         ) : (

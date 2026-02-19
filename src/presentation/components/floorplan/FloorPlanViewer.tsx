@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Box, CircularProgress, Alert, IconButton, Tooltip } from '@mui/material';
+import { Box, CircularProgress, Alert, IconButton, Tooltip, Snackbar, Typography } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditLocationAltIcon from '@mui/icons-material/EditLocationAlt';
 import { ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { FloorPlan, Category } from '@/domain/entities';
 import { FloorPlanService } from '@/application/services';
@@ -72,6 +73,9 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
   // Marker version trigger for post-mutation re-fetch
   const [markerVersion, setMarkerVersion] = useState(0);
   const refreshMarkers = () => setMarkerVersion(v => v + 1);
+
+  // Error notification state
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   // Fetch markers for marker counts
   const { markers } = useMarkers(floorPlanId, markerVersion);
@@ -386,6 +390,24 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
         filteredMarkerCount={filteredMarkerCount}
       />
 
+      {/* Edit mode help banner */}
+      {isEditMode && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999,
+            pointerEvents: 'none',
+          }}
+        >
+          <Alert severity="info" icon={<EditLocationAltIcon />} sx={{ py: 0.5, fontSize: '0.8rem' }}>
+            Click anywhere on the map to place a marker
+          </Alert>
+        </Box>
+      )}
+
       {/* Filter sidebar */}
       <FloorPlanFilterSidebar
         open={sidebarOpen}
@@ -465,6 +487,23 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
             <CenterFocusStrongIcon />
           </IconButton>
         </Tooltip>
+
+        <Tooltip
+          title={
+            <Box>
+              <Typography variant="caption" display="block" fontWeight={600}>Navigation</Typography>
+              <Typography variant="caption" display="block">Click + drag to pan</Typography>
+              <Typography variant="caption" display="block">Scroll wheel to zoom</Typography>
+              <Typography variant="caption" display="block">Arrow keys to pan</Typography>
+              <Typography variant="caption" display="block">+/- keys to zoom</Typography>
+            </Box>
+          }
+          placement="left"
+        >
+          <IconButton size="small" aria-label="Navigation help">
+            <Box sx={{ fontSize: '14px', fontWeight: 'bold', color: 'text.secondary' }}>?</Box>
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* AssetLinkDialog — opens for new placement OR relink */}
@@ -473,22 +512,35 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
         floorPlanId={floorPlanId}
         placeholder={selectedPlaceholder}
         onLink={async (assetId) => {
-          if (relinkingMarker) {
-            // Relink mode: swap the asset on the existing marker
-            await markerService.relinkMarker(relinkingMarker.marker.id, assetId);
-            setRelinkingMarker(null);
-          } else if (selectedPlaceholder) {
-            // Placement mode: persist a new marker
-            await markerService.placeMarker(
-              floorPlanId,
-              assetId,
-              selectedPlaceholder.normalizedX,
-              selectedPlaceholder.normalizedY
-            );
-            setPlaceholders(prev => prev.filter(p => p.id !== selectedPlaceholder.id));
-            setSelectedPlaceholder(null);
+          console.log('[FloorPlanViewer] onLink called', { assetId, relinkingMarker: !!relinkingMarker, selectedPlaceholder });
+          try {
+            if (relinkingMarker) {
+              // Relink mode: swap the asset on the existing marker
+              console.log('[FloorPlanViewer] Relinking marker', relinkingMarker.marker.id, 'to asset', assetId);
+              await markerService.relinkMarker(relinkingMarker.marker.id, assetId);
+              setRelinkingMarker(null);
+            } else if (selectedPlaceholder) {
+              // Placement mode: persist a new marker
+              console.log('[FloorPlanViewer] Placing marker at', selectedPlaceholder.normalizedX, selectedPlaceholder.normalizedY, 'for asset', assetId, 'on floor plan', floorPlanId);
+              await markerService.placeMarker(
+                floorPlanId,
+                assetId,
+                selectedPlaceholder.normalizedX,
+                selectedPlaceholder.normalizedY
+              );
+              console.log('[FloorPlanViewer] placeMarker succeeded');
+              setPlaceholders(prev => prev.filter(p => p.id !== selectedPlaceholder.id));
+              setSelectedPlaceholder(null);
+            } else {
+              console.warn('[FloorPlanViewer] onLink called but neither relinkingMarker nor selectedPlaceholder is set');
+            }
+            refreshMarkers();
+            console.log('[FloorPlanViewer] refreshMarkers called');
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.error('[FloorPlanViewer] onLink failed:', err);
+            setLinkError(msg);
           }
-          refreshMarkers();
         }}
         onDiscard={() => {
           if (selectedPlaceholder) {
@@ -541,6 +593,18 @@ export function FloorPlanViewer({ floorPlanId, onBack }: FloorPlanViewerProps) {
           locations={locations}
         />
       )}
+
+      {/* Error notification */}
+      <Snackbar
+        open={linkError !== null}
+        autoHideDuration={6000}
+        onClose={() => setLinkError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setLinkError(null)} sx={{ width: '100%' }}>
+          Failed to save marker: {linkError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

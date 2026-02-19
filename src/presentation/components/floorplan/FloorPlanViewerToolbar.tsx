@@ -1,4 +1,4 @@
-import { Box, Chip, IconButton, Button, Typography, Divider, Tooltip } from '@mui/material';
+import { Box, Chip, IconButton, Button, Typography, Divider } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CheckIcon from '@mui/icons-material/Check';
 import EditLocationAltIcon from '@mui/icons-material/EditLocationAlt';
@@ -70,24 +70,16 @@ export function FloorPlanViewerToolbar({
       </IconButton>
 
       {/* Edit Markers toggle button */}
-      <Tooltip title={isEditMode ? 'Exit Edit Mode' : 'Edit Markers'}>
-        <IconButton
-          size="small"
-          onClick={onToggleEditMode}
-          aria-label={isEditMode ? 'Exit edit mode' : 'Edit markers'}
-          color={isEditMode ? 'primary' : 'default'}
-          sx={
-            isEditMode
-              ? {
-                  backgroundColor: 'primary.light',
-                  '&:hover': { backgroundColor: 'primary.main', color: 'white' },
-                }
-              : {}
-          }
-        >
-          <EditLocationAltIcon />
-        </IconButton>
-      </Tooltip>
+      <Button
+        size="small"
+        variant={isEditMode ? 'contained' : 'outlined'}
+        onClick={onToggleEditMode}
+        startIcon={<EditLocationAltIcon />}
+        color={isEditMode ? 'primary' : 'inherit'}
+        aria-label={isEditMode ? 'Exit edit mode' : 'Edit markers'}
+      >
+        {isEditMode ? 'Done Editing' : 'Edit Markers'}
+      </Button>
 
       <Divider orientation="vertical" flexItem />
 

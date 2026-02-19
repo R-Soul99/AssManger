@@ -7,7 +7,7 @@ export interface CreateAssetDto {
   tag: string;
   description: string;
   categoryId: number;
-  locationId: string;
+  locationId?: string;
   serialNumber?: string;
   phoneExtension?: string;
   status?: 'active' | 'pending' | 'decommissioned' | 'faulty' | 'maintenance';
@@ -65,7 +65,7 @@ export class AssetService {
         tag: dto.tag,
         description: dto.description,
         categoryId: dto.categoryId,
-        locationId: dto.locationId,
+        locationId: dto.locationId ?? '',
         serialNumber: dto.serialNumber,
         phoneExtension: dto.phoneExtension,
         status: dto.status || 'active',

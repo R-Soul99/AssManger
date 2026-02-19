@@ -6,3 +6,6 @@ export { FloorPlanDeleteDialog } from './FloorPlanDeleteDialog';
 export { FloorPlanBulkActions } from './FloorPlanBulkActions';
 export { FloorPlanViewer } from './FloorPlanViewer';
 export { FloorPlanCanvas } from './FloorPlanCanvas';
+export { AssetLinkDialog } from './AssetLinkDialog';
+export { QuickCreateAssetForm } from './QuickCreateAssetForm';
+export type { PlaceholderMarker } from './FloorPlanCanvas';

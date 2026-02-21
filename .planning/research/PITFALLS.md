@@ -308,6 +308,604 @@ Phase 2 (Asset Management Features) - Implement required fields and validation. 
 
 ---
 
+### Pitfall 9: Coordinate System Confusion (Screen vs Canvas vs Logical)
+
+**What goes wrong:**
+Canvas applications use multiple coordinate systems simultaneously - screen (CSS pixels), canvas (HTML attributes), and logical (world/model coordinates). Developers confuse these systems, causing markers to drift during zoom/pan, mouse clicks to miss targets, and transformations to behave unexpectedly. The canvas element has two distinct coordinate sizes: model coordinates for drawing (canvas.width/height attributes) and display coordinates for screen rendering (CSS width/height), and mixing these causes scaling artifacts and incorrect hit detection.
+
+**Why it happens:**
+- False sense of mastery when model and display coordinates are identical (1:1 mapping)
+- Developers don't distinguish between getBoundingClientRect() (screen coords) and canvas dimensions (model coords)
+- Transform matrix (translate, scale, rotate) changes coordinate system but developers forget to invert
+- Mouse event clientX/clientY are in screen space, must be converted to canvas space
+- Zoom operations multiply coordinate confusion (3+ coordinate systems)
+
+**How to avoid:**
+- Document coordinate system architecture clearly:
+  ```
+  Screen (CSS pixels) → Canvas (element pixels) → Logical (world units)
+  Mouse click (clientX, clientY) → Canvas (x, y) → Normalized (0-1) → World (meters)
+  ```
+- Create explicit coordinate transformation functions:
+  ```typescript
+  screenToCanvas(screenX, screenY): {x, y}
+  canvasToLogical(canvasX, canvasY): {x, y}
+  logicalToCanvas(logicalX, logicalY): {x, y}
+  ```
+- Store transformation matrix with `ctx.getTransform()` and use `ctx.transformPoint()` for conversions
+- Explicitly set both HTML attributes AND CSS for canvas:
+  ```html
+  <canvas width="1600" height="1200" style="width: 800px; height: 600px;">
+  ```
+- Subtract canvas.getBoundingClientRect() offset from mouse events before processing
+- Use normalized coordinates (0-1) for storage to avoid coordinate system dependencies
+
+**Warning signs:**
+- Markers shift position when canvas resizes
+- Mouse clicks are offset from visual marker positions
+- Zoom-in causes markers to drift away from correct positions
+- Transform reset issues: clearing canvas leaves artifacts
+- Different coordinate values in storage vs display (e.g., marker at x=1200 displays at x=600)
+
+**Phase to address:**
+Phase 1 (Canvas Architecture) - Design coordinate system hierarchy from start. Phase 2 (Interaction Implementation) - Implement transformation functions and test thoroughly.
+
+---
+
+### Pitfall 10: Hit Detection Failures with Overlapping Objects
+
+**What goes wrong:**
+When using rectangle-based hit detection (bounding boxes), overlapping canvas objects cause false positives where users click on a lower visible object but the system detects a click on an overlapping object above it. Objects with transparent areas or irregular shapes register clicks on "empty" space within their bounding box. Antialiasing at object intersections creates completely opaque pixels that don't match either object's RGB values, breaking color-based hit detection. Small objects (resize handles, connection points) have tiny hit areas that are frustratingly difficult to click accurately.
+
+**Why it happens:**
+- Bounding box hit detection ignores actual pixel transparency
+- Objects rendered in z-order but hit detection checks in storage order (mismatched)
+- No concept of "click-through" for transparent regions
+- Resize handles sized for visual appeal (8px) not usability (44px touch target)
+- Mouse event coordinates not accounting for canvas transforms (zoom/pan)
+- No tolerance/fuzziness in hit detection - requires pixel-perfect clicks
+
+**How to avoid:**
+- Implement layered hit detection with fallback strategies:
+  1. Pixel-perfect check using color-based detection for irregular shapes
+  2. Path-based detection using `isPointInPath()` or `isPointInStroke()`
+  3. Bounding box as last resort for performance
+- Use dedicated hidden canvas for hit detection:
+  - Render each object with unique RGB color (object ID encoded)
+  - On click, read pixel color from hidden canvas and decode ID
+  - Handles overlapping, transparency, and irregular shapes correctly
+- Enlarge hit areas beyond visual size:
+  ```javascript
+  // Visual size 8px, hit area 20px
+  const hitArea = {x: visual.x - 6, y: visual.y - 6, w: 20, h: 20};
+  ```
+- For resize handles, use minimum 44x44px touch targets on mobile
+- Apply canvas transform to mouse coordinates before hit testing:
+  ```javascript
+  const matrix = ctx.getTransform().inverse();
+  const transformed = matrix.transformPoint(mouseX, mouseY);
+  ```
+- Add hover tolerance: detect when cursor is "near" object (within 5px)
+
+**Warning signs:**
+- Users complain "I clicked on X but Y was selected"
+- Small UI elements (handles, buttons) require multiple click attempts
+- Selection behavior changes unexpectedly when objects overlap
+- Mouse clicks work on desktop but not on mobile/tablet
+- Objects with transparent regions cannot be "un-selected" by clicking empty area
+
+**Phase to address:**
+Phase 2 (Canvas Interaction) - Implement basic hit detection with bounding boxes. Phase 3 (UX Polish) - Add pixel-perfect detection, larger touch targets, and hover states.
+
+---
+
+### Pitfall 11: Zoom/Pan Breaking Interactions
+
+**What goes wrong:**
+After implementing zoom and pan, previously working mouse interactions break. Dragging feels inconsistent - fast zoom makes small drags move objects huge distances. Panning after zoom causes view to "jerk" to new position instead of smooth continuation. Transform order mistakes (scale-then-translate vs translate-then-scale) cause zoom to orbit around origin (0,0) instead of cursor position. When drawing while canvas is zoomed, retrieved X/Y coordinates are incorrect because transforms aren't inverted. Canvas clearing artifacts appear when transform isn't reset before clearing.
+
+**Why it happens:**
+- Transform order matters: incorrect order causes unexpected behavior
+  - Correct: `ctx.translate(panX, panY); ctx.scale(zoom, zoom)`
+  - Wrong: `ctx.scale(zoom, zoom); ctx.translate(panX, panY)` - pan affected by zoom
+- Pan delta not scaled: user drags 10 pixels, object moves 100 pixels at 10x zoom
+- Zoom origin fixed at (0,0) instead of mouse cursor position
+- Transform not reset before `clearRect()` causes partial clears
+- Mouse coordinates not transformed by inverse matrix before processing
+- Viewport bounds not recalculated after zoom/pan - culling breaks
+
+**How to avoid:**
+- Establish consistent transform order and document it:
+  ```javascript
+  // Always: translate then scale (zoom around translated point)
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset
+  ctx.translate(camera.x, camera.y);
+  ctx.scale(camera.zoom, camera.zoom);
+  ```
+- Scale pan deltas by zoom factor for consistency:
+  ```javascript
+  camera.x += mouseDelta.x / camera.zoom;
+  camera.y += mouseDelta.y / camera.zoom;
+  ```
+- Implement zoom-to-cursor by adjusting pan during zoom:
+  ```javascript
+  // Zoom while keeping cursor world position constant
+  const worldPoint = screenToWorld(mouseX, mouseY, oldZoom);
+  camera.zoom = newZoom;
+  camera.pan = adjustPanToKeepWorldPointUnderMouse(worldPoint, mouseX, mouseY);
+  ```
+- Always reset transform before clearing:
+  ```javascript
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ```
+- Transform mouse coordinates with inverse matrix:
+  ```javascript
+  const inverse = ctx.getTransform().inverse();
+  const worldPos = inverse.transformPoint(mouseX, mouseY);
+  ```
+
+**Warning signs:**
+- Zoom causes content to "fly off screen" instead of zooming in place
+- Pan feels "sticky" or "slippery" at different zoom levels
+- After panning, stopping and restarting causes view to jump
+- Canvas clear leaves visual artifacts during zoom
+- Mouse click positions offset from visual positions after zoom/pan
+- Dragging objects behaves unpredictably at zoom levels other than 1.0
+
+**Phase to address:**
+Phase 2 (Zoom/Pan Implementation) - Get transform order correct from start. Phase 3 (Interaction Polish) - Fine-tune zoom-to-cursor and pan feel.
+
+---
+
+### Pitfall 12: Drag-and-Drop Edge Cases
+
+**What goes wrong:**
+Drag-and-drop breaks in edge cases: dragging object off-canvas continues to track mouse (object goes to extreme coordinates), dropping in invalid zones places object incorrectly, drag operations don't account for zoom/pan transforms, rapid mouse movements "lose" the dragged object, and multi-touch gestures conflict with drag operations. On mobile, default browser behaviors (scroll, context menu) interfere with drag. The dragleave event fires unexpectedly when entering child elements, and dragover events fire hundreds of times during a single drag creating performance issues.
+
+**Why it happens:**
+- Mouse events continue firing outside canvas bounds (no boundary checking)
+- `preventDefault()` not called on drop event - browser default behavior takes over
+- Drag delta not adjusted for zoom level (same as pan issue)
+- Event throttling not implemented - dragover fires every few milliseconds
+- Touch events and mouse events both fire on mobile - duplicate handling
+- No validation of drop target - objects dropped into invalid locations
+- Drag state not cleared on mouseup outside canvas
+
+**How to avoid:**
+- Clamp dragged object position to canvas bounds:
+  ```javascript
+  object.x = Math.max(0, Math.min(canvasWidth, object.x));
+  object.y = Math.max(0, Math.min(canvasHeight, object.y));
+  ```
+- Always call `preventDefault()` on dragover and drop events:
+  ```javascript
+  canvas.addEventListener('dragover', (e) => e.preventDefault());
+  canvas.addEventListener('drop', (e) => { e.preventDefault(); handleDrop(e); });
+  ```
+- Scale drag deltas by zoom factor:
+  ```javascript
+  const dx = (currentMouse.x - prevMouse.x) / camera.zoom;
+  const dy = (currentMouse.y - prevMouse.y) / camera.zoom;
+  ```
+- Throttle dragover events to reduce CPU usage:
+  ```javascript
+  let lastDragTime = 0;
+  if (Date.now() - lastDragTime > 16) { // ~60fps
+    processDragOver();
+    lastDragTime = Date.now();
+  }
+  ```
+- Use Pointer Events API instead of separate mouse/touch handlers:
+  ```javascript
+  canvas.addEventListener('pointerdown', handlePointerDown);
+  // Works for mouse, touch, and pen input
+  ```
+- Implement drop validation zones:
+  ```javascript
+  const dropZones = [{type: 'room', bounds: {...}}, ...];
+  const validDrop = dropZones.find(zone => isPointInBounds(dropPoint, zone.bounds));
+  if (!validDrop) { revertToOriginalPosition(); showError("Invalid drop location"); }
+  ```
+- Listen for mouseup on window, not just canvas:
+  ```javascript
+  window.addEventListener('mouseup', handleDragEnd); // Catches mouseup outside canvas
+  ```
+- Show visual feedback for valid/invalid drop zones (green highlight vs red/blocked cursor)
+
+**Warning signs:**
+- Objects "fly off screen" when dragged quickly
+- Dropped objects end up in wrong positions after zoom/pan
+- CPU spikes to 100% during drag operations
+- On mobile, dragging triggers page scroll or context menu
+- Drag state "stuck" - cursor shows drag mode even after releasing
+- Objects can be dropped into walls, outside floor plan, or overlapping
+- Multi-touch causes two objects to drag simultaneously
+
+**Phase to address:**
+Phase 2 (Drag Implementation) - Basic dragging with boundary checking and preventDefault(). Phase 3 (UX Polish) - Add drop validation, visual feedback, and mobile gesture handling.
+
+---
+
+### Pitfall 13: Undo/Redo State Management Nightmares
+
+**What goes wrong:**
+Undo/redo implemented as afterthought doesn't work reliably. Canvas doesn't have built-in undo like form inputs - developers must manually track all state changes. Naive implementations save entire canvas as image (toDataURL) for each change, consuming massive memory (1MB per snapshot for 1600x1200 canvas). Undo stack grows unbounded, causing memory leaks. Redo stack not cleared when new action performed after undo. Bulk operations (delete 50 markers) create 50 undo entries instead of 1. State serialization doesn't capture full context (zoom, pan, selection state). Undo/redo not designed from start - retrofitting requires refactoring entire application architecture.
+
+**Why it happens:**
+- Undo implemented late in development - all actions not centralized
+- Storing canvas image data (base64) instead of object state (JSON)
+- No command pattern - actions scattered across components
+- State history unlimited - no max stack size enforcement
+- Each individual change tracked instead of logical transactions
+- Redo stack not invalidated on new action after undo
+- Canvas operations (drawImage, fillRect) not easily reversible
+
+**How to avoid:**
+- Implement command pattern from start - all actions as reversible commands:
+  ```typescript
+  interface Command {
+    execute(): void;
+    undo(): void;
+    redo(): void;
+  }
+  class MoveMarkerCommand implements Command {
+    constructor(marker, oldPos, newPos) {...}
+    execute() { marker.pos = newPos; render(); }
+    undo() { marker.pos = oldPos; render(); }
+  }
+  ```
+- Maintain separate undo/redo stacks with size limits:
+  ```javascript
+  const undoStack = []; // Max 100 items
+  const redoStack = [];
+  function executeCommand(cmd) {
+    cmd.execute();
+    undoStack.push(cmd);
+    redoStack.length = 0; // Clear redo on new action
+    if (undoStack.length > 100) undoStack.shift(); // Limit memory
+  }
+  ```
+- Store object state (JSON) not canvas images:
+  ```javascript
+  // GOOD: {type: 'marker', id: 123, x: 0.5, y: 0.3} ~100 bytes
+  // BAD: canvas.toDataURL() ~1MB
+  ```
+- Group related changes into transactions:
+  ```javascript
+  class CompositeCommand implements Command {
+    constructor(commands) { this.commands = commands; }
+    undo() { this.commands.reverse().forEach(cmd => cmd.undo()); }
+  }
+  // Delete 50 markers = 1 undo entry, not 50
+  ```
+- For libraries like Konva/FabricJS, use built-in serialization:
+  ```javascript
+  const state = canvas.toJSON(); // Efficient JSON representation
+  ```
+- Centralize all state mutations through command dispatcher
+- Consider using Immer.js for immutable state snapshots (efficient memory)
+
+**Warning signs:**
+- Memory usage grows continuously during editing session
+- Undo only works for some actions, not others
+- Undo after redo clears redo stack unexpectedly
+- Deleting 100 markers requires pressing Undo 100 times
+- Undo doesn't restore zoom/pan/selection state
+- Browser DevTools shows MB of base64 strings in memory
+- Comment in code: "TODO: implement undo for this feature"
+
+**Phase to address:**
+Phase 1 (Architecture) - Design command pattern and state management. Phase 2 (Core Features) - Implement undo/redo for all actions from the start.
+
+---
+
+### Pitfall 14: Selection State Bugs (Multi-Select, Deselect, Click-Through)
+
+**What goes wrong:**
+Selection state becomes inconsistent: clicking empty canvas doesn't deselect, shift-click for multi-select broken, visual selection highlighting not synchronized with internal state, clicking "through" transparent areas selects wrong objects, no way to deselect last item, undo/redo doesn't restore selection state. Selection tools override OnCommit() to clear state but tons of code implicitly relies on this behavior (saving, deselect command, etc.). In systems without click-away deselection, users must manually deselect before performing other actions.
+
+**Why it happens:**
+- Selection state stored in multiple places (component state, selected object properties, UI state)
+- Click event handler doesn't check if click hit any object - always selects/deselects
+- Multi-select logic incomplete: shift-click toggles instead of adding to selection
+- Selection rendering separate from selection state - gets out of sync
+- No "background" object to click for deselection
+- State transitions not clearly defined (idle → selecting → selected → deselecting)
+- Undo/redo saves object state but not selection state
+
+**How to avoid:**
+- Maintain single source of truth for selection:
+  ```javascript
+  const selectionState = {
+    selectedIds: new Set(),
+    selectionRect: null,
+    mode: 'normal' // 'normal' | 'adding' | 'removing'
+  };
+  ```
+- Implement comprehensive click handling:
+  ```javascript
+  canvas.onClick = (e) => {
+    const clickedObject = hitTest(e.x, e.y);
+    if (!clickedObject) {
+      clearSelection(); // Click on empty area = deselect all
+    } else if (e.shiftKey) {
+      toggleSelection(clickedObject); // Multi-select
+    } else {
+      setSelection([clickedObject]); // Single select (clears others)
+    }
+  };
+  ```
+- Synchronize visual state with selection state:
+  ```javascript
+  function render() {
+    objects.forEach(obj => {
+      drawObject(obj);
+      if (selectionState.selectedIds.has(obj.id)) {
+        drawSelectionHighlight(obj);
+      }
+    });
+  }
+  ```
+- Support keyboard selection modifiers:
+  - Click: select single, clear others
+  - Shift+Click: toggle selection (add/remove)
+  - Ctrl+Click: add to selection
+  - Ctrl+A: select all
+  - Escape: deselect all
+- Include selection state in undo/redo:
+  ```javascript
+  class SelectCommand implements Command {
+    constructor(newSelection, oldSelection) {...}
+    undo() { restoreSelection(oldSelection); }
+  }
+  ```
+- Render "background" layer to capture clicks on empty areas
+
+**Warning signs:**
+- Users report "can't deselect" or "clicking doesn't work"
+- Selection highlight visible but object not actually selected (or vice versa)
+- Shift-clicking selects one object instead of adding to selection
+- Undo doesn't restore which items were selected
+- Selection state persists across floor plan changes
+- Clicking transparent part of image selects object underneath
+- Selection behavior inconsistent between desktop and mobile
+
+**Phase to address:**
+Phase 2 (Selection Implementation) - Single source of truth, comprehensive click handling. Phase 3 (UX Polish) - Keyboard shortcuts, visual feedback, multi-select refinement.
+
+---
+
+### Pitfall 15: Touch/Mobile Gesture Conflicts
+
+**What goes wrong:**
+Touch gestures conflict with mouse events: both touch and mouse events fire simultaneously on mobile, causing duplicate actions. Default browser behaviors interfere: drag triggers page scroll, long-press shows context menu, pinch-zoom zooms entire page instead of canvas. Touch event coordinates in wrong coordinate system (page vs client vs offset). Passive event listener errors: "Unable to preventDefault inside passive event listener" in Chrome. No hover state on touch devices - tooltips and resize handles invisible. Touch targets too small (8px handles) - users frustrated by imprecise clicks.
+
+**Why it happens:**
+- iPad/mobile devices fire both touch AND mouse events for compatibility
+- Developers test only on desktop with Chrome DevTools mobile emulation (doesn't show all issues)
+- Modern browsers default to passive event listeners for performance - preventDefault() blocked
+- Touch events have different structure: `e.touches[0]` instead of `e.clientX`
+- CSS `touch-action: auto` allows browser to handle gestures (scroll, zoom, pan)
+- No hover state on touch - features only shown on hover become inaccessible
+
+**How to avoid:**
+- Use Pointer Events API (unified interface for mouse/touch/pen):
+  ```javascript
+  canvas.addEventListener('pointerdown', handlePointerDown);
+  canvas.addEventListener('pointermove', handlePointerMove);
+  canvas.addEventListener('pointerup', handlePointerUp);
+  // Works for all input types, no duplication
+  ```
+- If using touch events, prevent mouse events from firing:
+  ```javascript
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Prevents corresponding mouse events
+    handleTouchStart(e);
+  }, {passive: false}); // Must explicitly set passive: false
+  ```
+- Disable browser touch behaviors with CSS:
+  ```css
+  canvas {
+    touch-action: none; /* Disable browser pan/zoom/scroll */
+    -webkit-user-select: none; /* Disable text selection */
+  }
+  ```
+- Normalize event coordinates across input types:
+  ```javascript
+  function getEventCoords(e) {
+    if (e.touches) {
+      return {x: e.touches[0].clientX, y: e.touches[0].clientY};
+    }
+    return {x: e.clientX, y: e.clientY};
+  }
+  ```
+- Enlarge touch targets (minimum 44x44px):
+  ```javascript
+  const isTouchDevice = 'ontouchstart' in window;
+  const handleSize = isTouchDevice ? 44 : 8; // Larger on touch
+  ```
+- Replace hover-dependent features with tap/long-press alternatives:
+  ```javascript
+  // Desktop: hover shows tooltip
+  // Mobile: tap shows tooltip, tap elsewhere hides
+  ```
+- Test on real devices - touch emulation doesn't catch all issues
+
+**Warning signs:**
+- Actions triggered twice on mobile (delete deletes 2 items)
+- Console error: "Unable to preventDefault inside passive event listener"
+- Page scrolls when user tries to pan canvas on mobile
+- Pinch gesture zooms browser instead of canvas
+- Resize handles invisible on iPad - users can't resize objects
+- Users report "can't select small items on phone"
+- Touch drag doesn't work but mouse drag works
+
+**Phase to address:**
+Phase 2 (Input Handling) - Use Pointer Events API, disable browser defaults. Phase 3 (Mobile UX) - Enlarge touch targets, test on real devices.
+
+---
+
+### Pitfall 16: Rotation Anchor Point Mistakes
+
+**What goes wrong:**
+Objects rotate around wrong point - furniture spins around center instead of corner, clock hands rotate around middle instead of base, rotation feels unnatural and disorienting. Developers apply rotation transform without setting rotation origin, causing objects to "swing wildly across screen" instead of pivoting in place. The default canvas rotation is around origin (0,0), not object center or custom anchor point. After rotation, object's bounding box changes, breaking hit detection and alignment operations.
+
+**Why it happens:**
+- Rotation transform defaults to origin (0,0) not object center
+- Developers forget to translate to anchor point before rotating
+- Transform order confusion: translate-rotate-translate vs rotate-translate
+- Anchor point not configurable - hardcoded to center for all objects
+- Bounding box calculation doesn't account for rotation
+- Different objects need different anchor points (doors: hinge, hands: base, furniture: center)
+
+**How to avoid:**
+- Implement rotation around custom anchor point pattern:
+  ```javascript
+  function rotateObject(obj, angle, anchorX, anchorY) {
+    ctx.save();
+    ctx.translate(anchorX, anchorY);  // Move origin to anchor
+    ctx.rotate(angle);                 // Rotate around anchor
+    ctx.translate(-anchorX, -anchorY); // Move origin back
+    drawObject(obj);
+    ctx.restore();
+  }
+  ```
+- Store anchor point with object metadata:
+  ```javascript
+  const furniture = {
+    x: 100, y: 200,
+    rotation: 0,
+    anchorPoint: {x: 0.5, y: 0.5} // Center (normalized coords)
+  };
+  const clockHand = {
+    rotation: 0,
+    anchorPoint: {x: 0.5, y: 1.0} // Bottom center (base)
+  };
+  ```
+- Calculate rotated bounding box for hit detection:
+  ```javascript
+  function getRotatedBounds(obj) {
+    const corners = getCorners(obj);
+    const rotated = corners.map(corner => rotatePoint(corner, obj.rotation, obj.anchor));
+    return getBoundingBox(rotated);
+  }
+  ```
+- Provide UI for setting custom anchor point:
+  - Visual anchor point handle (draggable)
+  - Presets: top-left, center, bottom-center, etc.
+  - Snap to object edges and center
+- Use libraries with built-in anchor point support:
+  ```javascript
+  // Konva.js
+  shape.offsetX(shape.width() / 2); // Set rotation anchor
+  shape.rotation(45);
+  ```
+
+**Warning signs:**
+- Rotating furniture causes it to move across floor plan instead of rotating in place
+- Doors don't pivot around hinge - swing through walls
+- Rotation feels "wrong" or "unnatural" to users
+- After rotation, clicking on object no longer selects it (bounding box wrong)
+- Undo rotation doesn't return object to exact original position
+- Some objects rotate correctly (rectangles) but others don't (irregular shapes)
+
+**Phase to address:**
+Phase 2 (Object Manipulation) - Implement correct rotation transforms with configurable anchor points from start.
+
+---
+
+### Pitfall 17: Copy/Paste Coordinate Offset Issues
+
+**What goes wrong:**
+Copy/paste places objects at wrong coordinates: pasted objects appear at original position (overlap with source), appear at origin (0,0), or appear off-screen. Transform matrix not applied correctly during paste - objects pasted at wrong zoom level appear giant or tiny. Clipboard contains absolute coordinates instead of relative offsets. Multiple paste operations (Ctrl+V repeatedly) create stack of objects at same position instead of offset cascade. Cross-floor-plan paste breaks when coordinate systems differ.
+
+**Why it happens:**
+- Clipboard stores absolute world coordinates instead of normalized/relative coords
+- Paste operation doesn't offset coordinates from original
+- Current viewport transform not considered during paste
+- No "smart paste" logic - paste at cursor vs paste at original location
+- Transform matrix e/f values (translation) not extracted correctly
+- Normalized coordinates not converted back to current canvas space
+
+**How to avoid:**
+- Store clipboard data with metadata:
+  ```javascript
+  const clipboard = {
+    objects: [...copiedObjects],
+    sourceTransform: ctx.getTransform(), // Original zoom/pan
+    copyCenter: getCenterPoint(copiedObjects), // For relative positioning
+    timestamp: Date.now()
+  };
+  ```
+- Implement paste with automatic offset:
+  ```javascript
+  function paste() {
+    const offset = {x: 20, y: 20}; // Offset from original
+    const pastedObjects = clipboard.objects.map(obj => ({
+      ...obj,
+      id: generateNewId(),
+      x: obj.x + offset.x,
+      y: obj.y + offset.y
+    }));
+    addObjects(pastedObjects);
+  }
+  ```
+- Support paste-at-cursor (alternative to offset):
+  ```javascript
+  function pasteAtCursor(cursorPos) {
+    const center = clipboard.copyCenter;
+    const offsetX = cursorPos.x - center.x;
+    const offsetY = cursorPos.y - center.y;
+    // Paste with objects centered at cursor
+  }
+  ```
+- Extract transform translation correctly:
+  ```javascript
+  const transform = ctx.getTransform();
+  const translateX = transform.e; // Horizontal translation
+  const translateY = transform.f; // Vertical translation
+  ```
+- Cascade multiple pastes:
+  ```javascript
+  let pasteCount = 0;
+  function paste() {
+    pasteCount++;
+    const offset = {x: 20 * pasteCount, y: 20 * pasteCount};
+    // Creates diagonal cascade of pasted objects
+  }
+  ```
+- Normalize coordinates before copying, denormalize on paste:
+  ```javascript
+  function copy() {
+    clipboard.objects = selectedObjects.map(obj => ({
+      ...obj,
+      x: obj.x / canvas.width,  // Normalize
+      y: obj.y / canvas.height
+    }));
+  }
+  function paste() {
+    const objects = clipboard.objects.map(obj => ({
+      ...obj,
+      x: obj.x * canvas.width,   // Denormalize
+      y: obj.y * canvas.height
+    }));
+  }
+  ```
+
+**Warning signs:**
+- Pasted objects invisible (positioned off-screen)
+- Paste creates exact overlap with original (no offset)
+- Pasting after zoom creates tiny or huge objects
+- Ctrl+V multiple times creates stack at same position
+- Copy from one floor plan, paste to another - objects misaligned
+- Paste coordinates don't account for current pan/zoom state
+
+**Phase to address:**
+Phase 2 (Copy/Paste Implementation) - Basic functionality with automatic offset. Phase 3 (UX Polish) - Paste-at-cursor, cascade, cross-floor-plan support.
+
+---
+
 ## Technical Debt Patterns
 
 Shortcuts that seem reasonable but create long-term problems.

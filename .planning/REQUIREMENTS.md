@@ -238,7 +238,112 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 
 ### Requirements → Phases Mapping
 
-(To be populated during roadmap creation)
+| Requirement ID | Phase | Status |
+|----------------|-------|--------|
+| FOUND-01 | Phase 1 | Pending |
+| FOUND-02 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Pending |
+| FOUND-04 | Phase 1 | Pending |
+| FOUND-05 | Phase 1 | Pending |
+| FOUND-06 | Phase 1 | Pending |
+| FOUND-07 | Phase 1 | Pending |
+| FOUND-08 | Phase 1 | Pending |
+| FOUND-09 | Phase 1 | Pending |
+| FOUND-10 | Phase 1 | Pending |
+| ASSET-01 | Phase 2 | Pending |
+| ASSET-02 | Phase 2 | Pending |
+| ASSET-03 | Phase 2 | Pending |
+| ASSET-04 | Phase 2 | Pending |
+| ASSET-05 | Phase 2 | Pending |
+| ASSET-06 | Phase 2 | Pending |
+| ASSET-07 | Phase 2 | Pending |
+| ASSET-08 | Phase 2 | Pending |
+| LOC-01 | Phase 2 | Pending |
+| LOC-02 | Phase 2 | Pending |
+| LOC-03 | Phase 2 | Pending |
+| LOC-04 | Phase 2 | Pending |
+| LOC-05 | Phase 2 | Pending |
+| LOC-06 | Phase 2 | Pending |
+| EXPORT-01 | Phase 2 | Pending |
+| EXPORT-02 | Phase 2 | Pending |
+| EXPORT-03 | Phase 2 | Pending |
+| EXPORT-04 | Phase 2 | Pending |
+| EXPORT-05 | Phase 2 | Pending |
+| EXPORT-06 | Phase 2 | Pending |
+| EXPORT-07 | Phase 2 | Pending |
+| UI-01 | Phase 3 | Pending |
+| UI-02 | Phase 3 | Pending |
+| UI-03 | Phase 3 | Pending |
+| UI-04 | Phase 3 | Pending |
+| UI-05 | Phase 3 | Pending |
+| UI-06 | Phase 3 | Pending |
+| UI-07 | Phase 3 | Pending |
+| UI-08 | Phase 3 | Pending |
+| UI-09 | Phase 3 | Pending |
+| NAV-01 | Phase 3 | Pending |
+| NAV-02 | Phase 3 | Pending |
+| NAV-03 | Phase 3 | Pending |
+| NAV-04 | Phase 3 | Pending |
+| NAV-05 | Phase 3 | Pending |
+| NAV-06 | Phase 3 | Pending |
+| NAV-07 | Phase 3 | Pending |
+| FLOOR-01 | Phase 4 | Pending |
+| FLOOR-02 | Phase 4 | Pending |
+| FLOOR-03 | Phase 4 | Pending |
+| FLOOR-04 | Phase 4 | Pending |
+| FLOOR-05 | Phase 4 | Pending |
+| FLOOR-06 | Phase 4 | Pending |
+| FLOOR-07 | Phase 4 | Pending |
+| FLOOR-08 | Phase 4 | Pending |
+| ROOM-01 | Phase 5 | Pending |
+| ROOM-02 | Phase 5 | Pending |
+| ROOM-03 | Phase 5 | Pending |
+| ROOM-04 | Phase 5 | Pending |
+| ROOM-05 | Phase 5 | Pending |
+| ROOM-06 | Phase 5 | Pending |
+| ROOM-07 | Phase 5 | Pending |
+| ROOM-08 | Phase 5 | Pending |
+| ROOM-09 | Phase 5 | Pending |
+| PLACE-01 | Phase 6 | Pending |
+| PLACE-02 | Phase 6 | Pending |
+| PLACE-03 | Phase 6 | Pending |
+| PLACE-04 | Phase 6 | Pending |
+| PLACE-05 | Phase 6 | Pending |
+| PLACE-06 | Phase 6 | Pending |
+| PLACE-07 | Phase 6 | Pending |
+| PLACE-08 | Phase 6 | Pending |
+| PLACE-09 | Phase 6 | Pending |
+| PLACE-10 | Phase 6 | Pending |
+| PLACE-11 | Phase 6 | Pending |
+| FURN-01 | Phase 7 | Pending |
+| FURN-02 | Phase 7 | Pending |
+| FURN-03 | Phase 7 | Pending |
+| FURN-04 | Phase 7 | Pending |
+| FURN-05 | Phase 7 | Pending |
+| FURN-06 | Phase 7 | Pending |
+| FURN-07 | Phase 7 | Pending |
+| FURN-08 | Phase 7 | Pending |
+| FURN-09 | Phase 7 | Pending |
+| FURN-10 | Phase 7 | Pending |
+| INFRA-01 | Phase 7 | Pending |
+| INFRA-02 | Phase 7 | Pending |
+| INFRA-03 | Phase 7 | Pending |
+| INFRA-04 | Phase 7 | Pending |
+| INFRA-05 | Phase 7 | Pending |
+| INFRA-06 | Phase 7 | Pending |
+| INFRA-07 | Phase 7 | Pending |
+| MEAS-01 | Phase 8 | Pending |
+| MEAS-02 | Phase 8 | Pending |
+| MEAS-03 | Phase 8 | Pending |
+| MEAS-04 | Phase 8 | Pending |
+| MEAS-05 | Phase 8 | Pending |
+| MEAS-06 | Phase 8 | Pending |
+| MEAS-07 | Phase 8 | Pending |
+| MEAS-08 | Phase 8 | Pending |
+| MEAS-09 | Phase 8 | Pending |
+| MEAS-10 | Phase 8 | Pending |
+
+**Coverage:** 102/102 requirements mapped (100%)
 
 ### Research → Requirements Coverage
 
@@ -265,6 +370,6 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 
 ---
 
-**Total v1 Requirements:** 94
+**Total v1 Requirements:** 102
 **Total v2 Requirements:** 20
 **Explicitly Excluded:** 13

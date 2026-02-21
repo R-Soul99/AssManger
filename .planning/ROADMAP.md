@@ -1,8 +1,8 @@
-# Roadmap: Visual Asset Mapper
+# Roadmap: Visual Asset Mapper - Spatial Planning Interface
 
 ## Overview
 
-This roadmap delivers a desktop application for visual asset management with interactive floor plan mapping. Starting with foundational architecture (normalized coordinates, repository abstraction), building core asset management, then adding spatial features (floor plan viewer, marker placement), and finally enabling real-world measurements through calibration. Each phase delivers verifiable capabilities that build toward the core value: making equipment location and details instantly accessible through spatial visualization.
+This roadmap transforms requirements into a spatial planning tool that lets users visually define rooms on floor plans, drag-place assets and furniture, and manage infrastructure with real-world measurements. Starting with foundational architecture (normalized coordinates, repository pattern), building asset/location management and spatial UI shell, then layering floor plan management, room zone drawing, asset/furniture/infrastructure placement, and finally measurement capabilities. Each phase delivers observable user value while respecting technical dependencies.
 
 ## Phases
 
@@ -12,197 +12,168 @@ This roadmap delivers a desktop application for visual asset management with int
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Foundation & Database Setup** - Establish architecture foundations and database infrastructure
-- [x] **Phase 2: Location Hierarchy & Categories** - Build organizational structure and equipment classification
-- [x] **Phase 3: Asset Management & CSV Export** - Implement core asset CRUD and data export
-- [x] **Phase 4: Floor Plan Management** - Enable floor plan import and metadata management
-- [x] **Phase 5: Floor Plan Viewer** - Build interactive viewer with pan/zoom and marker display
-- [x] **Phase 6: Marker Management** - Add spatial editing capabilities for equipment placement (completed 2026-02-19)
-- [ ] **Phase 7: Calibration & Measurement** - Enable real-world measurements with scale calibration
+- [ ] **Phase 1: Foundation & Data Model** - Establish normalized coordinates, repository pattern, and database architecture
+- [ ] **Phase 2: Asset & Location Management** - CRUD operations for assets, hierarchical locations, and CSV export
+- [ ] **Phase 3: Spatial UI Shell & Navigation** - Three-panel layout with location tree, canvas area, and pan/zoom controls
+- [ ] **Phase 4: Floor Plan Management** - Import, display, and navigate floor plan images
+- [ ] **Phase 5: Room Zone Drawing** - Draw and manage colored room boundaries on floor plans
+- [ ] **Phase 6: Asset Placement** - Drag-and-drop asset icons onto canvas with linking
+- [ ] **Phase 7: Furniture & Infrastructure Placement** - Resizable furniture rectangles and infrastructure icons
+- [ ] **Phase 8: Measurement & Calibration** - Two-point calibration and distance measurement tools
 
 ## Phase Details
 
-### Phase 1: Foundation & Database Setup
-**Goal**: Establish architectural foundations with normalized coordinates, repository abstraction, and database infrastructure that enables future scaling.
-
+### Phase 1: Foundation & Data Model
+**Goal**: Establish architectural foundation with normalized coordinates, repository abstraction, and database schema that enables all spatial features without future migration pain.
 **Depends on**: Nothing (first phase)
-
-**Requirements**: FOUN-01, FOUN-02, FOUN-03, FOUN-04, FOUN-05, DB-01, DB-02, DB-03, DB-04, DB-05, DB-06
-
+**Requirements**: FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, FOUND-06, FOUND-07, FOUND-08, FOUND-09, FOUND-10
 **Success Criteria** (what must be TRUE):
-  1. Application can create new SQLite database file at user-chosen location
-  2. Application can open existing database file and remember recent projects
-  3. Application detects cloud-synced folders and warns user about SQLite corruption risks
-  4. Domain entities (Asset, FloorPlan, Marker, Location, Calibration) are implemented with validation
-  5. Normalized coordinate system (0.0-1.0 range) transforms correctly to pixel coordinates
-
-**Plans**: 6 plans
-
-Plans:
-- [x] 01-01-PLAN.md — Tauri scaffolding, dependencies, and project structure
-- [x] 01-02-PLAN.md — Domain entities with Zod validation
-- [x] 01-03-PLAN.md — Database schema, connection, and migrations
-- [x] 01-04-PLAN.md — Repository interfaces and SQLite implementations
-- [x] 01-05-PLAN.md — Application services (coordinates, cloud detection, file storage)
-- [x] 01-06-PLAN.md — Project management service and UI components
-
-### Phase 2: Location Hierarchy & Categories
-**Goal**: Users can organize assets by physical location hierarchy and classify equipment by category with visual styling.
-
-**Depends on**: Phase 1
-
-**Requirements**: LOC-01, LOC-02, LOC-03, LOC-04, LOC-05, CAT-01, CAT-02, CAT-03
-
-**Success Criteria** (what must be TRUE):
-  1. User can create site, assign buildings to site, assign floors to building, assign rooms to floor
-  2. User can edit and delete locations with system enforcing hierarchical integrity (no orphaned locations)
-  3. User can create equipment categories with name, description, icon, and color
-  4. User can edit and delete categories
-  5. Location and category data persists correctly in database through repository layer
-
-**Plans**: 4 plans
-
-Plans:
-- [x] 02-01-PLAN.md — Implement Categories CRUD
-- [x] 02-02-PLAN.md — Implement Locations as a flat list (CRUD)
-- [x] 02-03-PLAN.md — Implement Location Hierarchy (parent/child relationships)
-- [x] 02-04-PLAN.md — Link Assets to Categories and Locations
-
-### Phase 3: Asset Management & CSV Export
-**Goal**: Users can manage complete asset inventory with full CRUD operations, filtering, search, and Excel-compatible data export.
-
-**Depends on**: Phase 2
-
-**Requirements**: AST-01, AST-02, AST-03, AST-04, AST-05, AST-06, AST-07, AST-08, AST-09, AST-10, CSV-01, CSV-02, CSV-03, CSV-04, CSV-05
-
-**Success Criteria** (what must be TRUE):
-  1. User can create asset with required fields (asset tag, category, location, description)
-  2. User can edit asset details (serial number, phone/extension, status, owner, cost centre, notes)
-  3. User can view asset list with sortable columns and filter by site/building/floor/room, category, and status
-  4. User can search assets by asset tag, description, serial number, or phone number
-  5. User can view asset detail page showing all fields and linked floor plan markers
-  6. User can export assets, locations, and categories to UTF-8 BOM CSV that opens correctly in Excel
-
-**Plans**: 4 plans
-
-Plans:
-- [x] 03-01-PLAN.md — Enhanced asset list with filtering, search, and sorting
-- [x] 03-02-PLAN.md — Asset detail drawer with edit and dirty state tracking
-- [x] 03-03-PLAN.md — Configurable columns and bulk selection
-- [x] 03-04-PLAN.md — CSV export with UTF-8 BOM and Explorer reveal
-
-### Phase 4: Floor Plan Management
-**Goal**: Users can import floor plan images, organize them by building/floor, and manage floor plan metadata.
-
-**Depends on**: Phase 2
-
-**Requirements**: FLP-01, FLP-02, FLP-03, FLP-04, FLP-05, FLP-06
-
-**Success Criteria** (what must be TRUE):
-  1. User can import floor plan image (PNG/JPEG/BMP/TIF) and assign to building/floor
-  2. User can view list of all floor plans organized by site/building/floor hierarchy
-  3. User can edit floor plan metadata (name, building/floor assignment)
-  4. User can delete floor plan with warning if markers exist
-  5. System stores floor plan images with database-relative paths for portability
-  6. System supports multiple floor plans per floor (different areas/zones)
-
-**Plans**: 4 plans
-
-Plans:
-- [x] 04-01-PLAN.md — Schema, service, and mock repository for floor plans
-- [x] 04-02-PLAN.md — Import workflow with image conversion
-- [x] 04-03-PLAN.md — Card list view with drag-to-reorder and detail view
-- [x] 04-04-PLAN.md — Delete safety and bulk actions
-
-### Phase 5: Floor Plan Viewer
-**Goal**: Users can view floor plans with interactive pan/zoom, see all placed markers with category styling, and filter/toggle marker visibility.
-
-**Depends on**: Phase 3, Phase 4
-
-**Requirements**: VWR-01, VWR-02, VWR-03, VWR-04, VWR-05, VWR-06, VWR-07, VWR-08
-
-**Success Criteria** (what must be TRUE):
-  1. User can view floor plan with smooth pan (drag) and zoom (mouse wheel/pinch) controls
-  2. User can see all asset markers displayed on floor plan with category-specific icons and colors
-  3. User can click marker to see asset summary (name, asset tag, category, status)
-  4. User can navigate from marker popup to full asset detail view
-  5. User can toggle marker visibility by category
-  6. User can filter markers by asset status with filtered markers highlighted on floor plan
-  7. Viewer performs smoothly with 500+ markers through viewport culling
-
-**Plans**: 5 plans
-
-Plans:
-- [x] 05-01-PLAN.md — Canvas infrastructure and floor plan rendering
-- [x] 05-02-PLAN.md — Pan/zoom controls integration
-- [x] 05-03-PLAN.md — Marker rendering with category styling
-- [x] 05-04-PLAN.md — Interactive marker popups and navigation
-- [x] 05-05-PLAN.md — Filtering and visibility controls
-
-### Phase 6: Marker Management
-**Goal**: Users can place equipment markers on floor plans, link them to assets, reposition markers, and manage marker lifecycle.
-
-**Depends on**: Phase 5
-
-**Requirements**: MRK-01, MRK-02, MRK-03, MRK-04, MRK-05, MRK-06, MRK-07, MRK-08, MRK-09
-
-**Success Criteria** (what must be TRUE):
-  1. User can click on floor plan to place new marker
-  2. User can link new marker to existing asset via search/dropdown
-  3. User can create new asset directly from marker placement workflow
-  4. User can drag marker to reposition it on floor plan
-  5. User can delete marker from floor plan
-  6. Marker coordinates stored as normalized values (0.0-1.0) and transformed to pixels during rendering
-  7. Marker icons/colors automatically match linked asset's category
-  8. User can see marker count per floor plan
-
-**Plans**: 5 plans
-
-Plans:
-- [x] 06-01-PLAN.md — MarkerService mutations and useMarkers refresh trigger
-- [x] 06-02-PLAN.md — Edit mode toggle button and filtered marker count in toolbar
-- [x] 06-03-PLAN.md — Canvas edit interactions: click-to-place, drag-to-reposition, Space+drag pan
-- [ ] 06-04-PLAN.md — AssetLinkDialog and QuickCreateAssetForm
-- [ ] 06-05-PLAN.md — MarkerEditPopup and full FloorPlanViewer integration
-
-### Phase 7: Calibration & Measurement
-**Goal**: Users can calibrate floor plans to real-world scale and measure distances accurately using calibrated measurements.
-
-**Depends on**: Phase 6
-
-**Requirements**: CAL-01, CAL-02, CAL-03, CAL-04, CAL-05, CAL-06, CAL-07, CAL-08, MSR-01, MSR-02, MSR-03, MSR-04, MSR-05, MSR-06
-
-**Success Criteria** (what must be TRUE):
-  1. User can activate two-point calibration tool and click two points representing known distance
-  2. User can enter real-world distance and select units (metres/feet)
-  3. System calculates and stores scale (units per pixel) with validation warnings for unrealistic values
-  4. User can see calibration status and scale value displayed on floor plan
-  5. User can re-calibrate floor plan at any time
-  6. System shows visual feedback during calibration (line between points, distance preview)
-  7. User can activate measurement tool on calibrated floor plan and measure distance between two points
-  8. System displays real-world distance using calibration data with measurement line and label
-  9. System warns if floor plan is not calibrated when measurement tool activated
-
+  1. All spatial data stored using normalized coordinates (0.0-1.0 range)
+  2. Repository interfaces defined with SQLite implementations working
+  3. Domain entities with validation (Asset, FloorPlan, RoomZone, Furniture, Infrastructure, Location, Calibration) exist
+  4. User can create new database or open existing database file
+  5. Database migrations execute successfully on schema changes
+  6. File storage abstraction uses relative paths not absolute paths
 **Plans**: TBD
 
 Plans:
-- [ ] TBD during phase planning
+- [ ] TBD
+
+### Phase 2: Asset & Location Management
+**Goal**: Deliver core non-spatial asset management features (CRUD, search, filter, hierarchy) and CSV export, validating repository layer before adding spatial complexity.
+**Depends on**: Phase 1
+**Requirements**: ASSET-01, ASSET-02, ASSET-03, ASSET-04, ASSET-05, ASSET-06, ASSET-07, ASSET-08, LOC-01, LOC-02, LOC-03, LOC-04, LOC-05, LOC-06, EXPORT-01, EXPORT-02, EXPORT-03, EXPORT-04, EXPORT-05, EXPORT-06, EXPORT-07
+**Success Criteria** (what must be TRUE):
+  1. User can create, view, update, and delete assets with required fields (tag, description, asset type, location)
+  2. User can search assets by tag, description, type, or location
+  3. User can filter assets by asset type, location, or status
+  4. User can create and navigate Building → Floor → Room hierarchy in left sidebar tree
+  5. User can edit and delete locations with cascade warnings if assets/floor plans linked
+  6. User can export assets, locations, and asset types to Excel-compatible CSV files
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 3: Spatial UI Shell & Navigation
+**Goal**: Build three-panel layout foundation and pan/zoom navigation system that all spatial features will use, establishing responsive canvas interaction patterns.
+**Depends on**: Phase 2
+**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, UI-07, UI-08, UI-09, NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06, NAV-07
+**Success Criteria** (what must be TRUE):
+  1. Three-panel layout displays correctly with location tree (left), canvas (center), details panel (right)
+  2. Bottom toolbar shows Edit/Move/Delete tools plus asset/furniture/infrastructure palette icons
+  3. Details panel shows context-sensitive information (asset counts by type when room selected)
+  4. User can pan canvas by dragging background and zoom using scroll wheel or zoom controls
+  5. Zoom preserves cursor position and respects limits (10%-500%)
+  6. Layout adapts to window resize with minimum 1280x720 support
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 4: Floor Plan Management
+**Goal**: Enable floor plan image import and display on canvas, validating coordinate transformation and file storage before adding interactive editing.
+**Depends on**: Phase 3
+**Requirements**: FLOOR-01, FLOOR-02, FLOOR-03, FLOOR-04, FLOOR-05, FLOOR-06, FLOOR-07, FLOOR-08
+**Success Criteria** (what must be TRUE):
+  1. User can import floor plan images (PNG, JPG, TIFF) and link to Building or Floor locations
+  2. Floor plan displays on canvas when location selected in tree
+  3. Floor plan maintains correct aspect ratio across all zoom levels
+  4. Floor plan images stored with relative paths in database for portability
+  5. Multiple floor plans work correctly (one per Building/Floor level)
+  6. User can pan and zoom floor plan smoothly without lag
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 5: Room Zone Drawing
+**Goal**: Enable users to draw colored room boundaries on floor plans and zoom into specific rooms, establishing spatial scoping for all objects.
+**Depends on**: Phase 4
+**Requirements**: ROOM-01, ROOM-02, ROOM-03, ROOM-04, ROOM-05, ROOM-06, ROOM-07, ROOM-08, ROOM-09
+**Success Criteria** (what must be TRUE):
+  1. User can draw room boundaries as colored rectangles on floor plans
+  2. Room zones link correctly to Room locations in hierarchy
+  3. Room zones display with color coding (yellow, cyan, magenta, orange per mockup)
+  4. User can resize room zones by dragging corner/edge handles
+  5. User can move room zones by dragging interior
+  6. User can click room in tree and canvas zooms to show only that room's bounds
+  7. Room zones stored with normalized coordinates (x, y, width, height, color)
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 6: Asset Placement
+**Goal**: Deliver core spatial value proposition - drag-and-drop asset placement on floor plans with visual icons and linking to asset records.
+**Depends on**: Phase 5
+**Requirements**: PLACE-01, PLACE-02, PLACE-03, PLACE-04, PLACE-05, PLACE-06, PLACE-07, PLACE-08, PLACE-09, PLACE-10, PLACE-11
+**Success Criteria** (what must be TRUE):
+  1. User can drag asset icon from toolbar palette and drop on canvas to place
+  2. User can click "Add..." button in details panel and asset icon follows cursor until clicked to place
+  3. User can link placed marker to existing asset via dialog/autocomplete
+  4. User can create new asset inline during placement workflow
+  5. Asset markers display with category-specific icons on canvas
+  6. User can click asset marker to view/edit details in right panel
+  7. User can drag asset marker to reposition on floor plan
+  8. Asset placements scope correctly to room zones (only visible when room displayed)
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 7: Furniture & Infrastructure Placement
+**Goal**: Complete spatial object palette with resizable furniture rectangles and infrastructure point placements, enabling full facility visualization.
+**Depends on**: Phase 6
+**Requirements**: FURN-01, FURN-02, FURN-03, FURN-04, FURN-05, FURN-06, FURN-07, FURN-08, FURN-09, FURN-10, INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INFRA-06, INFRA-07
+**Success Criteria** (what must be TRUE):
+  1. User can drag furniture types (Desk, Bench, Custom) from toolbar onto canvas
+  2. Furniture displays as resizable rectangles with outlined shapes
+  3. User can resize furniture by dragging corner/edge handles
+  4. User can rotate furniture pieces via rotation handle or property input
+  5. User can move furniture by dragging interior
+  6. User can drag infrastructure icons (Power outlet, Network port) from toolbar to canvas
+  7. Furniture and infrastructure scope correctly to room zones (only visible when room displayed)
+  8. Visual distinction is clear between assets (icons), furniture (outlined rectangles), and infrastructure (distinct icon style)
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
+
+### Phase 8: Measurement & Calibration
+**Goal**: Enable accurate real-world measurements through two-point calibration and distance measurement tool, completing spatial planning feature set.
+**Depends on**: Phase 7
+**Requirements**: MEAS-01, MEAS-02, MEAS-03, MEAS-04, MEAS-05, MEAS-06, MEAS-07, MEAS-08, MEAS-09, MEAS-10
+**Success Criteria** (what must be TRUE):
+  1. User can calibrate floor plan scale using two-point calibration workflow
+  2. User clicks two points and enters known real-world distance
+  3. Calibration validates input with minimum distance checks and sanity validation for unrealistic scales
+  4. Visual feedback shown during calibration with real-time calculation preview
+  5. User can access measure tool from toolbar
+  6. Measure tool displays real-world distance between two points clicked
+  7. Coordinate display shown when using measure tool (hover near crosshairs)
+  8. Coordinates hidden from main UI (background data only, not prominent display)
+**Plans**: TBD
+
+Plans:
+- [ ] TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Database Setup | 6/6 | Complete | 2026-01-29 |
-| 2. Location Hierarchy & Categories | 4/4 | Complete | 2026-02-01 |
-| 3. Asset Management & CSV Export | 4/4 | Complete | 2026-02-04 |
-| 4. Floor Plan Management | 4/4 | Complete | 2026-02-07 |
-| 5. Floor Plan Viewer | 5/5 | Complete | 2026-02-13 |
-| 6. Marker Management | 5/5 | Complete   | 2026-02-19 |
-| 7. Calibration & Measurement | 0/TBD | Not started | - |
+| 1. Foundation & Data Model | 0/TBD | Not started | - |
+| 2. Asset & Location Management | 0/TBD | Not started | - |
+| 3. Spatial UI Shell & Navigation | 0/TBD | Not started | - |
+| 4. Floor Plan Management | 0/TBD | Not started | - |
+| 5. Room Zone Drawing | 0/TBD | Not started | - |
+| 6. Asset Placement | 0/TBD | Not started | - |
+| 7. Furniture & Infrastructure Placement | 0/TBD | Not started | - |
+| 8. Measurement & Calibration | 0/TBD | Not started | - |
 
 ---
-*Roadmap created: 2026-01-28*
-*Last updated: 2026-02-19 (Phase 6 plan 06-03 complete — Canvas edit mode: click-to-place, drag-to-reposition, Space+drag pan)*
+*Roadmap created: 2026-02-21*
+*Reflects spatial UI pivot from PROJECT.md vision (three-panel layout, room zones, furniture, infrastructure)*

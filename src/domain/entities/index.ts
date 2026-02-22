@@ -4,3 +4,5 @@ export { FloorPlan } from './FloorPlan';
 export { Marker } from './Marker';
 export { Calibration } from './Calibration';
 export type { Category } from './Category';
+export type { AssetType, CustomFieldDefinition } from './AssetType';
+export { validateCustomFieldDefinition } from './AssetType';

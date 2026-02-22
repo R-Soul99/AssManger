@@ -34,10 +34,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. User can create new database or open existing database file
   5. Database migrations execute successfully on schema changes
   6. File storage abstraction uses relative paths not absolute paths
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD
+- [ ] 01-01-PLAN.md — Complete spatial entity domain models (RoomZone, Furniture, Infrastructure)
+- [ ] 01-02-PLAN.md — Implement asset types and custom fields system
+- [ ] 01-03-PLAN.md — Build project management workflows (create/open/recent databases)
+- [ ] 01-04-PLAN.md — Add cloud folder detection and auto-migrations
 
 ### Phase 2: Asset & Location Management
 **Goal**: Deliver core non-spatial asset management features (CRUD, search, filter, hierarchy) and CSV export, validating repository layer before adding spatial complexity.
@@ -165,7 +168,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Data Model | 0/TBD | Not started | - |
+| 1. Foundation & Data Model | 0/4 | Not started | - |
 | 2. Asset & Location Management | 0/TBD | Not started | - |
 | 3. Spatial UI Shell & Navigation | 0/TBD | Not started | - |
 | 4. Floor Plan Management | 0/TBD | Not started | - |

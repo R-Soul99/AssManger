@@ -94,6 +94,58 @@ export const CategorySchema = z.object({
   updatedAt: z.date(),
 });
 
+// RoomZone schema (spatial entity for room boundaries)
+export const RoomZoneSchema = z.object({
+  id: z.string().uuid(),
+  floorPlanId: z.string().uuid("Floor plan is required"),
+  locationId: z.string().uuid("Location is required"),
+  normalizedX: NormalizedCoordinateSchema,
+  normalizedY: NormalizedCoordinateSchema,
+  normalizedWidth: NormalizedCoordinateSchema,
+  normalizedHeight: NormalizedCoordinateSchema,
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Color must be a valid hex code"),
+  name: z.string().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+// Furniture type enum
+export const FurnitureTypeSchema = z.enum(['desk', 'bench', 'custom']);
+export type FurnitureType = z.infer<typeof FurnitureTypeSchema>;
+
+// Furniture schema (spatial entity for furniture placement)
+export const FurnitureSchema = z.object({
+  id: z.string().uuid(),
+  floorPlanId: z.string().uuid("Floor plan is required"),
+  roomZoneId: z.string().uuid("Room zone is required"),
+  type: FurnitureTypeSchema,
+  normalizedX: NormalizedCoordinateSchema,
+  normalizedY: NormalizedCoordinateSchema,
+  normalizedWidth: NormalizedCoordinateSchema,
+  normalizedHeight: NormalizedCoordinateSchema,
+  rotation: z.number().min(0).max(360).default(0),
+  customFields: z.record(z.any()).optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+// Infrastructure type enum
+export const InfrastructureTypeSchema = z.enum(['power_outlet', 'network_port']);
+export type InfrastructureType = z.infer<typeof InfrastructureTypeSchema>;
+
+// Infrastructure schema (spatial entity for infrastructure points)
+export const InfrastructureSchema = z.object({
+  id: z.string().uuid(),
+  floorPlanId: z.string().uuid("Floor plan is required"),
+  roomZoneId: z.string().uuid("Room zone is required"),
+  type: InfrastructureTypeSchema,
+  normalizedX: NormalizedCoordinateSchema,
+  normalizedY: NormalizedCoordinateSchema,
+  customFields: z.record(z.any()).optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
 // Type exports
 export type LocationData = z.infer<typeof LocationSchema>;
 export type AssetData = z.infer<typeof AssetSchema>;
@@ -101,3 +153,6 @@ export type FloorPlanData = z.infer<typeof FloorPlanSchema>;
 export type MarkerData = z.infer<typeof MarkerSchema>;
 export type CalibrationData = z.infer<typeof CalibrationSchema>;
 export type CategoryData = z.infer<typeof CategorySchema>;
+export type RoomZoneData = z.infer<typeof RoomZoneSchema>;
+export type FurnitureData = z.infer<typeof FurnitureSchema>;
+export type InfrastructureData = z.infer<typeof InfrastructureSchema>;

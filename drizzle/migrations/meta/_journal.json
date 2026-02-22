@@ -29,6 +29,20 @@
       "when": 1769967188476,
       "tag": "0003_quiet_zombie",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1770232862461,
+      "tag": "0004_next_cerise",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1771777130000,
+      "tag": "0005_add_asset_types_and_custom_fields",
+      "breakpoints": true
     }
   ]
 }

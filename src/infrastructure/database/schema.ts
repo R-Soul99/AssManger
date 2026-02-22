@@ -18,7 +18,8 @@ export const assets = sqliteTable('assets', {
   tag: text('tag').notNull(),
   description: text('description').notNull(),
   locationId: text('location_id').notNull().references(() => locations.id, { onDelete: 'restrict' }),
-  categoryId: integer('category_id').references(() => categories.id, { onDelete: 'restrict' }),
+  assetTypeId: text('asset_type_id').references(() => assetTypes.id, { onDelete: 'restrict' }),
+  categoryId: integer('category_id').references(() => categories.id, { onDelete: 'restrict' }), // DEPRECATED - will be removed after migration
   serialNumber: text('serial_number'),
   phoneExtension: text('phone_extension'),
   status: text('status', { enum: ['active', 'pending', 'decommissioned', 'faulty', 'maintenance'] }).notNull().default('active'),
@@ -92,10 +93,14 @@ export const assetsRelations = relations(assets, ({ one, many }) => ({
     fields: [assets.locationId],
     references: [locations.id],
   }),
+  assetType: one(assetTypes, {
+    fields: [assets.assetTypeId],
+    references: [assetTypes.id],
+  }),
   category: one(categories, {
     fields: [assets.categoryId],
     references: [categories.id],
-  }),
+  }), // DEPRECATED
   markers: many(markers),
 }));
 
@@ -126,7 +131,35 @@ export const calibrationsRelations = relations(calibrations, ({ one }) => ({
   }),
 }));
 
-// Categories table (hierarchical)
+// Asset Types table (replaces categories)
+export const assetTypes = sqliteTable('asset_types', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  description: text('description'),
+  icon: text('icon').notNull().default('FaBox'),
+  color: text('color').notNull().default('#000000'),
+  isSystemType: integer('is_system_type', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
+
+// Custom Field Definitions table
+export const customFieldDefinitions = sqliteTable('custom_field_definitions', {
+  id: text('id').primaryKey(),
+  assetTypeId: text('asset_type_id').notNull().references(() => assetTypes.id, { onDelete: 'cascade' }),
+  fieldName: text('field_name').notNull(),
+  fieldType: text('field_type', { enum: ['text', 'number', 'date', 'dropdown', 'checkbox', 'link'] }).notNull(),
+  required: integer('required', { mode: 'boolean' }).notNull().default(false),
+  dropdownOptions: text('dropdown_options'), // JSON array stored as text
+  defaultValue: text('default_value'), // JSON-encoded value
+  displayOrder: integer('display_order').notNull().default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+}, (table) => ({
+  uniqueFieldName: uniqueIndex('custom_field_definitions_unique_field_name').on(table.assetTypeId, table.fieldName),
+}));
+
+// Categories table (hierarchical) - DEPRECATED, will be removed in migration
 export const categories = sqliteTable('categories', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
@@ -138,7 +171,21 @@ export const categories = sqliteTable('categories', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
 
-// Relations for Categories
+// Relations for Asset Types
+export const assetTypesRelations = relations(assetTypes, ({ many }) => ({
+  assets: many(assets),
+  customFieldDefinitions: many(customFieldDefinitions),
+}));
+
+// Relations for Custom Field Definitions
+export const customFieldDefinitionsRelations = relations(customFieldDefinitions, ({ one }) => ({
+  assetType: one(assetTypes, {
+    fields: [customFieldDefinitions.assetTypeId],
+    references: [assetTypes.id],
+  }),
+}));
+
+// Relations for Categories - DEPRECATED
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
   parent: one(categories, {
     fields: [categories.parentId],

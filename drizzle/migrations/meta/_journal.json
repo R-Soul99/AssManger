@@ -43,6 +43,13 @@
       "when": 1771777130000,
       "tag": "0005_add_asset_types_and_custom_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1771777200000,
+      "tag": "0006_add_spatial_entities",
+      "breakpoints": true
     }
   ]
 }

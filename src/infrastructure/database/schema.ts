@@ -76,6 +76,50 @@ export const calibrations = sqliteTable('calibrations', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
 
+// Room Zones table (spatial entity for room boundaries)
+export const roomZones = sqliteTable('room_zones', {
+  id: text('id').primaryKey(),
+  floorPlanId: text('floor_plan_id').notNull().references(() => floorPlans.id, { onDelete: 'cascade' }),
+  locationId: text('location_id').notNull().references(() => locations.id, { onDelete: 'restrict' }),
+  normalizedX: real('normalized_x').notNull(), // 0.0 to 1.0
+  normalizedY: real('normalized_y').notNull(), // 0.0 to 1.0
+  normalizedWidth: real('normalized_width').notNull(), // 0.0 to 1.0
+  normalizedHeight: real('normalized_height').notNull(), // 0.0 to 1.0
+  color: text('color').notNull(),
+  name: text('name'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
+
+// Furniture table (spatial entity for furniture placement)
+export const furniture = sqliteTable('furniture', {
+  id: text('id').primaryKey(),
+  floorPlanId: text('floor_plan_id').notNull().references(() => floorPlans.id, { onDelete: 'cascade' }),
+  roomZoneId: text('room_zone_id').notNull().references(() => roomZones.id, { onDelete: 'cascade' }),
+  type: text('type', { enum: ['desk', 'bench', 'custom'] }).notNull(),
+  normalizedX: real('normalized_x').notNull(), // 0.0 to 1.0 (center point)
+  normalizedY: real('normalized_y').notNull(), // 0.0 to 1.0 (center point)
+  normalizedWidth: real('normalized_width').notNull(), // 0.0 to 1.0
+  normalizedHeight: real('normalized_height').notNull(), // 0.0 to 1.0
+  rotation: real('rotation').notNull().default(0), // degrees 0-360
+  customFields: text('custom_fields'), // JSON stored as text
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
+
+// Infrastructure table (spatial entity for infrastructure points)
+export const infrastructure = sqliteTable('infrastructure', {
+  id: text('id').primaryKey(),
+  floorPlanId: text('floor_plan_id').notNull().references(() => floorPlans.id, { onDelete: 'cascade' }),
+  roomZoneId: text('room_zone_id').notNull().references(() => roomZones.id, { onDelete: 'cascade' }),
+  type: text('type', { enum: ['power_outlet', 'network_port'] }).notNull(),
+  normalizedX: real('normalized_x').notNull(), // 0.0 to 1.0 (point location)
+  normalizedY: real('normalized_y').notNull(), // 0.0 to 1.0 (point location)
+  customFields: text('custom_fields'), // JSON stored as text
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
+
 // Relations (for Drizzle query builder)
 export const locationsRelations = relations(locations, ({ one, many }) => ({
   parent: one(locations, {
@@ -86,6 +130,7 @@ export const locationsRelations = relations(locations, ({ one, many }) => ({
   children: many(locations, { relationName: 'locationHierarchy' }),
   assets: many(assets),
   floorPlans: many(floorPlans),
+  roomZones: many(roomZones),
 }));
 
 export const assetsRelations = relations(assets, ({ one, many }) => ({
@@ -111,6 +156,9 @@ export const floorPlansRelations = relations(floorPlans, ({ one, many }) => ({
   }),
   markers: many(markers),
   calibration: one(calibrations),
+  roomZones: many(roomZones),
+  furniture: many(furniture),
+  infrastructure: many(infrastructure),
 }));
 
 export const markersRelations = relations(markers, ({ one }) => ({
@@ -194,4 +242,42 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
   }),
   children: many(categories, { relationName: 'categoryHierarchy' }),
   assets: many(assets),
+}));
+
+// Relations for Room Zones
+export const roomZonesRelations = relations(roomZones, ({ one, many }) => ({
+  floorPlan: one(floorPlans, {
+    fields: [roomZones.floorPlanId],
+    references: [floorPlans.id],
+  }),
+  location: one(locations, {
+    fields: [roomZones.locationId],
+    references: [locations.id],
+  }),
+  furniture: many(furniture),
+  infrastructure: many(infrastructure),
+}));
+
+// Relations for Furniture
+export const furnitureRelations = relations(furniture, ({ one }) => ({
+  floorPlan: one(floorPlans, {
+    fields: [furniture.floorPlanId],
+    references: [floorPlans.id],
+  }),
+  roomZone: one(roomZones, {
+    fields: [furniture.roomZoneId],
+    references: [roomZones.id],
+  }),
+}));
+
+// Relations for Infrastructure
+export const infrastructureRelations = relations(infrastructure, ({ one }) => ({
+  floorPlan: one(floorPlans, {
+    fields: [infrastructure.floorPlanId],
+    references: [floorPlans.id],
+  }),
+  roomZone: one(roomZones, {
+    fields: [infrastructure.roomZoneId],
+    references: [roomZones.id],
+  }),
 }));

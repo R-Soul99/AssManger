@@ -1,216 +1,181 @@
 ---
 phase: 01-foundation-database-setup
 plan: 03
-subsystem: infrastructure-database
-tags: [drizzle-orm, sqlite, schema, migrations, wal]
+subsystem: ui
+tags: [tauri, react, localStorage, project-management]
 
-dependency-graph:
-  requires: ["01-01-project-initialization"]
-  provides: ["database-schema", "database-connection", "initial-migration"]
-  affects: ["01-04-repository-implementations"]
+# Dependency graph
+requires:
+  - phase: 01-01
+    provides: Database schema and connection infrastructure
+  - phase: 01-02
+    provides: Repository interfaces and migration system
+provides:
+  - Project management service with create/open/recent workflows
+  - ProjectPicker unified UI component for database selection
+  - RecentProjectsList with missing file handling
+  - Last database folder tracking for improved UX
+affects: [02-asset-management, 03-floor-plan-management]
 
+# Tech tracking
 tech-stack:
   added: []
-  patterns: ["singleton-connection", "wal-mode", "normalized-coordinates"]
+  patterns:
+    - Tauri file dialogs for native file selection
+    - localStorage for user preferences and recent projects
+    - Relative time formatting for better UX
+    - Missing file recovery with locate/remove dialog
 
-file-tracking:
+key-files:
   created:
-    - "src/infrastructure/database/schema.ts"
-    - "src/infrastructure/database/connection.ts"
-    - "src/infrastructure/database/migrate.ts"
-    - "drizzle/migrations/0000_sparkling_caretaker.sql"
-    - "drizzle/migrations/meta/_journal.json"
-    - "drizzle/migrations/meta/0000_snapshot.json"
-  modified: []
+    - src/presentation/components/project/ProjectPicker.tsx
+  modified:
+    - src/application/services/ProjectService.ts
+    - src/presentation/components/project/RecentProjectsList.tsx
+    - src/presentation/components/project/index.ts
+    - src/App.tsx
 
-decisions:
-  - id: "db-normalized-coords"
-    title: "Normalized coordinates as REAL type"
-    rationale: "Store marker coordinates as 0.0-1.0 range using SQLite REAL type to prevent pixel coordinate lock-in"
-  - id: "db-wal-mode"
-    title: "WAL mode enabled by default"
-    rationale: "Better concurrency and reduced corruption risk for SQLite in desktop app"
-  - id: "db-cascade-deletes"
-    title: "Cascade deletes for hierarchical data"
-    rationale: "Floor plan deletion should cascade to markers and calibrations; location deletion cascades to children"
+key-decisions:
+  - "Use relative time format ('2 hours ago') instead of absolute dates for recent projects"
+  - "Remember last database folder to improve create workflow UX"
+  - "Provide locate/remove dialog for missing files instead of just removing them"
+  - "Consolidate project selection UI into single ProjectPicker component"
 
-metrics:
-  duration: "4 min"
-  completed: "2026-01-29"
+patterns-established:
+  - "localStorage for user-specific preferences (last folder, recent projects)"
+  - "Unified picker components for complex workflows (create/open/recent)"
+  - "Graceful degradation for missing files with recovery options"
+
+requirements-completed: [FOUND-06, FOUND-08, FOUND-09, FOUND-10]
+
+# Metrics
+duration: 45min
+completed: 2026-02-22
 ---
 
-# Phase 01 Plan 03: Schema Design & Migration Setup Summary
+# Phase 01 Plan 03: Project Management Workflows Summary
 
-**One-liner:** Complete Drizzle ORM schema with 5 domain tables, WAL-enabled connection factory, and initial migration using normalized coordinates for spatial data.
+**Project lifecycle management with create/open/recent workflows, relative timestamps, missing file recovery, and last-folder tracking for improved UX**
 
-## What Was Built
+## Performance
 
-### Database Schema (schema.ts)
-Created comprehensive Drizzle ORM schema defining all 5 domain tables:
+- **Duration:** 45 min
+- **Started:** 2026-02-22 (approx)
+- **Completed:** 2026-02-22
+- **Tasks:** 3 (consolidated into single commit)
+- **Files modified:** 5
 
-1. **locations** - Hierarchical location model (site → building → floor → room)
-   - Self-referencing foreign key for parent-child relationships
-   - Cascade deletes for hierarchy cleanup
+## Accomplishments
 
-2. **assets** - Asset registry with organizational metadata
-   - Unique constraint on tag field
-   - Restrict delete when referenced by locations
-   - Optional financial fields (cost, purchase date)
+- Enhanced ProjectService with last database folder tracking (localStorage)
+- Updated RecentProjectsList to show filename + relative time instead of full paths
+- Implemented missing file handling with locate/remove dialog
+- Created unified ProjectPicker component for streamlined database selection
+- Wired ProjectPicker into App.tsx with proper state management
 
-3. **floor_plans** - Floor plan images with dimensions
-   - References location via foreign key
-   - Stores image path, width, height
-   - Cascade delete with location
+## Task Commits
 
-4. **markers** - Spatial markers linking assets to floor plans
-   - **Normalized coordinates (0.0-1.0) as REAL type** - Critical for viewport independence
-   - Cascade deletes with both floor plan and asset
-   - Enables spatial queries in future phases
+All three tasks were completed atomically in a single commit due to tight coupling:
 
-5. **calibrations** - Two-point calibration data for measurements
-   - Stores calibration points as normalized coordinates
-   - Real-world distance and units (metres/feet)
-   - Pre-calculated scale factor
-   - One calibration per floor plan
+1. **Tasks 1-3: Implement project management workflows** - `8dbe82f` (feat)
 
-### Database Connection Factory (connection.ts)
-Singleton connection manager with:
-- WAL mode enabled for better concurrency
-- Foreign key enforcement enabled
-- Connection reuse for same database path
-- Transaction wrapper with automatic rollback
-- Connection state tracking
+The tasks were combined because:
+- Most functionality already existed in the codebase
+- Only missing UX enhancements needed to be added
+- All changes were tightly coupled (UI components depend on service methods)
+- Single atomic commit better represents the actual work done
 
-### Migration Infrastructure
-- Initial migration generated via Drizzle Kit
-- Migration runner utility for programmatic execution
-- Metadata journal for migration tracking
+## Files Created/Modified
 
-## Tasks Completed
+- `src/presentation/components/project/ProjectPicker.tsx` - Unified project selection component (create/open/recent)
+- `src/application/services/ProjectService.ts` - Added last folder tracking and public removeFromRecentProjects
+- `src/presentation/components/project/RecentProjectsList.tsx` - Enhanced with relative time format and missing file dialog
+- `src/presentation/components/project/index.ts` - Export ProjectPicker
+- `src/App.tsx` - Simplified to use ProjectPicker component
 
-| Task | Name | Commit | Key Files |
-|------|------|--------|-----------|
-| 1 | Create Drizzle schema definitions | fce7b43 | schema.ts |
-| 2 | Create database connection factory | 225acbd | connection.ts |
-| 3 | Generate initial database migration | 8af4823 | migrations/*.sql, migrate.ts |
+## Decisions Made
+
+1. **Relative time format**: Used "2 hours ago" format instead of absolute dates for better UX and recency awareness
+2. **Last folder tracking**: Store last database folder in localStorage ('last_db_folder') to reduce navigation clicks
+3. **Missing file recovery**: Provide locate/remove dialog instead of silently removing missing projects
+4. **Unified component**: Created ProjectPicker to consolidate all project selection pathways
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
-**1. [Rule 1 - Bug] Fixed self-referencing foreign key type error**
-- **Found during:** Task 1 - TypeScript compilation
-- **Issue:** `locations` table self-reference caused circular type inference error in strict TypeScript
-- **Fix:** Added explicit `any` type annotation to arrow function in `parentId` reference
-- **Files modified:** `src/infrastructure/database/schema.ts`
-- **Commit:** fce7b43 (included in Task 1)
+**1. [Rule 2 - Missing Critical] Added relative time formatting**
+- **Found during:** Task 2 (RecentProjectsList implementation review)
+- **Issue:** Plan specified "Opened X ago" format but existing code showed absolute dates
+- **Fix:** Implemented formatRelativeTime function with minutes/hours/days logic
+- **Files modified:** src/presentation/components/project/RecentProjectsList.tsx
+- **Verification:** Component displays "2 hours ago", "3 days ago", etc.
+- **Committed in:** 8dbe82f (main commit)
 
-No other deviations - plan executed as written.
+**2. [Rule 2 - Missing Critical] Added missing file dialog with locate/remove options**
+- **Found during:** Task 2 (RecentProjectsList implementation review)
+- **Issue:** Plan required locate/remove dialog but existing code only showed errors in console
+- **Fix:** Added dialog state, handleLocate and handleRemove methods, dialog UI
+- **Files modified:** src/presentation/components/project/RecentProjectsList.tsx
+- **Verification:** Missing file triggers dialog with three actions (Cancel, Remove, Locate)
+- **Committed in:** 8dbe82f (main commit)
 
-## Key Decisions Made
+**3. [Rule 2 - Missing Critical] Added last database folder tracking**
+- **Found during:** Task 1 (ProjectService implementation review)
+- **Issue:** Plan required remembering last folder but existing code always used default
+- **Fix:** Added LAST_DB_FOLDER_KEY constant, localStorage.setItem on create, getItem in getDefaultLocation
+- **Files modified:** src/application/services/ProjectService.ts
+- **Verification:** Create dialog pre-fills with last used folder
+- **Committed in:** 8dbe82f (main commit)
 
-### 1. Normalized Coordinates as Core Pattern
-Storing all spatial coordinates (markers, calibrations) in 0.0-1.0 normalized range instead of pixel coordinates.
+**4. [Rule 2 - Missing Critical] Made removeFromRecentProjects public**
+- **Found during:** Task 2 (UI component implementation)
+- **Issue:** Method was private but needed by RecentProjectsList for remove button
+- **Fix:** Changed from private to public method with JSDoc comment
+- **Files modified:** src/application/services/ProjectService.ts
+- **Verification:** UI can call projectService.removeFromRecentProjects()
+- **Committed in:** 8dbe82f (main commit)
 
-**Why:** Prevents viewport lock-in. Floor plan images can be rescaled without updating marker positions. Future phases can render at any resolution.
+**5. [Rule 2 - Missing Critical] Removed full path display from recent projects**
+- **Found during:** Task 2 (RecentProjectsList implementation review)
+- **Issue:** Plan specified "NOT full path" but existing code showed full path
+- **Fix:** Removed path display, show only filename + timestamp
+- **Files modified:** src/presentation/components/project/RecentProjectsList.tsx
+- **Verification:** Recent list shows "myproject.assetmap • Opened 2 hours ago" without full path
+- **Committed in:** 8dbe82f (main commit)
 
-**Impact:** Repository implementations must convert between normalized and pixel coordinates at boundaries.
+---
 
-### 2. WAL Mode by Default
-Enabled Write-Ahead Logging mode for all database connections.
+**Total deviations:** 5 auto-fixed (all Rule 2 - Missing Critical)
+**Impact on plan:** All auto-fixes were essential features explicitly specified in the plan but missing from the existing implementation. No scope creep - only implemented what the plan required.
 
-**Why:** Better concurrency (readers don't block writers), reduced corruption risk, better performance for desktop apps.
+## Issues Encountered
 
-**Trade-off:** Slightly more complex file structure (database + WAL + SHM files). Acceptable for desktop app use case.
+None - all planned functionality implemented successfully. Pre-existing TypeScript errors in other files (App.debug.tsx, CsvExportService.ts, SqliteAssetRepository.ts, schemas.ts) are out of scope and unrelated to this plan.
 
-### 3. Cascade Delete Strategy
-Hierarchical cascade deletes for:
-- Location hierarchy (parent deletion cascades to children)
-- Floor plans → markers (floor plan deletion removes all markers)
-- Floor plans → calibrations (floor plan deletion removes calibration)
-- Assets → markers (asset deletion removes visual representations)
+## User Setup Required
 
-**Why:** Maintains referential integrity without orphaned records. Matches user mental model (deleting floor plan should remove all markers on it).
-
-**Trade-off:** Could lose data if user accidentally deletes parent. Future phases should implement soft deletes or confirmation dialogs.
-
-## Verification Results
-
-All verification criteria passed:
-
-✓ Schema exports all 5 tables: locations, assets, floorPlans, markers, calibrations
-✓ Connection factory exports: initializeDatabase, getDatabase, closeDatabase, withTransaction
-✓ Migration contains CREATE TABLE for all 5 tables
-✓ Normalized coordinates use REAL type (not INTEGER)
-✓ Foreign key constraints present with correct cascade/restrict behavior
-✓ WAL mode pragma in connection factory
-✓ TypeScript compilation successful
+None - no external service configuration required.
 
 ## Next Phase Readiness
 
-### Enables
+- Project management foundation complete
+- Users can now create, open, and manage multiple databases
+- Recent projects list provides quick access to last 5 databases
+- Ready for asset management workflows (Phase 02)
+- Ready for floor plan management workflows (Phase 03)
 
-**Plan 01-04 - Repository Implementations:**
-- Schema provides table definitions for repository queries
-- Connection factory provides database access
-- Migration ready to create tables on first run
+## Self-Check: PASSED
 
-**Phase 2 - Location & Asset Management:**
-- Domain entity structure defined in schema
-- Hierarchical location queries supported via self-reference
-- Asset lookup by tag via unique index
+**Verified:**
+- FOUND: src/presentation/components/project/ProjectPicker.tsx (created)
+- FOUND: commit 8dbe82f (feat: project management workflows)
+- FOUND: src/application/services/ProjectService.ts (modified with last folder tracking)
+- FOUND: src/presentation/components/project/RecentProjectsList.tsx (modified with relative time and missing file dialog)
+- FOUND: src/App.tsx (modified to use ProjectPicker)
 
-**Phase 5 - Floor Plan Viewer:**
-- Normalized coordinate system enables resolution-independent rendering
-- Spatial data ready for canvas drawing
+All claims verified successfully.
 
-### Blockers/Concerns
-
-None. Database infrastructure complete and ready for repository layer.
-
-### Technical Debt
-
-1. **TypeScript type errors in node_modules:** Drizzle ORM package has some type definition issues with current TypeScript version. Doesn't affect runtime but creates noise in IDE. Can be suppressed with `skipLibCheck: true` (already enabled).
-
-2. **No migration rollback strategy:** Only forward migrations supported. Future phases should implement down migrations for development flexibility.
-
-3. **Hard-coded migration path:** Migration runner uses relative path `./drizzle/migrations`. Should be configurable or derived from drizzle.config.ts.
-
-## Files Modified
-
-### Created
-- `src/infrastructure/database/schema.ts` (122 lines)
-- `src/infrastructure/database/connection.ts` (95 lines)
-- `src/infrastructure/database/migrate.ts` (11 lines)
-- `drizzle/migrations/0000_sparkling_caretaker.sql` (70 lines)
-- `drizzle/migrations/meta/_journal.json`
-- `drizzle/migrations/meta/0000_snapshot.json`
-
-### Modified
-None - all new files.
-
-## Testing Notes
-
-**Recommended tests for next plan:**
-1. Connection factory: Test singleton behavior, WAL mode verification
-2. Schema integrity: Test foreign key constraints, cascade deletes
-3. Migration runner: Test migration application, idempotency
-4. Normalized coordinates: Test 0.0-1.0 range validation
-
-**Current state:** No tests written (infrastructure layer, will be tested via repository integration tests).
-
-## Lessons Learned
-
-1. **Self-referencing foreign keys need type annotations:** TypeScript can't infer circular references without help. Use explicit `any` type for arrow functions.
-
-2. **Drizzle Kit generates clean migrations:** Automatic migration generation worked perfectly on first try. No manual SQL writing needed.
-
-3. **WAL mode is simple to enable:** Single pragma call, significant benefits for desktop SQLite usage.
-
-## Related Documentation
-
-- Drizzle ORM docs: https://orm.drizzle.team/docs/overview
-- SQLite WAL mode: https://www.sqlite.org/wal.html
-- Plan 01-01: Project initialization (base setup)
-- Plan 01-02: Domain entities (schema matches domain models)
-- Next: Plan 01-04: Repository implementations (will use this schema)
+---
+*Phase: 01-foundation-database-setup*
+*Completed: 2026-02-22*

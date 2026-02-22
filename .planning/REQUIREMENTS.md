@@ -17,11 +17,11 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 - [ ] **FOUND-03**: Domain entities with validation (Asset, FloorPlan, RoomZone, Furniture, Infrastructure, Location, Calibration)
 - [ ] **FOUND-04**: File storage abstraction for floor plan images (relative paths, not absolute)
 - [ ] **FOUND-05**: Database migrations system for schema evolution
-- [ ] **FOUND-06**: Single-file SQLite database with configurable storage path
+- [x] **FOUND-06**: Single-file SQLite database with configurable storage path
 - [ ] **FOUND-07**: Database file path configurability (avoid cloud-synced folders by default)
-- [ ] **FOUND-08**: "Open database" workflow (select existing .db file)
-- [ ] **FOUND-09**: "Create new database" workflow (initialize new .db with schema)
-- [ ] **FOUND-10**: Recent projects tracking (remember last 5 opened databases)
+- [x] **FOUND-08**: "Open database" workflow (select existing .db file)
+- [x] **FOUND-09**: "Create new database" workflow (initialize new .db with schema)
+- [x] **FOUND-10**: Recent projects tracking (remember last 5 opened databases)
 
 ### Asset Management (ASSET)
 

@@ -124,7 +124,7 @@ export const FurnitureSchema = z.object({
   normalizedWidth: NormalizedCoordinateSchema,
   normalizedHeight: NormalizedCoordinateSchema,
   rotation: z.number().min(0).max(360).default(0),
-  customFields: z.record(z.any()).optional(),
+  customFields: z.record(z.string(), z.any()).optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -141,7 +141,7 @@ export const InfrastructureSchema = z.object({
   type: InfrastructureTypeSchema,
   normalizedX: NormalizedCoordinateSchema,
   normalizedY: NormalizedCoordinateSchema,
-  customFields: z.record(z.any()).optional(),
+  customFields: z.record(z.string(), z.any()).optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

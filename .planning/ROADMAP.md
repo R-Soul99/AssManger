@@ -37,9 +37,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Complete spatial entity domain models (RoomZone, Furniture, Infrastructure)
-- [ ] 01-02-PLAN.md — Implement asset types and custom fields system
-- [ ] 01-03-PLAN.md — Build project management workflows (create/open/recent databases)
+- [x] 01-01-PLAN.md — Complete spatial entity domain models (RoomZone, Furniture, Infrastructure)
+- [x] 01-02-PLAN.md — Implement asset types and custom fields system
+- [x] 01-03-PLAN.md — Build project management workflows (create/open/recent databases)
 - [ ] 01-04-PLAN.md — Add cloud folder detection and auto-migrations
 
 ### Phase 2: Asset & Location Management

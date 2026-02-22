@@ -14,7 +14,7 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 
 - [ ] **FOUND-01**: System uses normalized coordinates (0.0-1.0) for all spatial data storage
 - [ ] **FOUND-02**: Repository pattern abstracts database access (SQLite → PostgreSQL migration path)
-- [ ] **FOUND-03**: Domain entities with validation (Asset, FloorPlan, RoomZone, Furniture, Infrastructure, Location, Calibration)
+- [x] **FOUND-03**: Domain entities with validation (Asset, FloorPlan, RoomZone, Furniture, Infrastructure, Location, Calibration)
 - [ ] **FOUND-04**: File storage abstraction for floor plan images (relative paths, not absolute)
 - [ ] **FOUND-05**: Database migrations system for schema evolution
 - [x] **FOUND-06**: Single-file SQLite database with configurable storage path
@@ -242,7 +242,7 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 |----------------|-------|--------|
 | FOUND-01 | Phase 1 | Pending |
 | FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Complete |
 | FOUND-04 | Phase 1 | Pending |
 | FOUND-05 | Phase 1 | Pending |
 | FOUND-06 | Phase 1 | Pending |

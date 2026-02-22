@@ -1,255 +1,134 @@
 ---
 phase: 01-foundation-database-setup
 plan: 02
-subsystem: domain-layer
-tags: [zod, validation, entities, domain-driven-design, typescript]
-requires: [01-01]
-provides:
-  - Domain entity classes (Location, Asset, FloorPlan, Marker, Calibration)
-  - Zod validation schemas for all entities
-  - Factory pattern with typed validation results
-  - Normalized coordinate validation and clamping
-  - Location hierarchy type system
-affects: [01-03, 01-04]
-key-files:
+subsystem: data-model
+tags: [asset-types, custom-fields, migration, repository, service-layer]
+dependency_graph:
+  requires: []
+  provides: [AssetType entity, CustomFieldDefinition, AssetTypeRepository, AssetTypeService]
+  affects: [assets table, categories table]
+tech_stack:
+  added: []
+  patterns: [repository-pattern, service-layer, json-storage]
+key_files:
   created:
-    - src/domain/validators/schemas.ts
-    - src/domain/validators/index.ts
-    - src/domain/entities/Location.ts
-    - src/domain/entities/Asset.ts
-    - src/domain/entities/FloorPlan.ts
-    - src/domain/entities/Marker.ts
-    - src/domain/entities/Calibration.ts
-    - src/domain/entities/index.ts
+    - src/domain/entities/AssetType.ts
+    - src/infrastructure/repositories/interfaces/IAssetTypeRepository.ts
+    - src/infrastructure/repositories/sqlite/SqliteAssetTypeRepository.ts
+    - src/application/services/AssetTypeService.ts
+    - drizzle/migrations/0005_add_asset_types_and_custom_fields.sql
   modified:
+    - src/domain/entities/index.ts
     - src/infrastructure/database/schema.ts
-    - tsconfig.json
-    - vite.config.ts
-tech-stack:
-  added:
-    - zod: Runtime validation with TypeScript inference
-  patterns:
-    - Factory pattern with private constructors
-    - Immutable entities with getters
-    - Coordinate clamping (0.0-1.0 normalization)
-    - Hierarchical validation (Location type system)
+    - src/infrastructure/repositories/interfaces/index.ts
+    - src/infrastructure/repositories/sqlite/index.ts
+    - src/application/services/index.ts
+    - drizzle/migrations/meta/_journal.json
 decisions:
-  - id: domain-validation-strategy
-    choice: Zod schemas with safeParse factory pattern
-    rationale: Type-safe runtime validation with immediate error feedback
-    alternatives: [Class validators, Manual validation]
-  - id: coordinate-clamping
-    choice: Silent clamping in Marker entity factory
-    rationale: Per CONTEXT.md - handle edge cases (1.001 becomes 1.0) gracefully
-    alternatives: [Strict rejection, Rounding]
-  - id: entity-immutability
-    choice: Private data with getter methods only
-    rationale: Prevents accidental mutation, enforces controlled updates through repository
-    alternatives: [Public properties, Readonly modifiers]
-duration: 4min
-completed: 2026-01-29
+  - decision: "Used JSON text columns for dropdown_options and default_value storage"
+    rationale: "Simpler than EAV tables, aligns with Claude's discretion in CONTEXT.md for storage mechanism while supporting unlimited custom fields"
+    outcome: "Clean schema, easy serialization in repository layer"
+  - decision: "Migrated categories to asset_types preserving existing data"
+    rationale: "User decision to rename 'categories' to 'asset types' for clearer spatial terminology"
+    outcome: "Zero data loss, backward-compatible migration"
+  - decision: "Protected system types from deletion via isSystemType flag"
+    rationale: "Prevent accidental deletion of built-in types (PC, Phone, Printer, etc.)"
+    outcome: "Service layer validates and blocks system type deletion"
+metrics:
+  duration_minutes: 7
+  tasks_completed: 3
+  files_created: 5
+  files_modified: 6
+  commits: 3
+  completed_at: "2026-02-22T16:26:00Z"
 ---
 
-# Phase 01 Plan 02: Domain Entities with Validation Summary
+# Phase 01 Plan 02: Asset Types and Custom Fields System Summary
 
-**One-liner:** Type-safe domain entities with Zod validation, normalized coordinates (0.0-1.0), factory pattern, and location hierarchy validation.
+**One-liner:** Replaced generic categories with asset types terminology and implemented unlimited custom field definitions supporting rich types (text, number, date, dropdown, checkbox, link) per asset type.
 
 ## What Was Built
 
-Created the complete domain layer foundation with 5 core entities and comprehensive validation:
+### Task 1: AssetType Entity and Custom Field Definition System
+- Created `AssetType` domain entity with fields: id, name, description, icon, color, isSystemType, timestamps
+- Created `CustomFieldDefinition` interface supporting 6 field types: text, number, date, dropdown, checkbox, link
+- Added validation function `validateCustomFieldDefinition()` enforcing field type rules
+- Exported both types from entities index
 
-1. **Validation Schemas** (`src/domain/validators/schemas.ts`)
-   - Zod schemas for Location, Asset, FloorPlan, Marker, Calibration
-   - NormalizedCoordinateSchema enforces 0.0-1.0 range
-   - Asset schema requires tag, location, category, description (per CONTEXT.md)
-   - Location hierarchy enum: site/building/floor/room
-   - User-friendly error messages for real-time feedback
+**Commit:** f11160b
 
-2. **Domain Entities** (5 classes with factory pattern)
-   - **Location**: Hierarchical site/building/floor/room with `canHaveChildType()` validation
-   - **Asset**: Equipment with required fields, `isExpensive()` business logic
-   - **Marker**: Floor plan coordinates with automatic clamping to 0.0-1.0 range
-   - **FloorPlan**: Image metadata with `getAspectRatio()` helper
-   - **Calibration**: Two-point scale with `calculateDistance()` method
-   - All use private constructor + static `create()` factory returning `CreateResult<T>`
+### Task 2: Database Schema and Migration
+- Added `asset_types` table with unique name constraint and system type flag
+- Added `custom_field_definitions` table with foreign key to asset_types (cascade delete)
+- Created unique index on (asset_type_id, field_name) to prevent duplicate fields per type
+- Implemented migration 0005:
+  - Migrated data from categories to asset_types (preserving id, name, description, icon, color)
+  - Seeded 6 system asset types: PC, Phone, Printer, Monitor, Electronics, Machinery
+  - Updated assets table to use asset_type_id instead of category_id
+  - Dropped categories table after migration
+- JSON storage for dropdown_options and default_value fields
 
-3. **Infrastructure**
-   - Barrel exports for clean imports (`@/domain/entities`, `@/domain/validators`)
-   - Path alias configuration in tsconfig.json and vite.config.ts
-   - TypeScript strict mode validation passes
+**Commit:** ccf0901
 
-## Decisions Made
+### Task 3: Repository and Service Layer
+- Created `IAssetTypeRepository` interface with CRUD for asset types and custom field definitions
+- Implemented `SqliteAssetTypeRepository`:
+  - JSON serialization/deserialization for dropdown_options and default_value
+  - Handles cascading deletes for custom field definitions
+  - Follows existing Drizzle ORM patterns
+- Created `AssetTypeService` with business logic:
+  - `getSystemAssetTypes()` filters built-in types
+  - `validateCustomFieldValue()` validates values against field type rules
+  - Prevents deletion of system types (throws error if isSystemType = true)
+  - Validates field name uniqueness per asset type
+  - Enforces required field constraints
+- Exported all components from index files
 
-### Domain Validation Strategy
-**Chose:** Zod schemas with safeParse factory pattern
-
-**Why:** Provides runtime validation with TypeScript type inference. The `safeParse()` API returns typed `CreateResult` enabling graceful error handling. Schema validation happens in factory method before entity construction, preventing invalid entities.
-
-**Impact:** All entities guaranteed valid at construction time. UI can display field-level validation errors immediately (real-time feedback per CONTEXT.md).
-
-### Coordinate Clamping
-**Chose:** Silent clamping in Marker entity factory (1.001 → 1.0, -0.001 → 0.0)
-
-**Why:** Per CONTEXT.md decision on boundary handling. Floating point arithmetic can produce values slightly outside 0.0-1.0 range during drag operations. Silently clamping prevents errors while maintaining coordinate validity.
-
-**Impact:** Robust coordinate handling without user-visible errors. Validation still rejects wildly incorrect values (e.g., 5.0 or -2.0).
-
-### Entity Immutability
-**Chose:** Private data fields with public getter methods
-
-**Why:** Enforces controlled updates through repository pattern. Prevents accidental mutation of entity state. Domain entities are value objects that shouldn't change after construction (updates create new instances).
-
-**Impact:** Thread-safe, predictable entity behavior. Updates flow through application layer → repository → database, maintaining consistency.
+**Commit:** ca319d6
 
 ## Deviations from Plan
 
-### Auto-fixed Issues
+None - plan executed exactly as written.
 
-**1. [Rule 1 - Bug] Fixed TypeScript error in database schema**
-- **Found during:** Task 1 verification
-- **Issue:** Self-referencing `locations.parentId` caused TypeScript error "implicitly has type 'any'"
-- **Fix:** Added explicit `any` type annotation to reference callback: `references((): any => locations.id)`
-- **Files modified:** `src/infrastructure/database/schema.ts`
-- **Commit:** 6ed9c0c
+## Tech Notes
 
-**2. [Rule 1 - Bug] Fixed Zod API usage in all entities**
-- **Found during:** Task 2 verification
-- **Issue:** Used `result.error.errors` instead of correct `result.error.issues` API
-- **Fix:** Changed to `result.error.issues.map()` in all 5 entity classes
-- **Files modified:** All entity files (Location, Asset, Marker, FloorPlan, Calibration)
-- **Commit:** bbaae74
+**JSON Storage Pattern:**
+Used SQLite's text columns to store JSON-serialized arrays (dropdown_options) and values (default_value). Repository layer handles serialization/deserialization transparently.
 
-**3. [Rule 2 - Missing Critical] Added Vite path alias configuration**
-- **Found during:** Task 3 implementation
-- **Issue:** Path aliases configured in tsconfig.json won't work at runtime without Vite configuration
-- **Fix:** Added `resolve.alias` to vite.config.ts mapping `@` to `./src`
-- **Files modified:** `vite.config.ts`
-- **Commit:** 5d46cc6
+**Migration Safety:**
+Migration 0005 uses `INSERT OR IGNORE` for system types to handle re-runs. Categories data migrated with generated IDs (asset_type_{id}) to avoid conflicts.
 
-## Technical Highlights
+**System Type Protection:**
+Service layer enforces business rule: system types cannot be deleted or converted to non-system types. This protects the 6 built-in types from accidental removal.
 
-### Normalized Coordinate System
-Marker entity implements coordinate normalization critical for resolution-independent spatial data:
-```typescript
-private static clampCoordinate(value: unknown): number {
-  if (typeof value !== 'number' || isNaN(value)) return value as any;
-  return Math.max(0, Math.min(1, value));
-}
-```
+## Verification Results
 
-This prevents pixel-based coordinate issues (RESEARCH.md Pitfall 3). Coordinates stored in 0.0-1.0 range survive image resizing, multi-resolution displays, and floor plan updates.
+1. ✅ npm run build completes successfully (AssetType types import correctly)
+2. ✅ AssetType entity and CustomFieldDefinition interface export from index
+3. ✅ Database schema contains assetTypes and customFieldDefinitions tables
+4. ✅ Migration successfully transforms categories → assetTypes
+5. ✅ Assets table references asset_type_id instead of category_id
+6. ✅ Repository and service layer operational for asset types
+7. ✅ System asset types (PC, Phone, Printer, Monitor, Electronics, Machinery) seeded in migration
 
-### Location Hierarchy Validation
-Location entity enforces hierarchical constraints:
-```typescript
-canHaveChildType(childType: LocationType): boolean {
-  const hierarchy: Record<LocationType, LocationType | null> = {
-    site: 'building',      // Sites can contain buildings
-    building: 'floor',     // Buildings can contain floors
-    floor: 'room',         // Floors can contain rooms
-    room: null,            // Rooms are leaf nodes
-  };
-  return hierarchy[this.data.type] === childType;
-}
-```
+## Next Steps
 
-Prevents invalid hierarchies (e.g., room containing building) at domain level.
+- Phase 01 Plan 03: Build project management workflows (create/open/recent databases)
+- Phase 02: Implement UI components to manage asset types and custom fields
+- Future: Add custom field values storage table linking assets to their custom field data
 
-### Type-Safe Validation Results
-Factory pattern returns discriminated union:
-```typescript
-type CreateResult<T> =
-  | { success: true; entity: T }
-  | { success: false; errors: string[] };
-```
+## Self-Check: PASSED
 
-Enables exhaustive type checking:
-```typescript
-const result = Asset.create(formData);
-if (!result.success) {
-  // result.errors: string[]
-  showErrors(result.errors);
-} else {
-  // result.entity: Asset
-  await repository.save(result.entity);
-}
-```
+**Created files verified:**
+- ✅ src/domain/entities/AssetType.ts
+- ✅ src/infrastructure/repositories/interfaces/IAssetTypeRepository.ts
+- ✅ src/infrastructure/repositories/sqlite/SqliteAssetTypeRepository.ts
+- ✅ src/application/services/AssetTypeService.ts
+- ✅ drizzle/migrations/0005_add_asset_types_and_custom_fields.sql
 
-## Must-Haves Verification
+**Commits verified:**
+- ✅ f11160b (Task 1: AssetType entity)
+- ✅ ccf0901 (Task 2: Database schema and migration)
+- ✅ ca319d6 (Task 3: Repository and service layer)
 
-### Truths
-- [x] Domain entities validate input data using Zod schemas
-- [x] Asset requires tag, location, category, and description fields
-- [x] Marker coordinates are clamped to 0.0-1.0 range automatically
-- [x] Location hierarchy supports site/building/floor/room structure
-- [x] Validation errors provide specific field-level messages
-
-### Artifacts
-- [x] `src/domain/validators/schemas.ts` exports AssetSchema and all schemas
-- [x] `src/domain/entities/Asset.ts` exports Asset class
-- [x] `src/domain/entities/Marker.ts` implements normalizedX/normalizedY clamping
-- [x] `src/domain/entities/Location.ts` defines LocationType enum
-
-### Key Links
-- [x] Asset imports AssetSchema from validators/schemas
-- [x] Marker implements Math.max/min coordinate clamping
-- [x] All entities follow factory pattern with CreateResult
-
-## Next Phase Readiness
-
-**Blockers:** None
-
-**Concerns:** None - domain layer is complete and type-safe
-
-**Recommendations for next plans:**
-1. **Plan 01-03** can implement repositories using these entity interfaces
-2. Coordinate transformation service can use Marker's normalized coordinates
-3. Repository tests should verify entity validation through factory methods
-
-## Files Modified
-
-### Created (8 files)
-- `src/domain/validators/schemas.ts` - Zod validation schemas
-- `src/domain/validators/index.ts` - Validator barrel exports
-- `src/domain/entities/Location.ts` - Location entity with hierarchy
-- `src/domain/entities/Asset.ts` - Asset entity with business logic
-- `src/domain/entities/FloorPlan.ts` - FloorPlan entity
-- `src/domain/entities/Marker.ts` - Marker entity with clamping
-- `src/domain/entities/Calibration.ts` - Calibration entity
-- `src/domain/entities/index.ts` - Entity barrel exports
-
-### Modified (3 files)
-- `src/infrastructure/database/schema.ts` - Fixed TypeScript self-reference
-- `tsconfig.json` - Added @/* path alias
-- `vite.config.ts` - Configured path resolution
-
-## Performance & Quality
-
-**Code Quality:**
-- TypeScript strict mode: ✓ Passes
-- All entities immutable with getters
-- Factory pattern enforces validation
-- 100% type safety with Zod inference
-
-**Performance:**
-- Validation overhead: ~1ms per entity creation (negligible)
-- Coordinate clamping: O(1) operation
-- Zero runtime dependencies beyond Zod
-
-## Links to Artifacts
-
-**Commits:**
-1. `6ed9c0c` - Zod validation schemas for all domain entities
-2. `bbaae74` - Domain entity classes with factory methods
-3. `5d46cc6` - Barrel exports and path aliases
-
-**Key Files:**
-- Domain entities: `src/domain/entities/`
-- Validation schemas: `src/domain/validators/schemas.ts`
-- Barrel exports: `src/domain/{entities,validators}/index.ts`
-
----
-
-*Completed: 2026-01-29*
-*Duration: 4 minutes*
-*Commits: 3*
+All files created and commits exist in repository.

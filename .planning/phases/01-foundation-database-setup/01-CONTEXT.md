@@ -1,66 +1,92 @@
-# Phase 1: Foundation & Database Setup - Context
+# Phase 1: Foundation & Data Model - Context
 
-**Gathered:** 2026-01-28
+**Gathered:** 2026-02-21
 **Status:** Ready for planning
 
 <domain>
 ## Phase Boundary
 
-Establish architectural foundations with normalized coordinates, repository abstraction, and database infrastructure. This phase creates the domain entities (Asset, FloorPlan, Marker, Location hierarchy, Calibration), implements repository interfaces for database abstraction, sets up SQLite with migration path to PostgreSQL, and implements project management (create/open database files with cloud sync detection).
+Establish the architectural foundation for the spatial planning interface. This phase delivers the database structure, coordinate system, and entity schemas that all spatial features will build upon. Users interact with this through project creation/opening workflows, while the normalized coordinates, repository pattern, and domain entities remain under the hood.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Database file management
-- **Default location**: %LOCALAPPDATA%\AssManger for new databases (safe from cloud sync)
-- **Recent projects**: Remember 5 most recently opened databases
-- **Error handling**: If database doesn't exist or is corrupted, show clear error message and remove from recent list
-- **File extensions**: Use .assetmap as preferred extension, but also support opening .db and .sqlite files (save as .assetmap)
+### Database File Defaults
+- **Cloud folder handling**: Warning dialog when user creates/opens database in cloud-synced folder (OneDrive/SharePoint)
+  - Show risks (corruption, lock contention)
+  - Let user proceed or cancel
+  - Don't block entirely
+- **Remember last path**: Yes, remember the last database location for next "Create New" operation
+  - User creates multiple databases in same folder efficiently
 
-### Cloud sync warnings
-- **Detection method**: Use both known path checking (OneDrive, Dropbox patterns) and filesystem attribute detection for comprehensive cloud folder detection
-- **Warning emphasis**: Explain both the data corruption risk AND provide recommended alternative location (%LOCALAPPDATA%)
-- **Warning persistence**: Warn once per session if user proceeds with cloud-synced location (don't nag every time but keep reminding)
+### Project Management UX
+- **Recent projects display**: Filename + last opened date/time
+  - Not just filename (need to distinguish files with same name)
+  - Not full path (clutters the UI)
+  - Date/time helps find recent work
+- **Recent count**: 5 projects maximum
+  - Short list focused on most recent work
+  - Balance between history and clutter
+- **Missing file handling**: Prompt user to locate or remove when clicking missing recent project
+  - Don't silently remove (user might know where it moved)
+  - Don't just gray out (user can't act on it)
+  - Give user agency to find it or clean up list
+- **Open behavior**: Confirm if unsaved changes exist before opening another project
+  - Warn user before losing work
+  - Don't block multi-project use entirely (single window for v1)
 
-### Coordinate system precision
-- **Boundary handling**: Silently clamp coordinates to 0.0-1.0 range if slightly outside (e.g., -0.001 becomes 0.0)
-- **Pixel transformation**: Round to nearest integer pixel when converting normalized coordinates to pixels for rendering
-- **Validation timing**: Allow temporarily invalid coordinates during drag interactions, validate on save/release (relaxed during interactions)
+### Migration & Schema Updates
+- **Auto migrate**: Yes, run database schema migrations automatically on app start
+  - Seamless updates, user doesn't see migration complexity
+  - Fail gracefully with clear error if migration breaks
+- **Backup before migrate**: Prompt user to backup database before running migrations
+  - Don't force backup (trust in migrations)
+  - Don't skip backup option (give user safety net)
+  - Ask once per migration session
 
-### Entity validation rules
-- **Required fields for assets**: Asset tag, location, category, and description are all required
-- **Asset tag uniqueness**: Warn if tag already exists in database with explanation and suggestion to avoid duplicates (soft validation, not hard constraint)
-- **Hierarchical deletion**: Cascade delete with confirmation dialog showing impact (e.g., "This will delete 3 floors, 12 rooms, and 45 assets"), plus create silent backup snapshot for potential restoration
-- **Validation timing**: Show validation errors immediately as user types (real-time feedback)
+### Entity Flexibility
+- **Custom fields support**: Yes, unlimited custom fields per entity
+  - Assets, furniture, and infrastructure all support custom fields
+  - No arbitrary limit (5, 10, etc) - let users add what they need
+- **Field types**: Rich types (text, numbers, dates, dropdowns, checkboxes, links)
+  - Not just simple strings
+  - Support structured data for reporting/filtering
+  - Dropdowns for consistency, checkboxes for boolean flags, links for related resources
+- **Field configuration**: Per-asset-type custom field definitions
+  - Each asset type (PC, Phone, Printer, Monitor, Electronics, Machinery) has its own custom field schema
+  - PC type might have "Processor", "RAM", "OS"
+  - Printer type might have "PPM", "Color/BW", "Network/USB"
+  - Furniture and infrastructure follow same pattern (per furniture type, per infrastructure type)
+- **Apply to all entities**: Yes, furniture and infrastructure also support custom fields with same flexibility as assets
+  - Desk furniture might have "Material", "Capacity (people)", "Power outlets"
+  - Power outlet infrastructure might have "Voltage", "Amperage", "Circuit ID"
 
 ### Claude's Discretion
-- Decimal precision for normalized coordinates (choose appropriate precision based on accuracy needs vs storage efficiency)
-- Warning timing for cloud sync detection (decide whether to block before opening or warn with proceed option)
-- Exact wording and UI layout for warning dialogs
-- Backup snapshot storage location and retention policy
-- Implementation details of repository pattern and database migration infrastructure
+- Default database location (suggest %LOCALAPPDATA%/AssManger or Documents/AssManger based on best practice)
+- Database file extension (.db, .assetmap, .sqlite3 - pick most appropriate)
+- Migration failure handling (rollback + error dialog vs partial apply + warn)
+- Old version compatibility (refuse vs migrate vs read-only)
+- Custom field storage implementation (JSON column, EAV table, or schema migrations for new fields)
 
 </decisions>
 
 <specifics>
 ## Specific Ideas
 
-- Research flagged that normalized coordinates (0.0-1.0 range) are critical architectural decision that's expensive to change later - must be correct from day one
-- Research identified SQLite corruption in cloud folders as critical risk - detection and warnings are essential for data safety
-- Repository abstraction layer enables future SQLite → PostgreSQL migration without touching business logic
+None - discussion stayed focused on behavior decisions rather than specific product references or UI mockups.
 
 </specifics>
 
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope
+None - discussion stayed within phase scope. All questions focused on foundation architecture and project management behaviors, which are in Phase 1's requirements.
 
 </deferred>
 
 ---
 
 *Phase: 01-foundation-database-setup*
-*Context gathered: 2026-01-28*
+*Context gathered: 2026-02-21*

@@ -4,3 +4,4 @@ export { SqliteFloorPlanRepository } from './SqliteFloorPlanRepository';
 export { SqliteMarkerRepository } from './SqliteMarkerRepository';
 export { SqliteCalibrationRepository } from './SqliteCalibrationRepository';
 export { SqliteCategoryRepository } from './SqliteCategoryRepository';
+export { SqliteAssetTypeRepository } from './SqliteAssetTypeRepository';

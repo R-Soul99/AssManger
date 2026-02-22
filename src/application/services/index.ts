@@ -36,3 +36,5 @@ export {
   type ImportFloorPlanDto,
   type UpdateFloorPlanDto,
 } from './FloorPlanService';
+
+export { AssetTypeService } from './AssetTypeService';

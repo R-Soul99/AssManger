@@ -15,6 +15,7 @@ import {
 } from '../dto/ProjectDto';
 
 const RECENT_PROJECTS_KEY = 'assmanger_recent_projects';
+const LAST_DB_FOLDER_KEY = 'last_db_folder';
 const MAX_RECENT_PROJECTS = 5;
 const DEFAULT_EXTENSION = '.assetmap';
 const SUPPORTED_EXTENSIONS = ['.assetmap', '.db', '.sqlite'];
@@ -85,6 +86,9 @@ export class ProjectService {
 
       // Reset repository factory for new database
       // RepositoryFactory.reset(); // MOCK: Disabled for checkpoint
+
+      // Remember last database folder for next create operation
+      localStorage.setItem(LAST_DB_FOLDER_KEY, options.location);
 
       // Add to recent projects
       this.addToRecentProjects({
@@ -197,8 +201,13 @@ export class ProjectService {
 
   /**
    * Get default location for new projects.
+   * Returns last used folder if available, otherwise recommended location.
    */
   async getDefaultLocation(): Promise<string> {
+    const lastFolder = localStorage.getItem(LAST_DB_FOLDER_KEY);
+    if (lastFolder) {
+      return lastFolder;
+    }
     return cloudFolderDetectionService.getRecommendedLocation();
   }
 
@@ -271,7 +280,10 @@ export class ProjectService {
     localStorage.setItem(RECENT_PROJECTS_KEY, JSON.stringify(limited));
   }
 
-  private removeFromRecentProjects(dbPath: string): void {
+  /**
+   * Remove project from recent list (public method for UI).
+   */
+  removeFromRecentProjects(dbPath: string): void {
     const recent = this.getRecentProjects();
     const filtered = recent.filter(p => p.path !== dbPath);
     localStorage.setItem(RECENT_PROJECTS_KEY, JSON.stringify(filtered));

@@ -20,6 +20,7 @@ export type CreateProjectResult =
   | {
       success: true;
       path: string;
+      needsMigration?: boolean;
     }
   | {
       success: false;
@@ -35,6 +36,7 @@ export type OpenProjectResult =
       success: true;
       path: string;
       name: string;
+      needsMigration?: boolean;
     }
   | {
       success: false;

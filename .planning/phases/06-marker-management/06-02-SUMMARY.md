@@ -103,6 +103,14 @@ None - no external service configuration required.
 - `filteredMarkerCount` is reactive and will update instantly when category chips or status filter sidebar selection changes
 - All existing viewer functionality (back button, zoom controls, category chips, filter sidebar, asset detail drawer) is preserved intact
 
+## Self-Check: PASSED
+
+- FOUND: `src/presentation/components/floorplan/FloorPlanViewer.tsx`
+- FOUND: `src/presentation/components/floorplan/FloorPlanViewerToolbar.tsx`
+- FOUND: `.planning/phases/06-marker-management/06-02-SUMMARY.md`
+- FOUND commit: `0443813` (feat: Edit Markers toggle and filtered marker count)
+- FOUND commit: `37a01ad` (docs: plan 06-02 completion)
+
 ---
 *Phase: 06-marker-management*
 *Completed: 2026-02-18*

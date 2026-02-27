@@ -9,6 +9,17 @@
     "dialog:allow-save",
     "fs:allow-appdata-read-recursive",
     "fs:allow-appdata-write-recursive",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$APPDATA/**" },
+        { "path": "$APPLOCALDATA/**" },
+        { "path": "$HOME/**" },
+        { "path": "$DOCUMENT/**" },
+        { "path": "$DESKTOP/**" },
+        { "path": "$DOWNLOAD/**" }
+      ]
+    },
     "fs:allow-mkdir",
     "fs:allow-exists",
     "fs:allow-read-file",

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { projectService } from '@/application/services/ProjectService';
 import { CloudWarning } from '@/application/dto/ProjectDto';
+import { CloudFolderWarningDialog } from './CloudFolderWarningDialog';
 
 interface Props {
   isOpen: boolean;
@@ -66,36 +67,24 @@ export function CreateProjectDialog({ isOpen, onClose, onProjectCreated }: Props
     }
   };
 
-  const handleUseRecommended = () => {
-    if (cloudWarning) {
-      setLocation(cloudWarning.recommendedLocation);
-      setCloudWarning(null);
-    }
+  const handleCloudWarningClose = () => {
+    setCloudWarning(null);
+  };
+
+  const handleCloudWarningProceed = () => {
+    setCloudWarning(null);
+    handleCreate(true);
   };
 
   return (
-    <div className="dialog-overlay">
-      <div className="dialog">
-        <h2>Create New Project</h2>
+    <>
+      <div className="dialog-overlay">
+        <div className="dialog">
+          <h2>Create New Project</h2>
 
-        {error && (
-          <div className="error-message">{error}</div>
-        )}
-
-        {cloudWarning && (
-          <div className="warning-message">
-            <strong>Warning: Cloud-Synced Folder Detected</strong>
-            <p>{cloudWarning.message}</p>
-            <div className="warning-actions">
-              <button onClick={handleUseRecommended}>
-                Use Recommended Location
-              </button>
-              <button onClick={() => handleCreate(true)}>
-                Proceed Anyway
-              </button>
-            </div>
-          </div>
-        )}
+          {error && (
+            <div className="error-message">{error}</div>
+          )}
 
         <div className="form-group">
           <label htmlFor="project-name">Project Name</label>
@@ -131,7 +120,7 @@ export function CreateProjectDialog({ isOpen, onClose, onProjectCreated }: Props
           </button>
           <button
             onClick={() => handleCreate(false)}
-            disabled={isCreating || !!cloudWarning}
+            disabled={isCreating}
             className="primary"
           >
             {isCreating ? 'Creating...' : 'Create'}
@@ -139,5 +128,17 @@ export function CreateProjectDialog({ isOpen, onClose, onProjectCreated }: Props
         </div>
       </div>
     </div>
+
+      {cloudWarning && (
+        <CloudFolderWarningDialog
+          open={!!cloudWarning}
+          onClose={handleCloudWarningClose}
+          onProceed={handleCloudWarningProceed}
+          detectedProvider={cloudWarning.provider}
+          detectedPath={location}
+          recommendedPath={cloudWarning.recommendedLocation}
+        />
+      )}
+    </>
   );
 }

@@ -4,7 +4,7 @@ import { join, basename, dirname } from '@tauri-apps/api/path';
 // TEMPORARY: Using mocks for checkpoint verification
 // TODO: Replace with Tauri commands in Rust backend
 import { initializeDatabase, closeDatabase, getCurrentDatabasePath } from '@/infrastructure/database/connection.mock';
-import { runMigrations } from '@/infrastructure/database/migrate.mock';
+import { runMigrations, hasPendingMigrations, MigrationResult } from '@/infrastructure/database/migrate.mock';
 import { cloudFolderDetectionService } from './CloudFolderDetectionService';
 import { localFileStorage } from '@/infrastructure/storage/LocalFileStorage';
 import {
@@ -138,8 +138,8 @@ export class ProjectService {
       // Initialize database connection
       await initializeDatabase({ path: dbPath });
 
-      // Run any pending migrations
-      await runMigrations();
+      // Check if migrations are needed (but don't run them yet - UI will prompt for backup first)
+      const needsMigration = await hasPendingMigrations(dbPath);
 
       // Initialize file storage
       const dbDir = await dirname(dbPath);
@@ -159,7 +159,7 @@ export class ProjectService {
         lastOpened: new Date(),
       });
 
-      return { success: true, path: dbPath, name };
+      return { success: true, path: dbPath, name, needsMigration: needsMigration };
     } catch (error) {
       // Database may be corrupted
       this.removeFromRecentProjects(dbPath);
@@ -168,6 +168,14 @@ export class ProjectService {
         error: `Failed to open project. The database may be corrupted: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
+  }
+
+  /**
+   * Run pending migrations for the current database.
+   * Should be called after backup prompt flow completes.
+   */
+  async runPendingMigrations(): Promise<MigrationResult> {
+    return await runMigrations();
   }
 
   /**

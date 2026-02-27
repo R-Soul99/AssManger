@@ -2,7 +2,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 
 export interface CloudCheckResult {
   isSynced: boolean;
-  provider?: 'OneDrive' | 'Dropbox' | 'SharePoint' | 'GoogleDrive';
+  provider?: 'OneDrive' | 'Dropbox' | 'SharePoint' | 'GoogleDrive' | 'iCloudDrive';
   warning?: string;
 }
 
@@ -77,7 +77,35 @@ export class CloudFolderDetectionService {
       };
     }
 
+    // Check iCloud Drive
+    if (normalizedPath.includes('\\iclouddrive\\') ||
+        normalizedPath.includes('\\icloud drive\\') ||
+        normalizedPath.includes('\\icloud~')) {
+      return {
+        isSynced: true,
+        provider: 'iCloudDrive',
+        warning: this.buildWarning('iCloud Drive'),
+      };
+    }
+
     return { isSynced: false };
+  }
+
+  /**
+   * Get the cloud provider name for a path, or null if not cloud-synced.
+   */
+  getCloudProvider(filePath: string): string | null {
+    const result = this.isCloudSyncedPath(filePath);
+    return result.isSynced ? (result.provider || null) : null;
+  }
+
+  /**
+   * Get recommended safe path for database storage.
+   * Returns %LOCALAPPDATA%/AssManger as the recommended location.
+   */
+  getRecommendedPath(): string {
+    // Synchronous fallback - actual path resolution should use getRecommendedLocation() async
+    return '%LOCALAPPDATA%\\AssManger';
   }
 
   /**

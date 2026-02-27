@@ -1,194 +1,178 @@
 ---
 phase: 01-foundation-database-setup
 plan: 01
-subsystem: infra
-tags: [tauri, react, typescript, drizzle-orm, sqlite, vite, clean-architecture]
-
-# Dependency graph
-requires:
-  - phase: none
-    provides: Initial project creation
-provides:
-  - Tauri 2 desktop application scaffold with React 18 and TypeScript
-  - Clean architecture directory structure (domain/infrastructure/application/presentation)
-  - Phase 1 dependencies installed (drizzle-orm 0.45, better-sqlite3 12.6, zod 4.3)
-  - Drizzle Kit configured for SQLite migrations
-affects: [01-02, 01-03, all-subsequent-phases]
-
-# Tech tracking
-tech-stack:
-  added: [tauri@2.0, react@18.3, typescript@5.6, vite@5.4, drizzle-orm@0.45, better-sqlite3@12.6, zod@4.3, drizzle-kit@0.31]
-  patterns: [clean-architecture, domain-driven-design]
-
-key-files:
+subsystem: data-model
+tags: [spatial-entities, normalized-coordinates, repository, file-storage]
+dependency_graph:
+  requires: []
+  provides: [RoomZone entity, Furniture entity, Infrastructure entity, FileStorageService, spatial repositories]
+  affects: [schema, migrations]
+tech_stack:
+  added: [FileStorageService]
+  patterns: [repository-pattern, normalized-coordinates, relative-paths]
+key_files:
   created:
-    - package.json
-    - tsconfig.json
-    - vite.config.ts
-    - src-tauri/Cargo.toml
-    - src-tauri/tauri.conf.json
-    - src-tauri/src/lib.rs
-    - src-tauri/src/main.rs
-    - src/main.tsx
-    - src/App.tsx
-    - drizzle.config.ts
-  modified: []
-
-key-decisions:
-  - "Manually scaffolded Tauri 2 project structure (create-tauri-app had CLI issues)"
-  - "Configured Vite dev server on fixed port 1420 for Tauri integration"
-  - "Set TypeScript strict mode for type safety"
-  - "Added rusqlite with bundled feature to Cargo.toml"
-
-patterns-established:
-  - "Clean architecture: domain → infrastructure → application → presentation"
-  - "Drizzle ORM schema location: src/infrastructure/database/schema.ts"
-  - "Migration output: drizzle/migrations/"
-
-# Metrics
-duration: 7min
-completed: 2026-01-29
+    - src/domain/entities/RoomZone.ts
+    - src/domain/entities/Furniture.ts
+    - src/domain/entities/Infrastructure.ts
+    - src/infrastructure/services/FileStorageService.ts
+    - src/infrastructure/repositories/interfaces/IRoomZoneRepository.ts
+    - src/infrastructure/repositories/interfaces/IFurnitureRepository.ts
+    - src/infrastructure/repositories/interfaces/IInfrastructureRepository.ts
+    - src/infrastructure/repositories/sqlite/SqliteRoomZoneRepository.ts
+    - src/infrastructure/repositories/sqlite/SqliteFurnitureRepository.ts
+    - src/infrastructure/repositories/sqlite/SqliteInfrastructureRepository.ts
+    - drizzle/migrations/0006_add_spatial_entities.sql
+  modified:
+    - src/domain/entities/index.ts
+    - src/infrastructure/database/schema.ts
+    - src/infrastructure/repositories/interfaces/index.ts
+    - src/infrastructure/repositories/sqlite/index.ts
+    - src/infrastructure/services/index.ts
+    - drizzle/migrations/meta/_journal.json
+decisions:
+  - decision: "Used normalized coordinates (0.0-1.0) for all spatial entities"
+    rationale: "Ensures coordinate system independence from image resolution, enables seamless zoom/pan without recalculation"
+    outcome: "All spatial entities (RoomZone, Furniture, Infrastructure, Marker, Calibration) use consistent coordinate system"
+  - decision: "Furniture and Infrastructure scoped to room zones via roomZoneId"
+    rationale: "Hierarchical spatial containment matches physical reality and enables room-level filtering"
+    outcome: "Clean foreign key relationships with cascade deletes when room zones removed"
+  - decision: "JSON text columns for custom fields storage"
+    rationale: "Simple schema, flexible field support without EAV complexity"
+    outcome: "Repositories handle serialization/deserialization transparently"
+  - decision: "FileStorageService uses database-relative paths"
+    rationale: "Enables database portability across folders and devices without breaking image references"
+    outcome: "Floor plan images can be moved with database file, cloud sync friendly"
+metrics:
+  duration_minutes: 45
+  tasks_completed: 5
+  files_created: 11
+  files_modified: 6
+  commits: 3
+  completed_at: "2026-02-22"
 ---
 
-# Phase 01 Plan 01: Project Initialization Summary
+# Phase 01 Plan 01: Spatial Entity Domain Models Summary
 
-**Tauri 2 desktop app with React 18, TypeScript strict mode, clean architecture structure, and Phase 1 database dependencies ready for schema implementation**
+**One-liner:** Established foundational spatial entities (RoomZone, Furniture, Infrastructure) with normalized coordinates, repository pattern implementation, and file storage abstraction for portable database-relative paths.
 
-## Performance
+## What Was Built
 
-- **Duration:** 7 minutes
-- **Started:** 2026-01-29T19:23:19Z
-- **Completed:** 2026-01-29T19:29:58Z
-- **Tasks:** 3
-- **Files modified:** 22
+### Task 1: Verify Existing Spatial Entities Foundation
+- Audited existing entities: Marker and Calibration
+- Confirmed Marker uses normalizedX/normalizedY (0.0-1.0 range)
+- Confirmed Calibration uses normalized point1X/Y and point2X/Y coordinates
+- Verified all existing entities (Asset, FloorPlan, Location, Marker, Calibration) have repository interfaces with SQLite implementations
+- Foundation validated as solid before adding new entities
 
-## Accomplishments
-- Tauri 2 project scaffolded with React 18 and TypeScript (strict mode enabled)
-- Clean architecture directory structure established for domain-driven design
-- All Phase 1 dependencies installed: Drizzle ORM, better-sqlite3, Zod, Tauri plugins
-- Drizzle Kit configured for SQLite schema migrations
-- Frontend builds successfully with no TypeScript errors
+**Commit:** Verification task (no commit)
 
-## Task Commits
+### Task 2: Implement FileStorageService for Relative Path Handling
+- Created `FileStorageService` to abstract file path handling for floor plan images
+- Implemented `toRelativePath()`: converts absolute paths to database-relative paths
+- Implemented `toAbsolutePath()`: resolves relative paths back to absolute for image loading
+- Implemented `normalizePath()`: normalizes path separators (forward slashes for cross-platform)
+- Uses Tauri path API for directory operations
+- Addresses FOUND-04 requirement: database portability via relative paths
 
-Each task was committed atomically:
+**Commit:** 9d5b89b
 
-1. **Task 1: Create Tauri 2 project with React/TypeScript** - `c7b6750` (chore)
-2. **Task 2: Install Phase 1 dependencies** - `4ad0054` (feat)
-3. **Task 3: Create clean architecture directory structure** - `7ce8d3e` (chore)
+### Task 3: Create Spatial Entity Domain Models
+- Created `RoomZone` entity with fields: id, floorPlanId, locationId, normalizedX/Y/Width/Height, color, name, timestamps
+- Created `Furniture` entity with fields: id, floorPlanId, roomZoneId, type (desk/bench/custom), normalizedX/Y/Width/Height, rotation, customFields, timestamps
+- Created `Infrastructure` entity with fields: id, floorPlanId, roomZoneId, type (power_outlet/network_port), normalizedX/Y, customFields, timestamps
+- All entities use normalized coordinates (0.0-1.0 range) per FOUND-01
+- Furniture and Infrastructure reference roomZoneId for spatial scoping
+- Exported all entities from domain/entities/index.ts
 
-## Files Created/Modified
+**Commit:** 35e0d1e
 
-**Frontend:**
-- `package.json` - NPM dependencies for React, Drizzle, Zod, Tauri API
-- `tsconfig.json` - TypeScript strict mode configuration
-- `vite.config.ts` - Vite with React plugin, Tauri dev server integration
-- `index.html` - Entry HTML with root div
-- `src/main.tsx` - React root render
-- `src/App.tsx` - Placeholder UI component
+### Task 4: Add Database Schema Tables for Spatial Entities
+- Added `room_zones` table with normalized coordinate columns (real 0.0-1.0)
+- Added `furniture` table with type enum, rotation field, and customFields JSON column
+- Added `infrastructure` table with type enum and customFields JSON column
+- Implemented foreign key relationships:
+  - RoomZones → FloorPlans (cascade delete) and Locations (restrict delete)
+  - Furniture → FloorPlans (cascade), RoomZones (cascade)
+  - Infrastructure → FloorPlans (cascade), RoomZones (cascade)
+- Created migration 0006_add_spatial_entities.sql
+- All tables use real data type for normalized coordinates
 
-**Tauri (Rust):**
-- `src-tauri/Cargo.toml` - Tauri 2 dependencies with rusqlite (bundled)
-- `src-tauri/tauri.conf.json` - App configuration (Visual Asset Mapper)
-- `src-tauri/build.rs` - Tauri build script
-- `src-tauri/src/main.rs` - Entry point
-- `src-tauri/src/lib.rs` - Tauri app setup with FS plugin
-- `src-tauri/capabilities/default.json` - Permission configuration
+**Commit:** 2cf0a7e
 
-**Database:**
-- `drizzle.config.ts` - Drizzle Kit config pointing to schema.ts, SQLite dialect
+### Task 5: Implement Repository Interfaces and SQLite Implementations
+- Created three repository interfaces:
+  - `IRoomZoneRepository`: findById, findByFloorPlanId, findByLocationId, create, update, delete
+  - `IFurnitureRepository`: findById, findByFloorPlanId, findByRoomZoneId, create, update, delete
+  - `IInfrastructureRepository`: findById, findByFloorPlanId, findByRoomZoneId, create, update, delete
+- Implemented SQLite repositories using Drizzle ORM following existing patterns
+- JSON serialization/deserialization for customFields columns handled transparently
+- Proper transaction handling for create/update/delete operations
+- Foreign key constraints respected with cascade deletes
+- All exports wired through index files
 
-**Architecture:**
-- `src/domain/entities/` - Domain entities directory
-- `src/domain/validators/` - Zod schemas directory
-- `src/infrastructure/database/` - Database connection directory
-- `src/infrastructure/repositories/interfaces/` - Repository contracts
-- `src/infrastructure/repositories/sqlite/` - SQLite implementations
-- `src/infrastructure/storage/` - File storage directory
-- `src/application/services/` - Business logic services
-- `src/application/dto/` - Data transfer objects
-- `src/presentation/components/` - React components
-
-## Decisions Made
-
-**1. Manual Tauri scaffolding instead of create-tauri-app**
-- `npm create tauri-app` had CLI argument parsing issues
-- Manually created all necessary files based on Tauri 2 documentation
-- Result: Clean project structure with correct Tauri 2 patterns
-
-**2. Clean architecture from start**
-- Established domain/infrastructure/application/presentation layers immediately
-- Prevents mixing concerns later (repositories in UI, business logic in database layer)
-- Critical for STATE.md concern: "Repository abstraction critical for future PostgreSQL migration"
-
-**3. TypeScript strict mode enabled**
-- Catches type errors early during development
-- Aligns with best practices for maintainability
-
-**4. Rust rusqlite with bundled feature**
-- Ensures SQLite library is included in compiled binary
-- No external SQLite installation required on target systems
+**Commit:** Included in 2cf0a7e (repositories created alongside schema)
 
 ## Deviations from Plan
 
-None - plan executed exactly as written. The plan anticipated CLI issues with create-tauri-app and provided manual scaffolding instructions, which were followed successfully.
+None - plan executed as written with all tasks completed.
 
-## Issues Encountered
+## Tech Notes
 
-**Rust prerequisite not installed**
-- Tauri development requires Rust toolchain (rustc, cargo)
-- Frontend builds successfully, but `npm run tauri dev` requires Rust
-- Resolution: Documented in Next Phase Readiness section
-- Impact: Application scaffold is complete, but full Tauri app cannot run until Rust is installed
+**Normalized Coordinates Pattern:**
+All spatial entities use 0.0-1.0 coordinate system independent of image pixel dimensions. This enables:
+- Resolution-independent placement
+- Seamless zoom/pan without coordinate recalculation
+- Clean data model for spatial queries
 
-**Package type warnings**
-- drizzle-orm and zod have some TypeScript definition issues in node_modules
-- Does not affect build or compilation (skipLibCheck: true in tsconfig.json)
-- Packages function correctly in application code
-- Impact: None - cosmetic warnings only
+**Spatial Hierarchy:**
+- RoomZones define boundaries on floor plans and link to Room locations
+- Furniture and Infrastructure are scoped to RoomZones via roomZoneId
+- Cascade deletes ensure referential integrity when floor plans or room zones removed
 
-## User Setup Required
+**File Storage Abstraction:**
+FileStorageService enables database portability by storing image paths relative to database file location. Database + images folder can be moved together without breaking references.
 
-**Rust installation required before next plan**
+**JSON Custom Fields:**
+Furniture and Infrastructure support unlimited custom properties via JSON text columns, avoiding EAV table complexity while maintaining flexibility.
 
-Before executing plan 01-02 (Database Schema Implementation), install Rust:
+## Verification Results
 
-1. Visit https://rustup.rs/
-2. Download and run rustup-init
-3. Follow installation wizard (default options recommended)
-4. Restart terminal/IDE to refresh PATH
-5. Verify installation:
-   ```bash
-   rustc --version
-   cargo --version
-   ```
+1. ✅ npm run build completes successfully
+2. ✅ Existing entities verified: Marker and Calibration use normalized coordinates (0.0-1.0)
+3. ✅ All existing entities have repository interfaces with SQLite implementations
+4. ✅ FileStorageService implements relative path conversion (toRelativePath, toAbsolutePath)
+5. ✅ All three new entities (RoomZone, Furniture, Infrastructure) export from domain/entities/index.ts
+6. ✅ Database schema contains roomZones, furniture, infrastructure tables with normalized coordinate columns
+7. ✅ Migration file 0006_add_spatial_entities.sql generated in drizzle/migrations/
+8. ✅ All six repository files (3 interfaces, 3 implementations) exist and export correctly
+9. ✅ Repository implementations use Drizzle ORM and handle JSON custom fields
 
-After Rust installation, verify Tauri app runs:
-```bash
-npm run tauri dev
-```
+## Next Steps
 
-Expected: Desktop window opens showing "Visual Asset Mapper - Phase 1: Foundation & Database Setup"
+- Phase 01 Plan 04: Add cloud folder detection and auto-migrations
+- Phase 05: Room Zone Drawing - UI components to draw/edit room boundaries
+- Phase 06: Asset Placement - UI components for drag-drop asset placement
+- Phase 07: Furniture & Infrastructure Placement - UI for furniture/infrastructure placement
 
-## Next Phase Readiness
+## Self-Check: PASSED
 
-**Ready to proceed with database schema (Plan 01-02):**
-- Clean architecture structure in place for domain entities
-- Drizzle ORM installed and configured
-- schema.ts location defined: `src/infrastructure/database/schema.ts`
-- Migration output configured: `drizzle/migrations/`
+**Created files verified:**
+- ✅ src/domain/entities/RoomZone.ts
+- ✅ src/domain/entities/Furniture.ts
+- ✅ src/domain/entities/Infrastructure.ts
+- ✅ src/infrastructure/services/FileStorageService.ts
+- ✅ src/infrastructure/repositories/interfaces/IRoomZoneRepository.ts
+- ✅ src/infrastructure/repositories/interfaces/IFurnitureRepository.ts
+- ✅ src/infrastructure/repositories/interfaces/IInfrastructureRepository.ts
+- ✅ src/infrastructure/repositories/sqlite/SqliteRoomZoneRepository.ts
+- ✅ src/infrastructure/repositories/sqlite/SqliteFurnitureRepository.ts
+- ✅ src/infrastructure/repositories/sqlite/SqliteInfrastructureRepository.ts
+- ✅ drizzle/migrations/0006_add_spatial_entities.sql
 
-**Blocked pending Rust installation:**
-- Cannot test Tauri-specific functionality until Rust toolchain installed
-- Frontend development can continue independently
-- Tauri commands (for database access from UI) require Rust compilation
+**Commits verified:**
+- ✅ 9d5b89b (Task 2: FileStorageService)
+- ✅ 35e0d1e (Task 3: Domain entities)
+- ✅ 2cf0a7e (Task 4 & 5: Schema and repositories)
 
-**Key for Plan 01-02:**
-- Implement normalized coordinates (0.0-1.0 range) from start per STATE.md concern
-- Use Drizzle schema location: `src/infrastructure/database/schema.ts`
-- Repository interfaces go in: `src/infrastructure/repositories/interfaces/`
-- SQLite implementations go in: `src/infrastructure/repositories/sqlite/`
-
----
-*Phase: 01-foundation-database-setup*
-*Completed: 2026-01-29*
+All files created and commits exist in repository.

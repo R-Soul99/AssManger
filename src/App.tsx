@@ -21,19 +21,27 @@ function App() {
   const [showFloorPlans, setShowFloorPlans] = useState(false);
 
   // Auto-restore: re-enter the most recent project on mount (survives page refresh)
+  // Skip auto-restore if migrations are needed (user must go through manual open flow with backup prompt)
   useEffect(() => {
     const recent = projectService.getRecentProjects();
     if (recent.length === 0) return;
     const last = recent[0];
     projectService.openExistingProject(last.path).then(result => {
-      if (result.success) {
+      if (result.success && !result.needsMigration) {
+        // Only auto-restore if no migrations needed
         setCurrentDatabasePath(result.path);
       }
+      // If migrations needed, user must manually open via ProjectPicker (triggers backup prompt)
     });
   }, []);
 
   const handleDatabaseLoaded = (path: string) => {
     setCurrentDatabasePath(path);
+  };
+
+  const handleCloseProject = async () => {
+    await projectService.closeCurrentProject();
+    setCurrentDatabasePath(null);
   };
 
   // Welcome screen when no project is open
@@ -57,7 +65,12 @@ function App() {
         <h1>Visual Asset Mapper</h1>
         <p>Current Project: {projectName}</p>
         <p className="project-path">{currentDatabasePath}</p>
-        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
+          <button onClick={handleCloseProject} style={{ backgroundColor: '#dc3545', color: 'white' }}>
+            Close Project
+          </button>
+        </div>
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
           <button onClick={() => setShowAssets(!showAssets)}>
             {showAssets ? 'Hide Assets' : 'Manage Assets'}
           </button>

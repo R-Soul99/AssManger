@@ -13,8 +13,8 @@ This roadmap transforms requirements into a spatial planning tool that lets user
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & Data Model** - Establish normalized coordinates, repository pattern, and database architecture
-- [ ] **Phase 2: Asset & Location Management** - CRUD operations for assets, hierarchical locations, and CSV export
-- [ ] **Phase 3: Spatial UI Shell & Navigation** - Three-panel layout with location tree, canvas area, and pan/zoom controls
+- [ ] **Phase 2: Asset & Location Management** - Three-panel layout shell, location hierarchy, asset CRUD, and CSV export
+- [ ] **Phase 3: Spatial UI Shell & Navigation** - Pan/zoom controls and canvas interaction patterns
 - [ ] **Phase 4: Floor Plan Management** - Import, display, and navigate floor plan images
 - [ ] **Phase 5: Room Zone Drawing** - Draw and manage colored room boundaries on floor plans
 - [ ] **Phase 6: Asset Placement** - Drag-and-drop asset icons onto canvas with linking
@@ -43,34 +43,37 @@ Plans:
 - [ ] 01-04-PLAN.md — Add cloud folder detection and auto-migrations
 
 ### Phase 2: Asset & Location Management
-**Goal**: Deliver core non-spatial asset management features (CRUD, search, filter, hierarchy) and CSV export, validating repository layer before adding spatial complexity.
+**Goal**: Build three-panel layout foundation and deliver core asset/location management features (CRUD, search, filter, hierarchy, CSV export) integrated into the final UI structure.
 **Depends on**: Phase 1
-**Requirements**: ASSET-01, ASSET-02, ASSET-03, ASSET-04, ASSET-05, ASSET-06, ASSET-07, ASSET-08, LOC-01, LOC-02, LOC-03, LOC-04, LOC-05, LOC-06, EXPORT-01, EXPORT-02, EXPORT-03, EXPORT-04, EXPORT-05, EXPORT-06, EXPORT-07
+**Requirements**: UI-01, UI-09, ASSET-01, ASSET-02, ASSET-03, ASSET-04, ASSET-06, ASSET-07, ASSET-08, LOC-01, LOC-02, LOC-03, LOC-04, LOC-05, LOC-06, EXPORT-01, EXPORT-02, EXPORT-03, EXPORT-04, EXPORT-05, EXPORT-06, EXPORT-07
 **Success Criteria** (what must be TRUE):
-  1. User can create, view, update, and delete assets with required fields (tag, description, asset type, location)
-  2. User can search assets by tag, description, type, or location
-  3. User can filter assets by asset type, location, or status
-  4. User can create and navigate Building → Floor → Room hierarchy in left sidebar tree
-  5. User can edit and delete locations with cascade warnings if assets/floor plans linked
-  6. User can export assets, locations, and asset types to Excel-compatible CSV files
-**Plans**: 3 plans
+  1. Three-panel layout displays with location tree (left), canvas placeholder (center), details panel (right), and bottom toolbar
+  2. User can create and navigate Building → Floor → Room hierarchy in left panel tree
+  3. User can create, view, update, and delete assets in details panel when location selected
+  4. User can search assets by tag, description, type, or location with debounced search
+  5. User can filter assets by asset type, location, or status
+  6. User can edit and delete locations with cascade warnings if children or assets exist
+  7. User can export assets, locations, and asset types to Excel-compatible CSV files
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Location hierarchy management with tree UI and cascade delete warnings
-- [ ] 02-02-PLAN.md — Asset CRUD with standalone list page (search, filter, create, edit, delete)
-- [ ] 02-03-PLAN.md — CSV export service with UTF-8 BOM for Excel compatibility
+- [ ] 02-01-PLAN.md — Three-panel layout shell with CSS Grid (280px/flex/320px/80px), placeholder canvas, empty states
+- [ ] 02-02-PLAN.md — Location hierarchy management with tree UI, context menu, and cascade delete warnings
+- [ ] 02-03-PLAN.md — Asset CRUD integrated into details panel (search, filter, create, edit, delete)
+- [ ] 02-04-PLAN.md — CSV export service with UTF-8 BOM for Excel compatibility
 
 ### Phase 3: Spatial UI Shell & Navigation
-**Goal**: Build three-panel layout foundation and pan/zoom navigation system that all spatial features will use, establishing responsive canvas interaction patterns.
+**Goal**: Add pan/zoom navigation controls and canvas interaction patterns to the existing three-panel layout.
 **Depends on**: Phase 2
-**Requirements**: UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, UI-07, UI-08, UI-09, NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06, NAV-07
+**Requirements**: NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06, NAV-07, UI-02, UI-03, UI-04, UI-05, UI-06, UI-07, UI-08
 **Success Criteria** (what must be TRUE):
-  1. Three-panel layout displays correctly with location tree (left), canvas (center), details panel (right)
-  2. Bottom toolbar shows Edit/Move/Delete tools plus asset/furniture/infrastructure palette icons
-  3. Details panel shows context-sensitive information (asset counts by type when room selected)
-  4. User can pan canvas by dragging background and zoom using scroll wheel or zoom controls
-  5. Zoom preserves cursor position and respects limits (10%-500%)
-  6. Layout adapts to window resize with minimum 1280x720 support
+  1. User can pan canvas by dragging background
+  2. User can zoom canvas using scroll wheel or zoom controls
+  3. Zoom preserves cursor position and respects limits (10%-500%)
+  4. Bottom toolbar tools become enabled when floor plan loaded
+  5. Asset/furniture palette icons show active state during placement
+  6. Details panel shows context-sensitive information based on selection
+  7. Layout adapts to window resize with minimum 1280x720 support
 **Plans**: TBD
 
 Plans:
@@ -171,7 +174,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Data Model | 3/4 | In progress | - |
-| 2. Asset & Location Management | 0/3 | Not started | - |
+| 2. Asset & Location Management | 0/4 | Not started | - |
 | 3. Spatial UI Shell & Navigation | 0/TBD | Not started | - |
 | 4. Floor Plan Management | 0/TBD | Not started | - |
 | 5. Room Zone Drawing | 0/TBD | Not started | - |
@@ -181,5 +184,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 ---
 *Roadmap created: 2026-02-21*
-*Last updated: 2026-03-05 (Phase 2 plans finalized)*
-*Reflects spatial UI pivot from PROJECT.md vision (three-panel layout, room zones, furniture, infrastructure)*
+*Last updated: 2026-03-05 (Phase 2 plans finalized - architectural pivot to build three-panel layout in Phase 2)*
+*Reflects spatial UI pivot from PROJECT.md vision (three-panel layout foundation established early to prevent rework)*

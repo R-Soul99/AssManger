@@ -53,10 +53,12 @@ Plans:
   4. User can create and navigate Building → Floor → Room hierarchy in left sidebar tree
   5. User can edit and delete locations with cascade warnings if assets/floor plans linked
   6. User can export assets, locations, and asset types to Excel-compatible CSV files
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] TBD
+- [ ] 02-01-PLAN.md — Location hierarchy management with tree UI and cascade delete warnings
+- [ ] 02-02-PLAN.md — Asset CRUD with standalone list page (search, filter, create, edit, delete)
+- [ ] 02-03-PLAN.md — CSV export service with UTF-8 BOM for Excel compatibility
 
 ### Phase 3: Spatial UI Shell & Navigation
 **Goal**: Build three-panel layout foundation and pan/zoom navigation system that all spatial features will use, establishing responsive canvas interaction patterns.
@@ -168,8 +170,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Data Model | 0/4 | Not started | - |
-| 2. Asset & Location Management | 0/TBD | Not started | - |
+| 1. Foundation & Data Model | 3/4 | In progress | - |
+| 2. Asset & Location Management | 0/3 | Not started | - |
 | 3. Spatial UI Shell & Navigation | 0/TBD | Not started | - |
 | 4. Floor Plan Management | 0/TBD | Not started | - |
 | 5. Room Zone Drawing | 0/TBD | Not started | - |
@@ -179,4 +181,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 ---
 *Roadmap created: 2026-02-21*
+*Last updated: 2026-03-05 (Phase 2 plans finalized)*
 *Reflects spatial UI pivot from PROJECT.md vision (three-panel layout, room zones, furniture, infrastructure)*

@@ -36,12 +36,12 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 
 ### Hierarchical Locations (LOC)
 
-- [ ] **LOC-01**: User can create location hierarchy (Building → Floor → Room structure)
-- [ ] **LOC-02**: User can view location tree in left sidebar
-- [ ] **LOC-03**: User can navigate tree to select Building or Floor for floor plan display
-- [ ] **LOC-04**: User can edit location names and hierarchy relationships
-- [ ] **LOC-05**: User can delete locations (with cascade warning if assets/floor plans linked)
-- [ ] **LOC-06**: Locations persist building/floor/room relationships in database
+- [x] **LOC-01**: User can create location hierarchy (Building → Floor → Room structure)
+- [x] **LOC-02**: User can view location tree in left sidebar
+- [x] **LOC-03**: User can navigate tree to select Building or Floor for floor plan display
+- [x] **LOC-04**: User can edit location names and hierarchy relationships
+- [x] **LOC-05**: User can delete locations (with cascade warning if assets/floor plans linked)
+- [x] **LOC-06**: Locations persist building/floor/room relationships in database
 
 ### Spatial UI Shell (UI)
 
@@ -258,12 +258,12 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 | ASSET-06 | Phase 2 | Pending |
 | ASSET-07 | Phase 2 | Pending |
 | ASSET-08 | Phase 2 | Pending |
-| LOC-01 | Phase 2 | Pending |
-| LOC-02 | Phase 2 | Pending |
-| LOC-03 | Phase 2 | Pending |
-| LOC-04 | Phase 2 | Pending |
-| LOC-05 | Phase 2 | Pending |
-| LOC-06 | Phase 2 | Pending |
+| LOC-01 | Phase 2 | Complete |
+| LOC-02 | Phase 2 | Complete |
+| LOC-03 | Phase 2 | Complete |
+| LOC-04 | Phase 2 | Complete |
+| LOC-05 | Phase 2 | Complete |
+| LOC-06 | Phase 2 | Complete |
 | EXPORT-01 | Phase 2 | Pending |
 | EXPORT-02 | Phase 2 | Pending |
 | EXPORT-03 | Phase 2 | Pending |

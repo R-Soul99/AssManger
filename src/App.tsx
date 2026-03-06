@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, Typography } from '@mui/material';
 import { ProjectPicker } from '@/presentation/components/project';
 import { projectService } from '@/application/services/ProjectService';
-import CategoryManager from '@/presentation/components/category/CategoryManager';
-import LocationManager from '@/presentation/components/location/LocationManager';
-import { AssetList } from '@/presentation/components/asset';
-import { FloorPlanList } from '@/presentation/components/floorplan';
+import { AppShell, CanvasPlaceholder, DetailsPanel, BottomToolbar } from '@/presentation/components/layout';
 import './App.css';
 
 const theme = createTheme();
@@ -15,10 +12,6 @@ console.log('[App] Component loaded');
 function App() {
   console.log('[App] Component rendering');
   const [currentDatabasePath, setCurrentDatabasePath] = useState<string | null>(null);
-  const [showCategories, setShowCategories] = useState(false);
-  const [showLocations, setShowLocations] = useState(false);
-  const [showAssets, setShowAssets] = useState(false);
-  const [showFloorPlans, setShowFloorPlans] = useState(false);
 
   // Auto-restore: re-enter the most recent project on mount (survives page refresh)
   // Skip auto-restore if migrations are needed (user must go through manual open flow with backup prompt)
@@ -39,11 +32,6 @@ function App() {
     setCurrentDatabasePath(path);
   };
 
-  const handleCloseProject = async () => {
-    await projectService.closeCurrentProject();
-    setCurrentDatabasePath(null);
-  };
-
   // Welcome screen when no project is open
   if (!currentDatabasePath) {
     return (
@@ -54,41 +42,22 @@ function App() {
     );
   }
 
-  // Extract project name from path
-  const projectName = currentDatabasePath.split(/[/\\]/).pop()?.replace(/\.(assetmap|db|sqlite)$/i, '') || 'Project';
-
   // Main application view when project is open
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div className="container">
-        <h1>Visual Asset Mapper</h1>
-        <p>Current Project: {projectName}</p>
-        <p className="project-path">{currentDatabasePath}</p>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
-          <button onClick={handleCloseProject} style={{ backgroundColor: '#dc3545', color: 'white' }}>
-            Close Project
-          </button>
-        </div>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
-          <button onClick={() => setShowAssets(!showAssets)}>
-            {showAssets ? 'Hide Assets' : 'Manage Assets'}
-          </button>
-          <button onClick={() => setShowCategories(!showCategories)}>
-            {showCategories ? 'Hide Categories' : 'Manage Categories'}
-          </button>
-          <button onClick={() => setShowLocations(!showLocations)}>
-            {showLocations ? 'Hide Locations' : 'Manage Locations'}
-          </button>
-          <button onClick={() => setShowFloorPlans(!showFloorPlans)}>
-            {showFloorPlans ? 'Hide Floor Plans' : 'Manage Floor Plans'}
-          </button>
-        </div>
-        {showAssets && <AssetList />}
-        {showCategories && <CategoryManager />}
-        {showLocations && <LocationManager />}
-        {showFloorPlans && <FloorPlanList />}
-      </div>
+      <AppShell
+        leftPanel={
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Location tree coming in 02-02
+            </Typography>
+          </Box>
+        }
+        centerPanel={<CanvasPlaceholder selectedLocationId={null} />}
+        rightPanel={<DetailsPanel state={{ type: 'empty' }} />}
+        toolbar={<BottomToolbar />}
+      />
     </ThemeProvider>
   );
 }

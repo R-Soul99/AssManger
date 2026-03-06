@@ -130,13 +130,13 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 
 ### Data Export (EXPORT)
 
-- [ ] **EXPORT-01**: User can export assets table to CSV
-- [ ] **EXPORT-02**: User can export locations hierarchy to CSV
-- [ ] **EXPORT-03**: User can export asset types to CSV
-- [ ] **EXPORT-04**: CSV exports use UTF-8 BOM encoding for Excel compatibility
-- [ ] **EXPORT-05**: CSV exports include headers and predictable column order
-- [ ] **EXPORT-06**: CSV field quoting to prevent data corruption through Excel
-- [ ] **EXPORT-07**: User can select export destination path via file dialog
+- [x] **EXPORT-01**: User can export assets table to CSV
+- [x] **EXPORT-02**: User can export locations hierarchy to CSV
+- [x] **EXPORT-03**: User can export asset types to CSV
+- [x] **EXPORT-04**: CSV exports use UTF-8 BOM encoding for Excel compatibility
+- [x] **EXPORT-05**: CSV exports include headers and predictable column order
+- [x] **EXPORT-06**: CSV field quoting to prevent data corruption through Excel
+- [x] **EXPORT-07**: User can select export destination path via file dialog
 
 ### Pan & Zoom Controls (NAV)
 
@@ -264,13 +264,13 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 | LOC-04 | Phase 2 | Complete |
 | LOC-05 | Phase 2 | Complete |
 | LOC-06 | Phase 2 | Complete |
-| EXPORT-01 | Phase 2 | Pending |
-| EXPORT-02 | Phase 2 | Pending |
-| EXPORT-03 | Phase 2 | Pending |
-| EXPORT-04 | Phase 2 | Pending |
-| EXPORT-05 | Phase 2 | Pending |
-| EXPORT-06 | Phase 2 | Pending |
-| EXPORT-07 | Phase 2 | Pending |
+| EXPORT-01 | Phase 2 | Complete |
+| EXPORT-02 | Phase 2 | Complete |
+| EXPORT-03 | Phase 2 | Complete |
+| EXPORT-04 | Phase 2 | Complete |
+| EXPORT-05 | Phase 2 | Complete |
+| EXPORT-06 | Phase 2 | Complete |
+| EXPORT-07 | Phase 2 | Complete |
 | UI-01 | Phase 3 | Complete |
 | UI-02 | Phase 3 | Pending |
 | UI-03 | Phase 3 | Pending |

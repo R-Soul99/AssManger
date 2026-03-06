@@ -57,9 +57,9 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Three-panel layout shell with CSS Grid (280px/flex/320px/80px), placeholder canvas, empty states
-- [ ] 02-02-PLAN.md — Location hierarchy management with tree UI, context menu, and cascade delete warnings
-- [ ] 02-03-PLAN.md — Asset CRUD integrated into details panel (search, filter, create, edit, delete)
+- [x] 02-01-PLAN.md — Three-panel layout shell with CSS Grid (280px/flex/320px/80px), placeholder canvas, empty states
+- [x] 02-02-PLAN.md — Location hierarchy management with tree UI, context menu, and cascade delete warnings
+- [x] 02-03-PLAN.md — Asset CRUD integrated into details panel (search, filter, create, edit, delete)
 - [ ] 02-04-PLAN.md — CSV export service with UTF-8 BOM for Excel compatibility
 
 ### Phase 3: Spatial UI Shell & Navigation

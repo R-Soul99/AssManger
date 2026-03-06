@@ -45,7 +45,7 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 
 ### Spatial UI Shell (UI)
 
-- [ ] **UI-01**: Three-panel layout (location tree left, canvas center, details panel right)
+- [x] **UI-01**: Three-panel layout (location tree left, canvas center, details panel right)
 - [ ] **UI-02**: Location tree displays Building → Floor → Room hierarchy
 - [ ] **UI-03**: Canvas area displays selected floor plan with pan/zoom controls
 - [ ] **UI-04**: Details panel shows context-sensitive information (asset counts by type when room selected)
@@ -53,7 +53,7 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 - [ ] **UI-06**: Asset type palette in toolbar (PC, Phone, Printer, Monitor, Electronics, Machinery icons)
 - [ ] **UI-07**: Furniture palette in toolbar (Desk, Bench, Custom)
 - [ ] **UI-08**: Infrastructure palette in toolbar (Power outlet, Network port)
-- [ ] **UI-09**: Responsive layout adapts to window resize (minimum 1280x720)
+- [x] **UI-09**: Responsive layout adapts to window resize (minimum 1280x720)
 
 ### Floor Plan Management (FLOOR)
 
@@ -271,7 +271,7 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 | EXPORT-05 | Phase 2 | Pending |
 | EXPORT-06 | Phase 2 | Pending |
 | EXPORT-07 | Phase 2 | Pending |
-| UI-01 | Phase 3 | Pending |
+| UI-01 | Phase 3 | Complete |
 | UI-02 | Phase 3 | Pending |
 | UI-03 | Phase 3 | Pending |
 | UI-04 | Phase 3 | Pending |
@@ -279,7 +279,7 @@ Visual spatial planning interface that lets users define rooms on floor plans, d
 | UI-06 | Phase 3 | Pending |
 | UI-07 | Phase 3 | Pending |
 | UI-08 | Phase 3 | Pending |
-| UI-09 | Phase 3 | Pending |
+| UI-09 | Phase 3 | Complete |
 | NAV-01 | Phase 3 | Pending |
 | NAV-02 | Phase 3 | Pending |
 | NAV-03 | Phase 3 | Pending |

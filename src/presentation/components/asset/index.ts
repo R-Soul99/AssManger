@@ -6,3 +6,4 @@ export { ExportDialog } from './ExportDialog';
 export { AssetSearchBar } from './AssetSearchBar';
 export { AssetFilterPanel } from './AssetFilterPanel';
 export { AssetListView } from './AssetListView';
+export { DeleteAssetDialog } from './DeleteAssetDialog';

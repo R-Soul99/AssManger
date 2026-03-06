@@ -1,6 +1,10 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 import { Location } from '@/domain/entities/Location';
 import { Asset } from '@/domain/entities/Asset';
+import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
+import { CategoryData, LocationData } from '@/domain/validators';
+import { AssetSearchBar, AssetFilterPanel, AssetListView } from '@/presentation/components/asset';
 
 /**
  * Discriminated union for type-safe state management
@@ -12,7 +16,21 @@ import { Asset } from '@/domain/entities/Asset';
  */
 type DetailsPanelState =
   | { type: 'empty' }
-  | { type: 'location'; data: Location }
+  | {
+      type: 'location';
+      data: Location;
+      assets: AssetWithRelations[];
+      assetTypes: CategoryData[];
+      locations: LocationData[];
+      searchTerm: string;
+      filters: { categoryId?: number; locationId?: string; status?: string };
+      onSearch: (term: string) => void;
+      onFilterChange: (filters: { categoryId?: number; locationId?: string; status?: string }) => void;
+      onCreateAsset: () => void;
+      onEditAsset: (id: string) => void;
+      onDeleteAsset: (id: string) => void;
+      loading?: boolean;
+    }
   | { type: 'asset'; data: Asset };
 
 interface DetailsPanelProps {
@@ -46,16 +64,47 @@ export function DetailsPanel({ state }: DetailsPanelProps) {
 
           case 'location':
             return (
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Location Details
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Name: {state.data.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Full details view coming in Phase 3
-                </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                {/* Location Header */}
+                <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+                  <Typography variant="h6" gutterBottom>
+                    {state.data.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    {state.assets.length} asset(s)
+                  </Typography>
+                  <Button
+                    size="small"
+                    startIcon={<AddIcon />}
+                    onClick={state.onCreateAsset}
+                    variant="outlined"
+                  >
+                    Add Asset
+                  </Button>
+                </Box>
+
+                {/* Asset Management UI */}
+                <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+                  <Box sx={{ mb: 2 }}>
+                    <AssetSearchBar
+                      value={state.searchTerm}
+                      onChange={state.onSearch}
+                    />
+                  </Box>
+                  <AssetFilterPanel
+                    assetTypes={state.assetTypes}
+                    locations={state.locations}
+                    filters={state.filters}
+                    onChange={state.onFilterChange}
+                  />
+                  <AssetListView
+                    assets={state.assets}
+                    loading={state.loading || false}
+                    onEdit={state.onEditAsset}
+                    onDelete={state.onDeleteAsset}
+                    onCreate={state.onCreateAsset}
+                  />
+                </Box>
               </Box>
             );
 

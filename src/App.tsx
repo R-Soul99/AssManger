@@ -1,13 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Box, Typography, Button } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { ProjectPicker } from '@/presentation/components/project';
 import { projectService } from '@/application/services/ProjectService';
 import { AppShell, CanvasPlaceholder, DetailsPanel, BottomToolbar } from '@/presentation/components/layout';
 import { LocationTreeView, LocationDialog, CascadeDeleteDialog, LocationDialogData, CascadeDeleteOptions } from '@/presentation/components/location';
-import { LocationService, CreateLocationDto } from '@/application/services';
+import { CreateAssetForm, AssetDetailDrawer, DeleteAssetDialog } from '@/presentation/components/asset';
+import { LocationService, CreateLocationDto, AssetService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { Location } from '@/domain/entities';
+import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
+import { CategoryData, LocationData } from '@/domain/validators';
+import { useDebounce } from '@/presentation/components/asset/hooks';
 import './App.css';
 
 const theme = createTheme();
@@ -33,6 +37,18 @@ function App() {
     assetCount: number;
   } | null>(null);
 
+  // Asset management state
+  const [assets, setAssets] = useState<AssetWithRelations[]>([]);
+  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState<{ categoryId?: number; locationId?: string; status?: string }>({});
+  const [createAssetDialogOpen, setCreateAssetDialogOpen] = useState(false);
+  const [deleteAssetDialogOpen, setDeleteAssetDialogOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<AssetWithRelations | null>(null);
+  const [assetsLoading, setAssetsLoading] = useState(false);
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   // Auto-restore: re-enter the most recent project on mount (survives page refresh)
   // Skip auto-restore if migrations are needed (user must go through manual open flow with backup prompt)
   useEffect(() => {
@@ -48,10 +64,12 @@ function App() {
     });
   }, []);
 
-  // Load locations when database is opened
+  // Load locations and assets when database is opened
   useEffect(() => {
     if (currentDatabasePath) {
       loadLocations();
+      loadAssets();
+      loadCategories();
     }
   }, [currentDatabasePath]);
 
@@ -61,8 +79,79 @@ function App() {
     setLocations(allLocations);
   };
 
+  const loadAssets = async () => {
+    setAssetsLoading(true);
+    const assetRepo = RepositoryFactory.getInstance().getAssetRepository();
+    const assetService = new AssetService(assetRepo);
+    const result = await assetService.getAssetsWithRelations();
+    if (result.success) {
+      setAssets(result.data);
+    }
+    setAssetsLoading(false);
+  };
+
+  const loadCategories = async () => {
+    const categoryRepo = RepositoryFactory.getInstance().getCategoryRepository();
+    const allCategories = await categoryRepo.findAll();
+    // Convert Category entities to CategoryData
+    const categoryData: CategoryData[] = allCategories.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      icon: cat.icon,
+      color: cat.color,
+      parentId: cat.parentId,
+      description: cat.description ?? undefined,
+      createdAt: cat.createdAt,
+      updatedAt: cat.updatedAt,
+    }));
+    setCategories(categoryData);
+  };
+
   const handleDatabaseLoaded = (path: string) => {
     setCurrentDatabasePath(path);
+  };
+
+  // Asset CRUD handlers
+  const handleCreateAsset = () => {
+    setCreateAssetDialogOpen(true);
+  };
+
+  const handleAssetCreated = async () => {
+    await loadAssets();
+    setCreateAssetDialogOpen(false);
+  };
+
+  const handleEditAsset = (id: string) => {
+    const asset = assets.find(a => a.asset.id === id);
+    if (asset) {
+      setSelectedAsset(asset);
+    }
+  };
+
+  const handleAssetSaved = async () => {
+    await loadAssets();
+    setSelectedAsset(null);
+  };
+
+  const handleDeleteAsset = (id: string) => {
+    const asset = assets.find(a => a.asset.id === id);
+    if (asset) {
+      setSelectedAsset(asset);
+      setDeleteAssetDialogOpen(true);
+    }
+  };
+
+  const handleConfirmDeleteAsset = async (assetId: string) => {
+    const assetRepo = RepositoryFactory.getInstance().getAssetRepository();
+    const assetService = new AssetService(assetRepo);
+    const result = await assetService.deleteAsset(assetId);
+    if (result.success) {
+      await loadAssets();
+      setDeleteAssetDialogOpen(false);
+      setSelectedAsset(null);
+    } else {
+      alert(`Failed to delete asset: ${result.error}`);
+    }
   };
 
   // Location CRUD handlers
@@ -191,6 +280,57 @@ function App() {
     );
   }
 
+  // Filter assets by location, search term, and filters
+  const filteredAssets = useMemo(() => {
+    let result = assets;
+
+    // Filter by selected location
+    if (selectedLocationId) {
+      result = result.filter(a => a.asset.locationId === selectedLocationId);
+    }
+
+    // Filter by search term (debounced)
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      result = result.filter(a =>
+        a.asset.tag.toLowerCase().includes(searchLower) ||
+        a.asset.description.toLowerCase().includes(searchLower) ||
+        a.category?.name.toLowerCase().includes(searchLower) ||
+        a.location?.name.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filter by category
+    if (filters.categoryId !== undefined) {
+      result = result.filter(a => a.asset.categoryId === filters.categoryId);
+    }
+
+    // Filter by status
+    if (filters.status) {
+      result = result.filter(a => a.asset.status === filters.status);
+    }
+
+    // Filter by location (from filter panel, not tree selection)
+    if (filters.locationId) {
+      result = result.filter(a => a.asset.locationId === filters.locationId);
+    }
+
+    return result;
+  }, [assets, selectedLocationId, debouncedSearchTerm, filters]);
+
+  // Convert locations to LocationData format for filters
+  const locationData: LocationData[] = useMemo(() => {
+    return locations.map(loc => ({
+      id: loc.id,
+      name: loc.name,
+      type: loc.type,
+      parentId: loc.parentId,
+      description: loc.description,
+      createdAt: loc.createdAt,
+      updatedAt: loc.updatedAt,
+    }));
+  }, [locations]);
+
   // Main application view when project is open
   const selectedLocation = selectedLocationId
     ? locations.find(loc => loc.id === selectedLocationId)
@@ -234,7 +374,21 @@ function App() {
           <DetailsPanel
             state={
               selectedLocation
-                ? { type: 'location', data: selectedLocation }
+                ? {
+                    type: 'location',
+                    data: selectedLocation,
+                    assets: filteredAssets,
+                    assetTypes: categories,
+                    locations: locationData,
+                    searchTerm: searchTerm,
+                    filters: filters,
+                    onSearch: setSearchTerm,
+                    onFilterChange: setFilters,
+                    onCreateAsset: handleCreateAsset,
+                    onEditAsset: handleEditAsset,
+                    onDeleteAsset: handleDeleteAsset,
+                    loading: assetsLoading,
+                  }
                 : { type: 'empty' }
             }
           />
@@ -267,6 +421,34 @@ function App() {
         location={locationToDelete}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <CreateAssetForm
+        open={createAssetDialogOpen}
+        onClose={() => setCreateAssetDialogOpen(false)}
+        onAssetCreated={handleAssetCreated}
+      />
+
+      <AssetDetailDrawer
+        asset={selectedAsset}
+        onClose={() => setSelectedAsset(null)}
+        onSave={handleAssetSaved}
+        categories={categories}
+        locations={locationData}
+      />
+
+      <DeleteAssetDialog
+        open={deleteAssetDialogOpen}
+        asset={selectedAsset ? {
+          id: selectedAsset.asset.id,
+          tag: selectedAsset.asset.tag,
+          description: selectedAsset.asset.description,
+        } : null}
+        onClose={() => {
+          setDeleteAssetDialogOpen(false);
+          setSelectedAsset(null);
+        }}
+        onConfirm={handleConfirmDeleteAsset}
       />
     </ThemeProvider>
   );

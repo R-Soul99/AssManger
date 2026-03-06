@@ -20,7 +20,7 @@ const LocationManager: React.FC = () => {
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>();
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [childType, setChildType] = useState<LocationType | undefined>();
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +47,7 @@ const LocationManager: React.FC = () => {
 
   const handleAddSite = () => {
     setChildType(undefined);
-    setDialogMode('create');
+    setDialogMode('add');
     setDialogOpen(true);
   };
 
@@ -69,7 +69,7 @@ const LocationManager: React.FC = () => {
     }
 
     setChildType(nextType);
-    setDialogMode('create');
+    setDialogMode('add');
     setDialogOpen(true);
   };
 
@@ -100,7 +100,7 @@ const LocationManager: React.FC = () => {
     type: LocationType;
     description?: string;
   }) => {
-    if (dialogMode === 'create') {
+    if (dialogMode === 'add') {
       const dto: CreateLocationDto = {
         name: data.name,
         type: childType || data.type,
@@ -202,18 +202,20 @@ const LocationManager: React.FC = () => {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleDialogSubmit}
+        locations={locations}
         initialData={
           dialogMode === 'edit' && selectedLocation
             ? {
+                id: selectedLocation.id,
                 name: selectedLocation.name,
                 type: selectedLocation.type,
+                parentId: selectedLocation.parentId,
                 description: selectedLocation.description,
               }
             : undefined
         }
         mode={dialogMode}
-        fixedType={childType}
-        disableTypeChange={dialogMode === 'edit'}
+        parentId={selectedLocationId}
       />
     </Box>
   );

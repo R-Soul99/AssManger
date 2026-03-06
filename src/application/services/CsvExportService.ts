@@ -3,6 +3,7 @@ import { writeFile } from '@tauri-apps/plugin-fs';
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
 import { CategoryData, LocationData } from '@/domain/validators';
+import { AssetType } from '@/domain/entities';
 
 /**
  * Escapes a single CSV field per RFC 4180 rules:
@@ -17,16 +18,6 @@ function escapeCsvField(value: string | number | boolean | null | undefined): st
     return '"' + str.replace(/"/g, '""') + '"';
   }
   return str;
-}
-
-/**
- * Formats a Date or date-like value as an ISO date string (YYYY-MM-DD).
- * Returns empty string for null/undefined.
- */
-function formatDate(value: Date | string | null | undefined): string {
-  if (value == null) return '';
-  if (value instanceof Date) return value.toISOString().split('T')[0];
-  return String(value);
 }
 
 /**
@@ -104,6 +95,7 @@ export class CsvExportService {
 
   /**
    * Export categories to CSV.
+   * @deprecated Use exportAssetTypes instead. Kept for backward compatibility.
    */
   async exportCategories(
     categories: CategoryData[],
@@ -119,6 +111,29 @@ export class CsvExportService {
       escapeCsvField(cat.color),
       escapeCsvField(formatTimestamp(cat.createdAt)),
       escapeCsvField(formatTimestamp(cat.updatedAt)),
+    ]);
+
+    return this.writeCSV(headers, rows, filename);
+  }
+
+  /**
+   * Export asset types to CSV.
+   */
+  async exportAssetTypes(
+    assetTypes: AssetType[],
+    filename: string = 'asset_types.csv'
+  ): Promise<{ success: true; path: string } | { success: false; error: string }> {
+    const headers = ['ID', 'Name', 'Description', 'Icon', 'Color', 'Is System Type', 'Created', 'Updated'];
+
+    const rows = assetTypes.map((type) => [
+      escapeCsvField(type.id),
+      escapeCsvField(type.name),
+      escapeCsvField(type.description ?? null),
+      escapeCsvField(type.icon),
+      escapeCsvField(type.color),
+      escapeCsvField(type.isSystemType ? 'Yes' : 'No'),
+      escapeCsvField(formatTimestamp(type.createdAt)),
+      escapeCsvField(formatTimestamp(type.updatedAt)),
     ]);
 
     return this.writeCSV(headers, rows, filename);

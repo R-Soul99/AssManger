@@ -9,9 +9,7 @@ console.log('[App.debug] Component loaded');
 
 function App() {
   console.log('[App.debug] Component rendering');
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isOpenDialogOpen, setIsOpenDialogOpen] = useState(false);
-  const [currentProject, setCurrentProject] = useState<{ path: string; name: string } | null>(null);
+  const [currentProject] = useState<{ path: string; name: string } | null>(null);
 
   // Simple welcome screen without the complex components
   if (!currentProject) {
@@ -19,10 +17,10 @@ function App() {
       <div className="container">
         <h1>Visual Asset Mapper</h1>
         <div className="welcome-actions">
-          <button onClick={() => setIsCreateOpen(true)} className="primary">
+          <button onClick={() => console.log('Create clicked')} className="primary">
             Create New Project
           </button>
-          <button onClick={() => setIsOpenDialogOpen(true)}>
+          <button onClick={() => console.log('Open clicked')}>
             Open Project
           </button>
         </div>

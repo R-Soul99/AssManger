@@ -1,8 +1,8 @@
-import { eq, like, or, and, ne, count, sql } from 'drizzle-orm';
+import { eq, like, or, and, ne, count } from 'drizzle-orm';
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { IAssetRepository, AssetFilters, AssetWithRelations } from '../interfaces/IAssetRepository';
 import { Asset } from '@/domain/entities';
-import { AssetData, CategoryData, LocationData } from '@/domain/validators';
+import { AssetData } from '@/domain/validators';
 import { assets, categories, locations } from '@/infrastructure/database/schema';
 import * as schema from '@/infrastructure/database/schema';
 
@@ -119,7 +119,7 @@ export class SqliteAssetRepository implements IAssetRepository {
     let currentId: string | null = locationId;
 
     while (currentId) {
-      const locationRows = await this.db
+      const locationRows: typeof locations.$inferSelect[] = await this.db
         .select()
         .from(locations)
         .where(eq(locations.id, currentId))
@@ -127,7 +127,7 @@ export class SqliteAssetRepository implements IAssetRepository {
 
       if (locationRows.length === 0) break;
 
-      const loc = locationRows[0];
+      const loc: typeof locations.$inferSelect = locationRows[0];
       path.unshift(loc.name);
       currentId = loc.parentId;
     }

@@ -11,6 +11,7 @@ import {
   Edit as EditIcon,
   DriveFileMove as MoveIcon,
   Delete as DeleteIcon,
+  FileDownload as FileDownloadIcon,
 } from '@mui/icons-material';
 import { Location } from '@/domain/entities/Location';
 import { LocationType } from '@/domain/validators/schemas';
@@ -30,6 +31,7 @@ interface LocationTreeViewProps {
   onRename?: (id: string) => void;
   onMove?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onExport?: () => void;
 }
 
 const LocationTreeView: React.FC<LocationTreeViewProps> = ({
@@ -40,6 +42,7 @@ const LocationTreeView: React.FC<LocationTreeViewProps> = ({
   onRename,
   onMove,
   onDelete,
+  onExport,
 }) => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<{
@@ -108,7 +111,7 @@ const LocationTreeView: React.FC<LocationTreeViewProps> = ({
     setContextMenu(null);
   };
 
-  const handleMenuAction = (action: 'addChild' | 'rename' | 'move' | 'delete') => {
+  const handleMenuAction = (action: 'addChild' | 'rename' | 'move' | 'delete' | 'export') => {
     if (!contextMenu) return;
 
     const locationId = contextMenu.locationId;
@@ -126,6 +129,9 @@ const LocationTreeView: React.FC<LocationTreeViewProps> = ({
         break;
       case 'delete':
         onDelete?.(locationId);
+        break;
+      case 'export':
+        onExport?.();
         break;
     }
   };
@@ -200,6 +206,12 @@ const LocationTreeView: React.FC<LocationTreeViewProps> = ({
             <AddIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Add Child Location</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleMenuAction('export')}>
+          <ListItemIcon>
+            <FileDownloadIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Export Locations...</ListItemText>
         </MenuItem>
         <MenuItem onClick={() => handleMenuAction('rename')}>
           <ListItemIcon>

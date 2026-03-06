@@ -5,8 +5,8 @@ import { ProjectPicker } from '@/presentation/components/project';
 import { projectService } from '@/application/services/ProjectService';
 import { AppShell, CanvasPlaceholder, DetailsPanel, BottomToolbar } from '@/presentation/components/layout';
 import { LocationTreeView, LocationDialog, CascadeDeleteDialog, LocationDialogData, CascadeDeleteOptions } from '@/presentation/components/location';
-import { CreateAssetForm, AssetDetailDrawer, DeleteAssetDialog } from '@/presentation/components/asset';
-import { LocationService, CreateLocationDto, AssetService } from '@/application/services';
+import { CreateAssetForm, AssetDetailDrawer, DeleteAssetDialog, ExportDialog } from '@/presentation/components/asset';
+import { LocationService, CreateLocationDto, AssetService, CsvExportService } from '@/application/services';
 import { RepositoryFactory } from '@/infrastructure/repositories/RepositoryFactory';
 import { Location } from '@/domain/entities';
 import { AssetWithRelations } from '@/infrastructure/repositories/interfaces/IAssetRepository';
@@ -46,6 +46,7 @@ function App() {
   const [deleteAssetDialogOpen, setDeleteAssetDialogOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithRelations | null>(null);
   const [assetsLoading, setAssetsLoading] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -270,6 +271,77 @@ function App() {
     }
   };
 
+  // Export handlers
+  const handleOpenExport = () => {
+    setExportDialogOpen(true);
+  };
+
+  const handleExportAssets = async (exportAll: boolean) => {
+    try {
+      const csvExportService = new CsvExportService();
+      const assetsToExport = exportAll ? assets : filteredAssets;
+
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const filename = `assets_export_${date}.csv`;
+
+      const result = await csvExportService.exportAssets(assetsToExport, filename);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  };
+
+  const handleExportLocations = async () => {
+    try {
+      const csvExportService = new CsvExportService();
+
+      // Convert Location[] to LocationData[]
+      const locationData: LocationData[] = locations.map(loc => ({
+        id: loc.id,
+        name: loc.name,
+        type: loc.type,
+        parentId: loc.parentId,
+        description: loc.description,
+        createdAt: loc.createdAt,
+        updatedAt: loc.updatedAt,
+      }));
+
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const filename = `locations_export_${date}.csv`;
+
+      const result = await csvExportService.exportLocations(locationData, filename);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  };
+
+  const handleExportCategories = async () => {
+    try {
+      const csvExportService = new CsvExportService();
+
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const filename = `categories_export_${date}.csv`;
+
+      const result = await csvExportService.exportCategories(categories, filename);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  };
+
   // Welcome screen when no project is open
   if (!currentDatabasePath) {
     return (
@@ -365,6 +437,7 @@ function App() {
                 onRename={handleEditLocation}
                 onMove={(id) => console.log('Move not implemented yet:', id)}
                 onDelete={handleDeleteLocation}
+                onExport={handleOpenExport}
               />
             </Box>
           </Box>
@@ -449,6 +522,16 @@ function App() {
           setSelectedAsset(null);
         }}
         onConfirm={handleConfirmDeleteAsset}
+      />
+
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        filteredAssetCount={filteredAssets.length}
+        totalAssetCount={assets.length}
+        onExportAssets={handleExportAssets}
+        onExportLocations={handleExportLocations}
+        onExportCategories={handleExportCategories}
       />
     </ThemeProvider>
   );
